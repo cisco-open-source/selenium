@@ -1,0 +1,60 @@
+
+# note that this server doesn't include the necessary drivers.
+
+java_library(name = "server",
+  deps = [
+    ":server_core",
+    "//java/client/src/org/openqa/selenium:webdriver-api",
+    "//java/client/src/org/openqa/selenium/ie",
+    "//java/client/src/org/openqa/selenium/firefox",
+  ])
+
+java_library(name = "server_core",
+  srcs = [
+    "DriverServlet.java",
+    "JsonHttpRemoteConfig.java",
+  ],
+  deps = [
+    ":server_very_core",
+    "//java/server/src/org/openqa/selenium/remote/server/resource",
+  ])
+
+java_library(name = "server_very_core",
+  srcs = [
+    "CapabilitiesComparator.java",
+    "DefaultDriverFactory.java",
+    "DefaultDriverSessions.java",
+    "DriverFactory.java",
+    "DriverSessions.java",
+    "HttpRequest.java",
+    "HttpResponse.java",
+    "HttpStatusCodes.java",
+    "KnownElements.java",
+    "JeeServletHttpRequest.java",
+    "JeeServletHttpResponse.java",
+    "JsonParametersAware.java",
+    "MimeType.java",
+    "Session.java",
+    "DefaultSession.java",
+    "SessionCleaner.java",
+    "SnapshotScreenListener.java",
+    "WebbitHttpRequest.java",
+    "WebbitHttpResponse.java",
+    "handler/**/*.java",
+    "renderer/*.java",
+    "rest/*.java",
+    "xdrpc/*.java",
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium:base",
+    "//java/client/src/org/openqa/selenium:codecs",
+    "//java/client/src/org/openqa/selenium:webdriver-api",
+    "//java/client/src/org/openqa/selenium/logging",
+    "//java/client/src/org/openqa/selenium/remote",
+    "//java/client/src/org/openqa/selenium/support/events",
+    "//java/server/src/org/openqa/selenium/server:logging",
+    "//third_party/java/guava-libraries",
+    "//third_party/java/json",
+    "//third_party/java/servlet-api",
+    "//third_party/java/webbit",
+  ])

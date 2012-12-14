@@ -1,0 +1,69 @@
+
+java_library(name = "test-webdriver",
+  srcs = [
+    "internal/**/*.java",
+    "support/*.java",
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium:webdriver-api",
+    "//java/client/src/org/openqa/selenium:webdriver-backed-selenium",
+    "//java/client/src/org/openqa/selenium/remote",
+    "//java/client/src/org/openqa/selenium/support",
+    "//java/client/src/org/openqa/selenium/internal/seleniumemulation",
+    "//java/client/test/org/openqa/selenium:base",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//third_party/java/junit",
+  ])
+
+java_library(name = "environment",
+  srcs = [
+    "SeleniumTestEnvironment.java",
+    "SeleniumAppServer.java",
+  ], deps = [
+    "//java/client/src/com/thoughtworks/selenium",
+    "//java/client/src/org/openqa/selenium:webdriver-backed-selenium",
+    "//java/client/test/org/openqa/selenium:base",
+    "//java/client/test/org/openqa/selenium/environment",
+    "//java/server/test/org/openqa/selenium:server-with-tests:uber",
+    "//third_party/java/guava-libraries",
+  ])
+
+java_library(name = "selenium_backed_webdriver",
+  srcs = [
+    "SeleneseBackedWebDriver.java",
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium:selenium-backed-webdriver",
+    "//java/client/src/org/openqa/selenium/remote",
+  ])
+
+java_test(name = "selenium-backed-webdriver-test",
+  srcs = [
+    "SeleneseWebDriverTests.java",
+  ],
+  sysproperties = [
+    { "selenium.browser" : "ff" },
+    { "selenium.browser.selenium" : "true" },
+  ],
+  deps = [
+    ":selenium_backed_webdriver",
+    "//java/client/src/com/thoughtworks/selenium",
+    "//java/client/test/org/openqa/selenium:base",
+    "//java/server/test/org/openqa/selenium:server-with-tests:uber",
+    "//java/client/test/org/openqa/selenium:tests",
+  ])
+
+java_test(name = "small_tests",
+  srcs = [
+    "SmallTests.java",
+    "FastWebDriverBackedSeleniumTest.java",
+    "WebDriverCommandProcessorTest.java",
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium:base",
+    "//java/client/test/org/openqa/selenium:base",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//java/client/test/org/openqa/selenium/v1/internal/seleniumemulation:small_tests",
+    "//third_party/java/jmock",
+    "//third_party/java/junit",
+  ])

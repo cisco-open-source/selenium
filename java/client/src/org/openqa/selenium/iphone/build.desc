@@ -1,0 +1,18 @@
+
+java_library(name = "iphone",
+  srcs = [ "*.java" ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/remote",
+    "//third_party/java/commons-exec",
+  ],
+  embedded = [
+    ":mac"
+  ])
+
+folder(name = "mac",
+  deps = [
+    "//third_party/objc/iphonesim:iphonesim-binary"
+  ],
+  outs = [
+    "mac/ios-sim",
+  ])

@@ -1,0 +1,24 @@
+
+java_test(name = "test",
+  srcs = [
+    "*.java",
+    "handler/*.java",
+    "rest/*.java",
+    "testing/*.java",
+    "xdrpc/*.java",
+  ],
+  sysproperties = [
+    { "selenium.browser" : "ff" },
+    { "selenium.browser.remote" : "true" },
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/chrome",
+    "//java/client/src/org/openqa/selenium/firefox",
+    "//java/client/src/org/openqa/selenium/htmlunit",
+    "//java/client/src/org/openqa/selenium/ie",
+    "//java/server/src/org/openqa/selenium/remote/server",
+    "//java/client/test/org/openqa/selenium:base",
+    "//java/client/test/org/openqa/selenium/remote:common-tests",
+    "//java/client/test/org/openqa/selenium/testing/drivers",
+    "//third_party/java/junit",
+  ])

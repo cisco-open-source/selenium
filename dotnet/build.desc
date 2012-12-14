@@ -1,0 +1,261 @@
+dotnet_library(name = "dotnet",
+  srcs = "src/WebDriver/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Drawing.dll",
+    "System.Xml.dll"
+  ],
+  merge_refs = [
+    "third_party/dotnet/json-net-4.5r7/net40/Newtonsoft.Json.dll",
+    "third_party/dotnet/dotnetzip-1.9/Ionic.Zip.dll"
+  ],
+  resources = [
+    {"//javascript/firefox-driver:webdriver" : "WebDriver.FirefoxExt.zip"},
+    {"//cpp:noblur" : "WebDriver.FirefoxNoFocus.x86.dll"},
+    {"//cpp:noblur64" : "WebDriver.FirefoxNoFocus.x64.dll"}
+  ],
+  keyfile = "WebDriver.snk",
+  framework_ver = "net40",
+  out = "WebDriver.dll"
+)
+
+dotnet_library(name = "dotnet35",
+  srcs = "src/WebDriver/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Drawing.dll",
+    "System.Xml.dll"
+  ],
+  merge_refs = [
+    "third_party/dotnet/json-net-4.5r7/net35/Newtonsoft.Json.dll",
+    "third_party/dotnet/dotnetzip-1.9/Ionic.Zip.dll"
+  ],
+  resources = [
+    {"//javascript/firefox-driver:webdriver" : "WebDriver.FirefoxExt.zip"},
+    {"//cpp:noblur" : "WebDriver.FirefoxNoFocus.x86.dll"},
+    {"//cpp:noblur64" : "WebDriver.FirefoxNoFocus.x64.dll"}
+  ],
+  keyfile = "WebDriver.snk",
+  framework_ver = "net35",
+  out = "WebDriver.dll"
+)
+
+dotnet_package(name = "dotnet-package",
+  packageid = "Selenium.WebDriver",
+  deps = [
+    ":dotnet",
+    ":dotnet35"
+  ],
+  title = "Selenium WebDriver",
+  summary = ".NET bindings for the Selenium WebDriver API",
+  description = "Selenium is a set of different software tools each with a different approach to supporting browser automation. These tools are highly flexible, allowing many options for locating and manipulating elements within a browser, and one of its key features is the support for automating multiple browser platforms. This package contains the .NET bindings for the newer, more concise and object-based Selenium WebDriver API, which uses native OS-level events to manipulate the browser, bypassing the JavaScript sandbox, and does not require the Selenium Server to automate the browser.",
+  tags = "Selenium WebDriver browser automation",
+  assemblies = [
+    {"System.Drawing" : ""}
+  ]
+)
+
+dotnet_library(name = "support",
+  srcs = "src/WebDriver.Support/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Drawing.dll",
+    "System.Xml.dll",
+    ":dotnet",
+    "third_party/dotnet/Castle.Core.3.0.0/net40/Castle.Core.dll"
+  ],
+  keyfile = "WebDriver.snk",
+  framework_ver = "net40",
+  out = "WebDriver.Support.dll"
+)
+
+dotnet_library(name = "support35",
+  srcs = "src/WebDriver.Support/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Drawing.dll",
+    "System.Xml.dll",
+    ":dotnet35",
+    "third_party/dotnet/Castle.Core.3.0.0/net35/Castle.Core.dll"
+  ],
+  framework_ver = "net35",
+  keyfile = "WebDriver.snk",
+  out = "WebDriver.Support.dll"
+)
+
+dotnet_package(name = "support-package",
+  packageid = "Selenium.Support",
+  deps = [
+    ":support",
+    ":support35"
+  ],
+  title = "Selenium WebDriver Support Classes",
+  summary = "Support classes for the .NET bindings of the Selenium WebDriver API",
+  description = "Selenium is a set of different software tools each with a different approach to supporting browser automation. These tools are highly flexible, allowing many options for locating and manipulating elements within a browser, and one of its key features is the support for automating multiple browser platforms. This package contains .NET support classes for the Selenium WebDriver API, which includes helper classes for HTML Select elements, waiting for conditions, and Page Object creation.",
+  tags = "Selenium WebDriver browser automation support",
+  packagedeps = [
+    {":dotnet-package" : ""},
+    {"Castle.Core" : "3.0.0.4001"}
+  ],
+  assemblies = [
+    {"System.Drawing" : ""}
+  ]
+)
+
+dotnet_library(name = "core",
+  srcs = "src/Selenium.Core/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Xml.dll",
+    "System.Web.dll"
+  ],
+  keyfile = "WebDriver.snk",
+  framework_ver = "net40",
+  out = "ThoughtWorks.Selenium.Core.dll"
+)
+
+dotnet_library(name = "core35",
+  srcs = "src/Selenium.Core/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Xml.dll",
+    "System.Web.dll"
+  ],
+  framework_ver = "net35",
+  keyfile = "WebDriver.snk",
+  out = "ThoughtWorks.Selenium.Core.dll"
+)
+
+dotnet_package(name = "core-package",
+  packageid = "Selenium.RC",
+  deps = [
+    ":core",
+    ":core35"
+  ],
+  title = "Selenium Remote Control (RC)",
+  summary = ".NET bindings for the Selenium RC API",
+  description = "Selenium is a set of different software tools each with a different approach to supporting browser automation. These tools are highly flexible, allowing many options for locating and manipulating elements within a browser, and one of its key features is the support for automating multiple browser platforms. This package contains the .NET bindings for the older, more procedural Selenium Remote Control (or Selenium RC) API. It requires a running instance of the Selenium Server, and uses JavaScript for automating the browser, which means it is limited to the functionality available from within the JavaScript sandbox.",
+  tags = "Selenium remote control RC browser automation",
+  assemblies = [
+    {"System.Drawing" : ""}
+  ]
+)
+
+dotnet_library(name = "webdriverbackedselenium",
+  srcs = "src/Selenium.WebdriverBackedSelenium/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Drawing.dll",
+    "System.Xml.dll",
+    "System.Web.dll",
+    ":dotnet",
+    ":core"
+  ],
+  resources = [
+    {"java/client/src/org/openqa/selenium/internal/seleniumemulation/injectableSelenium.js" : "injectableSelenium.js"},
+    {"java/client/src/org/openqa/selenium/internal/seleniumemulation/htmlutils.js" : "htmlutils.js"},
+    {"//javascript/selenium-atoms:findElement" : "findElement.js" },
+    {"//javascript/selenium-atoms:findOption" : "findOption.js" },
+    {"//javascript/selenium-atoms:fireEvent" : "fireEvent.js" },
+    {"//javascript/selenium-atoms:fireEventAt" : "fireEventAt.js" },
+    {"//javascript/selenium-atoms:getAttribute" : "getAttribute.js" },
+    {"//javascript/selenium-atoms:getText" : "getText.js" },
+    {"//javascript/selenium-atoms:linkLocator" : "linkLocator.js" },
+    {"//javascript/selenium-atoms:isElementPresent" : "isElementPresent.js" },
+    {"//javascript/selenium-atoms:isSomethingSelected" : "isSomethingSelected.js" },
+    {"//javascript/selenium-atoms:isTextPresent" : "isTextPresent.js" },
+    {"//javascript/selenium-atoms:isVisible" : "isVisible.js" },
+    {"//javascript/selenium-atoms:type" : "type.js" }
+  ],
+  keyfile = "WebDriver.snk",
+  framework_ver = "net40",
+  out = "Selenium.WebDriverBackedSelenium.dll"
+)
+
+dotnet_library(name = "webdriverbackedselenium35",
+  srcs = "src/Selenium.WebdriverBackedSelenium/**/*.cs",
+  refs = [
+    "System.dll",
+    "System.Core.dll",
+    "System.Data.dll",
+    "System.Drawing.dll",
+    "System.Xml.dll",
+    "System.Web.dll",
+    ":dotnet35",
+    ":core35"
+  ],
+  resources = [
+    {"java/client/src/org/openqa/selenium/internal/seleniumemulation/injectableSelenium.js" : "injectableSelenium.js"},
+    {"java/client/src/org/openqa/selenium/internal/seleniumemulation/htmlutils.js" : "htmlutils.js"},
+    {"//javascript/selenium-atoms:findElement" : "findElement.js" },
+    {"//javascript/selenium-atoms:findOption" : "findOption.js" },
+    {"//javascript/selenium-atoms:fireEvent" : "fireEvent.js" },
+    {"//javascript/selenium-atoms:fireEventAt" : "fireEventAt.js" },
+    {"//javascript/selenium-atoms:getAttribute" : "getAttribute.js" },
+    {"//javascript/selenium-atoms:getText" : "getText.js" },
+    {"//javascript/selenium-atoms:linkLocator" : "linkLocator.js" },
+    {"//javascript/selenium-atoms:isElementPresent" : "isElementPresent.js" },
+    {"//javascript/selenium-atoms:isSomethingSelected" : "isSomethingSelected.js" },
+    {"//javascript/selenium-atoms:isTextPresent" : "isTextPresent.js" },
+    {"//javascript/selenium-atoms:isVisible" : "isVisible.js" },
+    {"//javascript/selenium-atoms:type" : "type.js" }
+  ],
+  keyfile = "WebDriver.snk",
+  framework_ver = "net35",
+  out = "Selenium.WebDriverBackedSelenium.dll"
+)
+
+dotnet_package(name = "webdriverbackedselenium-package",
+  packageid = "Selenium.WebDriverBackedSelenium",
+  deps = [
+    ":webdriverbackedselenium",
+    ":webdriverbackedselenium35"
+  ],
+  title = "WebDriver-backed Selenium",
+  summary = "Implementation of the Selenium Remote Control (RC) API, using WebDriver technology",
+  description = "Selenium is a set of different software tools each with a different approach to supporting browser automation. These tools are highly flexible, allowing many options for locating and manipulating elements within a browser, and one of its key features is the support for automating multiple browser platforms. This package contains the .NET bindings for the older, more procedural Selenium Remote Control (or Selenium RC) API, but implemented using the newer WebDriver technology. It does not require a running instance of the Selenium Server, and is not limited to the functionality available from within the JavaScript sandbox. It is intended as a transitional package to allow organizations with significant investment in the Selenium RC API to run their code with minimal modifications until they are able to migrate to the newer Selenium WebDriver API.",
+  tags = "Selenium WebDriver remote control RC browser automation",
+  assemblies = [
+    {"System.Drawing" : ""}
+  ]
+)
+
+dotnet_docs(name = "docs",
+  srcs = [
+    ":dotnet",
+    ":support",
+    ":core",
+    ":webdriverbackedselenium"
+  ],
+  project = "docgen/docs.shfbproj",
+  website = "build/docs/dotnet/web",
+  helpfile = "WebDriver.chm",
+  out = "build/dotnet/WebDriver.chm"
+)
+
+dotnet_release(name = "release",
+  deps = [
+    ":dotnet-package",
+    ":support-package",
+    ":core-package",
+    ":webdriverbackedselenium-package",
+	":docs"
+  ],
+  desc = ".NET bindings for Selenium, including the RC and WebDriver APIs.",
+  featured = "true",
+  out = "selenium-dotnet.zip"
+)

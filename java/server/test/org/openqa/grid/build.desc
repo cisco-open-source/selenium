@@ -1,0 +1,14 @@
+
+java_test(name = "test",
+  srcs = [
+    "internal/**/*.java",
+    "plugin/**/*.java",
+  ],
+  resources = [
+    "internal/configuration/*.yml",
+  ],
+  deps = [
+    "//java/server/src/org/openqa/grid",
+    "//third_party/java/junit",
+    "//third_party/java/jmock"
+  ])
