@@ -16,7 +16,7 @@ limitations under the License.
 */
 
 
-package org.openqa.selenium.remotedriver;
+package org.openqa.selenium.qtwebkit;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.OutputType;
@@ -25,9 +25,9 @@ import org.openqa.selenium.remote.DriverCommand;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 
-public class RemoteDriver extends RemoteWebDriver implements TakesScreenshot {
-    public RemoteDriver(Capabilities capabilities) {
-        super(org.openqa.selenium.remotedriver.RemoteDriverExecutor.getCommandExecutor(), capabilities);
+public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot {
+    public QtWebKitDriver(Capabilities capabilities) {
+        super(org.openqa.selenium.qtwebkit.QtWebKitDriverExecutor.getCommandExecutor(), capabilities);
     }
 
 

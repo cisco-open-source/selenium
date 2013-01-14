@@ -218,8 +218,8 @@ public class DesiredCapabilities implements Serializable, Capabilities {
     return new DesiredCapabilities(BrowserType.PHANTOMJS, "", Platform.ANY);
   }
 
-    public static DesiredCapabilities remotedriver() {
-        return new DesiredCapabilities("remotedriver", "", Platform.ANY);
+    public static DesiredCapabilities qtwebkit() {
+        return new DesiredCapabilities("QtWebKit", "", Platform.ANY);
     }
 
   @Override

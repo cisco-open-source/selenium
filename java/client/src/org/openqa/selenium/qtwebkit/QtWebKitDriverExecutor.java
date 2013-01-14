@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.openqa.selenium.remotedriver;
+package org.openqa.selenium.qtwebkit;
 
 
 import org.openqa.selenium.WebDriverException;
@@ -29,7 +29,7 @@ import java.net.MalformedURLException;
 * request and shutdown after each quit command.
 */
 
-class RemoteDriverExecutor {
+class QtWebKitDriverExecutor {
 
     /**
      * System property that defines the IP of the launched WebDriver.
@@ -39,7 +39,7 @@ class RemoteDriverExecutor {
     /**
      * Creates a new ChromeCommandExecutor which will communicate with the chromedriver as configured
     */
-    public RemoteDriverExecutor() {
+    public QtWebKitDriverExecutor() {
 
     }
 
