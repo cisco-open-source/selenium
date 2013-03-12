@@ -132,7 +132,8 @@ public class DefaultRemoteProxy extends BaseRemoteProxy
 
   // TODO freynaud replace with getstatus.
   public boolean isAlive() {
-    String url = getRemoteHost().toExternalForm() + "/wd/hub/status";
+    //HE String url = getRemoteHost().toExternalForm() + "/wd/hub/status";
+    String url = getRemoteHost().toExternalForm() + "/status";  
     BasicHttpRequest r = new BasicHttpRequest("GET", url);
     HttpClient client = getHttpClientFactory().getHttpClient();
     HttpHost host = new HttpHost(getRemoteHost().getHost(), getRemoteHost().getPort());
