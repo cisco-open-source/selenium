@@ -102,16 +102,14 @@ var browserbot = {
                 evt = document.createEvent('KeyEvents');
                 evt.initKeyEvent(eventType, true, true, window, controlKeyDown, altKeyDown, shiftKeyDown, metaKeyDown, keycode, keycode);
             } else {
-                evt = document.createEvent('UIEvents');
-
+                evt = document.createEvent('Events');
                 evt.shiftKey = shiftKeyDown;
                 evt.metaKey = metaKeyDown;
                 evt.altKey = altKeyDown;
                 evt.ctrlKey = controlKeyDown;
 
-                evt.initUIEvent(eventType, true, true, window, 1);
-                evt.keyCode = keycode;
-                evt.which = keycode;
+                evt.initEvent(eventType, true, true);
+                evt.keyCode = parseInt(keycode);
             }
 
             element.dispatchEvent(evt);
