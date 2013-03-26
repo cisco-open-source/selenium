@@ -153,9 +153,7 @@ public class SeleniumDriverResourceHandler extends ResourceHandler {
         handleBrowserResponse(req, res, sessionId, logging, jsState,
             justLoaded, retrying, closing);
       } else if (-1 != req.getRequestURL().indexOf(
-          "selenium-server/core/scripts/user-extensions.js")
-          ||
-          -1 != req.getRequestURL().indexOf("selenium-server/tests/html/tw.jpg")) {
+          "selenium-server/core/scripts/user-extensions.js")) {
         // ignore failure to find these items...
       } else {
         log.fine("Not handling: " + req.getRequestURL() + "?" + req.getQuery());
@@ -441,13 +439,13 @@ public class SeleniumDriverResourceHandler extends ResourceHandler {
           setDomain(sessionId, values.get(1));
           results = "OK," + sessionId;
         } catch (RemoteCommandException rce) {
-          results = "Failed to start new browser session: " + rce.getMessage();
+          results = "Failed to start new browser session: " + rce;
         } catch (InvalidBrowserExecutableException ibex) {
-          results = "Failed to start new browser session: " + ibex.getMessage();
+          results = "Failed to start new browser session: " + ibex;
         } catch (IllegalArgumentException iaex) {
-          results = "Failed to start new browser session: " + iaex.getMessage();
+          results = "Failed to start new browser session: " + iaex;
         } catch (RuntimeException rte) {
-          results = "Failed to start new browser session: " + rte.getMessage();
+          results = "Failed to start new browser session: " + rte;
         }
         // clear out any network traffic captured but never pulled back by the last client (this
         // feature only works with one concurrent browser, similar to PI mode)

@@ -2,7 +2,9 @@ js_library(name = "common_lib",
   srcs = [
     "alert.js",
     "command.js",
+    "commandregistry.js",
     "console.js",
+    "dom.js",
     "message/alert.js",
     "message/command.js",
     "message/load.js",
@@ -144,6 +146,7 @@ js_binary(name = "page",
     "bot.json.NATIVE_JSON=false",
     "goog.userAgent.ASSUME_WEBKIT=true",
     "goog.userAgent.product.ASSUME_SAFARI=true",
+    "safaridriver.message.ASSUME_DOM_WINDOW=true",
     "safaridriver.message.ORIGIN=2"
   ],
   externs = [

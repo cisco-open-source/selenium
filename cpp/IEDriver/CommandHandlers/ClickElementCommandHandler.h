@@ -42,20 +42,20 @@ class ClickElementCommandHandler : public IECommandHandler {
       response->SetErrorResponse(400, "Missing parameter in URL: id");
       return;
     } else {
-      int status_code = SUCCESS;
+      int status_code = WD_SUCCESS;
       std::string element_id = id_parameter_iterator->second;
 
       BrowserHandle browser_wrapper;
       status_code = executor.GetCurrentBrowser(&browser_wrapper);
-      if (status_code != SUCCESS) {
+      if (status_code != WD_SUCCESS) {
         response->SetErrorResponse(status_code, "Unable to get browser");
         return;
       }
 
       ElementHandle element_wrapper;
       status_code = this->GetElement(executor, element_id, &element_wrapper);
-      if (status_code == SUCCESS) {
-        if (executor.enable_native_events()) {
+      if (status_code == WD_SUCCESS) {
+        if (executor.input_manager()->enable_native_events()) {
           if (this->IsOptionElement(element_wrapper)) {
             std::string option_click_error = "";
             if (executor.allow_asynchronous_javascript()) {
@@ -69,14 +69,17 @@ class ClickElementCommandHandler : public IECommandHandler {
               CComVariant element_variant(element_wrapper->element());
               status_code = ExecuteClickAtom(doc, element_variant);
             }
-            if (status_code != SUCCESS) {
+            if (status_code != WD_SUCCESS) {
               response->SetErrorResponse(status_code, "Cannot click on option element. " + option_click_error);
               return;
             }
           } else {
-            status_code = element_wrapper->Click(executor.scroll_behavior());
+            if (executor.input_manager()->require_window_focus()) {
+              executor.input_manager()->SetFocusToBrowser(browser_wrapper);
+            }
+            status_code = element_wrapper->Click(executor.input_manager()->scroll_behavior());
             browser_wrapper->set_wait_required(true);
-            if (status_code != SUCCESS) {
+            if (status_code != WD_SUCCESS) {
               if (status_code == EELEMENTCLICKPOINTNOTSCROLLED) {
                 // We hard-code the error code here to be "Element not visible"
                 // to maintain compatibility with previous behavior.
@@ -97,9 +100,9 @@ class ClickElementCommandHandler : public IECommandHandler {
           browser_wrapper->GetDocument(&doc);
           Script script_wrapper(doc, script_source, 2);
           script_wrapper.AddArgument(element_wrapper);
-          script_wrapper.AddArgument(executor.mouse_state());
+          script_wrapper.AddArgument(executor.input_manager()->mouse_state());
           status_code = script_wrapper.Execute();
-          if (status_code != SUCCESS) {
+          if (status_code != WD_SUCCESS) {
             // This is a hack. We should change this when we can get proper error
             // codes back from the atoms. We'll assume the script failed because
             // the element isn't visible.
@@ -108,7 +111,7 @@ class ClickElementCommandHandler : public IECommandHandler {
             return;
           } else {
             IECommandExecutor& mutable_executor = const_cast<IECommandExecutor&>(executor);
-            mutable_executor.set_mouse_state(script_wrapper.result());
+            mutable_executor.input_manager()->set_mouse_state(script_wrapper.result());
           }
         }
       } else {
@@ -169,7 +172,7 @@ class ClickElementCommandHandler : public IECommandHandler {
     while ((bRet = ::GetMessage(&msg, NULL, 0, 0)) != 0) {
       if (msg.message == WD_EXECUTE_ASYNC_SCRIPT) {
         LOG(DEBUG) << "Received execution message. Unmarshaling element from stream";
-        int status_code = SUCCESS;
+        int status_code = WD_SUCCESS;
         CComPtr<IDispatch> dispatch;
         LPSTREAM message_payload = reinterpret_cast<LPSTREAM>(param);
         hr = ::CoGetInterfaceAndReleaseStream(message_payload, IID_IDispatch, reinterpret_cast<void**>(&dispatch));

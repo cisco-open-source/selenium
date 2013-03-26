@@ -346,7 +346,7 @@ module CrazyFunDotNet
       target = nunit "#{task_name}:run" do |nunit_task|
         mkdir_p test_log_dir
         puts "Testing: #{task_name}"
-        nunit_task.command = "third_party/dotnet/nunit-2.6.0/nunit-console.exe"
+        nunit_task.command = "third_party/dotnet/nunit-2.6.2/nunit-console.exe"
         nunit_task.assemblies << [output_dir, args[:project]].join(File::SEPARATOR)
         nunit_task.options << "/nologo"
         nunit_task.options << "/nodots"
@@ -626,14 +626,19 @@ module CrazyFunVisualC
          target_task.out = full_path
       else
         file desc_path do
-          msbuild! "#{task_name}.compile" do |msb|
-            puts "Compiling: #{task_name} as #{desc_path}"
-            msb.use :net40
-            msb.properties :configuration => :Release, :platform => args[:platform]
-            msb.solution = File.join(dir, args[:project])
-            msb.targets = ["Build"]
-            msb.parameters "/nologo"
-            msb.verbosity = "quiet"
+          begin
+            msbuild! "#{task_name}.compile" do |msb|
+              puts "Compiling: #{task_name} as #{desc_path}"
+              msb.use :net40
+              msb.properties :configuration => :Release, :platform => args[:platform]
+              msb.solution = File.join(dir, args[:project])
+              msb.targets = ["Build"]
+              msb.parameters "/nologo"
+              msb.verbosity = "quiet"
+            end
+          rescue
+              puts "Compilation of #{desc_path} failed."
+              copy_prebuilt(fun, full_path)
           end
         end
 

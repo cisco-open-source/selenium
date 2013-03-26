@@ -24,7 +24,7 @@ package com.thoughtworks.selenium;
  * 
  * 
  * @author Paul Hammant
- * @version $Revision: 15204 $
+ * @version $Revision$
  */
 public interface CommandProcessor {
 

@@ -24,7 +24,13 @@ goog.provide('safaridriver.message.Message');
 goog.require('bot.json');
 goog.require('goog.asserts');
 goog.require('goog.debug.Logger');
-goog.require('safaridriver.Command');
+goog.require('safaridriver.dom');
+
+
+/**
+ * @define {boolean} Whether to assume message targets are always a DOM window.
+ */
+safaridriver.message.ASSUME_DOM_WINDOW = false;
 
 
 /**
@@ -115,7 +121,7 @@ safaridriver.message.fromEvent = function(event) {
 
   var message = factory(data);
 
-  var origin = (/** @type {(string|number)} */
+  var origin = /** @type {(string|number)} */ (
       data[safaridriver.message.Message.Field.ORIGIN]);
   message.setOrigin(origin);
   return message;
@@ -162,7 +168,7 @@ safaridriver.message.Message.Field = {
  * @private
  */
 safaridriver.message.Message.fromData_ = function(data) {
-  var type = (/** @type {string} */ data[
+  var type = /** @type {string} */ (data[
       safaridriver.message.Message.Field.TYPE]);
   return new safaridriver.message.Message(type);
 };
@@ -203,7 +209,7 @@ safaridriver.message.Message.prototype.setOrigin = function(origin) {
  * @return {(string|number)} This message's origin.
  */
 safaridriver.message.Message.prototype.getOrigin = function() {
-  return (/** @type {(string|number)} */this.getField(
+  return /** @type {(string|number)} */ (this.getField(
       safaridriver.message.Message.Field.ORIGIN));
 };
 
@@ -221,7 +227,7 @@ safaridriver.message.Message.prototype.isSameOrigin = function() {
  * @return {string} This message's type.
  */
 safaridriver.message.Message.prototype.getType = function() {
-  return (/** @type {string} */this.getField(
+  return /** @type {string} */ (this.getField(
       safaridriver.message.Message.Field.TYPE));
 };
 
@@ -246,17 +252,29 @@ safaridriver.message.Message.prototype.isType = function(type) {
  */
 safaridriver.message.Message.prototype.send = function(target) {
   this.setOrigin(safaridriver.message.ORIGIN);
-  if (target.postMessage) {
-    (/** @type {!Window} */target).postMessage(this.data_, '*');
+  if (safaridriver.message.ASSUME_DOM_WINDOW || target.postMessage) {
+    var win = /** @type {!Window} */ (target);
+    if (win === window) {
+      // Avoid using the default postMessage when communicating over the DOM
+      // as there may be conflicts on the page (e.g. the page under test
+      // changed the definition of postMessage).
+      this.sendSync(win);
+    } else {
+      if (!goog.isFunction(win.postMessage)) {
+        throw Error('Unable to send message; postMessage function not ' +
+            'available on target window');
+      }
+      win.postMessage(this.data_, '*');
+    }
   } else {
     if (safaridriver.message.FORCE_SYNCHRONOUS_PROXY_SEND &&
         target.canLoad) {
       return this.sendSync(
-          (/** @type {!SafariContentBrowserTabProxy} */target));
+          /** @type {!SafariContentBrowserTabProxy} */ (target));
     }
 
-    (/** @type {!(SafariContentBrowserTabProxy|SafariWebPageProxy)} */
-        target).dispatchMessage(this.getType(), this.data_);
+    (/** @type {!(SafariContentBrowserTabProxy|SafariWebPageProxy)} */ (
+        target)).dispatchMessage(this.getType(), this.data_);
   }
 };
 
@@ -273,11 +291,24 @@ safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_ =
 
 
 /**
+ * The custom event type for {@link MessageEvent}s sent synchronously over the
+ * DOM. This is used to avoid firing standard "message" events as much as
+ * possible since the page under test will receive those events as well.
+ * Standard messages will still be sent through window.postMessage when
+ * sending messages to windows belonging to a different domain.
+ * @type {string}
+ * @const
+ */
+safaridriver.message.Message.SYNCHRONOUS_DOM_MESSAGE_EVENT_TYPE =
+    'safaridriver.message';
+
+
+/**
  * @param {string} response The response value.
  */
 safaridriver.message.Message.setSynchronousMessageResponse = function(
     response) {
-  document.documentElement.setAttribute(
+  safaridriver.dom.call(document.documentElement, 'setAttribute',
       safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_,
       response);
 };
@@ -291,25 +322,32 @@ safaridriver.message.Message.setSynchronousMessageResponse = function(
  *     a DOMWindow.
  */
 safaridriver.message.Message.prototype.sendSync = function(target) {
-  if (target.postMessage) {
+  this.setOrigin(safaridriver.message.ORIGIN);
+  if (safaridriver.message.ASSUME_DOM_WINDOW || target.postMessage) {
     goog.asserts.assert(target === window,
-        'Synchrnous messages may only be sent to a window when that ' +
+        'Synchronous messages may only be sent to a window when that ' +
             'window is the same as the current context');
 
-    var messageEvent = document.createEvent('MessageEvent');
-    messageEvent.initMessageEvent('message', false, false, this.data_,
+    var messageEvent = /** @type {!Event} */ (safaridriver.dom.call(
+        document, 'createEvent', 'MessageEvent'));
+    messageEvent.initMessageEvent(
+        safaridriver.message.Message.SYNCHRONOUS_DOM_MESSAGE_EVENT_TYPE,
+        false, false, this.data_,
         // origin is a non-standard property on location.
         window.location['origin'], '0', window, null);
-    target.dispatchEvent(messageEvent);
+    safaridriver.dom.call(
+        /** @type {!Window} */ (target), 'dispatchEvent', messageEvent);
 
-    var response = document.documentElement.getAttribute(
+    var response = safaridriver.dom.call(document.documentElement,
+        'getAttribute',
         safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_);
-    document.documentElement.removeAttribute(
+    safaridriver.dom.call(document.documentElement, 'removeAttribute',
         safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_);
     return response;
   } else {
     // Create a beforeload event, which is required by the canLoad function.
-    var stubEvent = document.createEvent('Events');
+    var stubEvent = /** @type {!Event} */ (safaridriver.dom.call(
+        document, 'createEvent', 'Events'));
     stubEvent.initEvent('beforeload', false, false);
     return target.canLoad(stubEvent, this.data_);
     // TODO(jleyba): Do something more intelligent with the response.

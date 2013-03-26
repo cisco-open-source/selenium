@@ -1,5 +1,4 @@
-# Copyright 2008-2011 WebDriver committers
-# Copyright 2008-2011 Google Inc.
+# Copyright 2008-2013 Software freedom conservancy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,10 +37,11 @@ class WebDriver(object):
      - error_handler - errorhandler.ErrorHandler object used to verify that the server did not return an error.
      - session_id - The session ID to send with every command.
      - capabilities - A dictionary of capabilities of the underlying browser for this instance's session.
+     - proxy - A selenium.webdriver.common.proxy.Proxy object, to specify a proxy for the browser to use.
     """
 
     def __init__(self, command_executor='http://127.0.0.1:4444/wd/hub',
-        desired_capabilities=None, browser_profile=None):
+        desired_capabilities=None, browser_profile=None, proxy=None):
         """
         Create a new driver that will issue commands using the wire protocol.
 
@@ -54,9 +54,12 @@ class WebDriver(object):
             raise WebDriverException("Desired Capabilities can't be None")
         if not isinstance(desired_capabilities, dict):
             raise WebDriverException("Desired Capabilities must be a dictionary")
+        if proxy is not None:
+            proxy.add_to_capabilities(desired_capabilities)
         self.command_executor = command_executor
         if type(self.command_executor) is str or type(self.command_executor) is unicode:
             self.command_executor = RemoteConnection(command_executor)
+        self._is_remote = True
         self.session_id = None
         self.capabilities = {}
         self.error_handler = ErrorHandler()
@@ -636,7 +639,7 @@ class WebDriver(object):
            execute_async_script call before throwing an error.
 
         :Args:
-         - time_to_wait: The amount of time to wait
+         - time_to_wait: The amount of time to wait (in seconds)
 
         :Usage:
             driver.set_script_timeout(30)
@@ -646,7 +649,7 @@ class WebDriver(object):
 
     def set_page_load_timeout(self, time_to_wait):
         """
-        Set the amount of time to wait for a page load to complete 
+        Set the amount of time to wait for a page load to complete
            before throwing an error.
 
         :Args:
@@ -667,7 +670,7 @@ class WebDriver(object):
         """
         if isinstance(by, tuple) or isinstance(value, int) or value==None:
             raise InvalidSelectorException("Invalid locator values passed in")
-            
+
         return self.execute(Command.FIND_ELEMENT,
                              {'using': by, 'value': value})['value']
 
@@ -803,3 +806,19 @@ class WebDriver(object):
     def application_cache(self):
         """ Returns a ApplicationCache Object to interact with the browser app cache"""
         return ApplicationCache(self)
+
+    def save_screenshot(self, filename):
+        """
+        Gets the screenshot of the current window. Returns False if there is
+        any IOError, else returns True. Use full paths in your filename.
+        """
+        png = self.execute(Command.SCREENSHOT)['value']
+        try:
+            f = open(filename, 'wb')
+            f.write(base64.decodestring(png))
+            f.close()
+        except IOError:
+            return False
+        finally:
+            del png
+        return True

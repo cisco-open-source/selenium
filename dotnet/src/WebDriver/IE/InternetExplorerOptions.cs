@@ -93,12 +93,16 @@ namespace OpenQA.Selenium.IE
         private const string IgnoreZoomSettingCapability = "ignoreZoomSetting";
         private const string InitialBrowserUrlCapability = "initialBrowserUrl";
         private const string EnableNativeEventsCapability = "nativeEvents";
+        private const string EnablePersistentHoverCapability = "enablePersistentHover";
         private const string ElementScrollBehaviorCapability = "elementScrollBehavior";
         private const string UnexpectedAlertBehaviorCapability = "unexpectedAlertBehaviour";
+        private const string RequireWindowFocusCapability = "requireWindowFocus";
 
         private bool ignoreProtectedModeSettings;
         private bool ignoreZoomLevel;
         private bool enableNativeEvents = true;
+        private bool requireWindowFocus;
+        private bool enablePersistentHover = true;
         private string initialBrowserUrl = string.Empty;
         private InternetExplorerElementScrollBehavior elementScrollBehavior = InternetExplorerElementScrollBehavior.Top;
         private InternetExplorerUnexpectedAlertBehavior unexpectedAlertBehavior = InternetExplorerUnexpectedAlertBehavior.Default;
@@ -129,6 +133,15 @@ namespace OpenQA.Selenium.IE
         {
             get { return this.enableNativeEvents; }
             set { this.enableNativeEvents = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to require the browser window to have focus before interacting with elements.
+        /// </summary>
+        public bool RequireWindowFocus
+        {
+            get { return this.requireWindowFocus; }
+            set { this.requireWindowFocus = value; }
         }
 
         /// <summary>
@@ -168,6 +181,16 @@ namespace OpenQA.Selenium.IE
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable persistently sending WM_MOUSEMOVE messages
+        /// to the IE window during a mouse hover.
+        /// </summary>
+        public bool EnablePersistentHover
+        {
+            get { return this.enablePersistentHover; }
+            set { this.enablePersistentHover = value; }
+        }
+
+        /// <summary>
         /// Provides a means to add additional capabilities not yet added as type safe options 
         /// for the Internet Explorer driver.
         /// </summary>
@@ -183,10 +206,12 @@ namespace OpenQA.Selenium.IE
         {
             if (capabilityName == IgnoreProtectedModeSettingsCapability ||
                 capabilityName == IgnoreZoomSettingCapability ||
-                capabilityName == InitialBrowserUrlCapability ||
                 capabilityName == EnableNativeEventsCapability ||
+                capabilityName == InitialBrowserUrlCapability ||
                 capabilityName == ElementScrollBehaviorCapability ||
-                capabilityName == UnexpectedAlertBehaviorCapability)
+                capabilityName == UnexpectedAlertBehaviorCapability ||
+                capabilityName == EnablePersistentHoverCapability ||
+                capabilityName == RequireWindowFocusCapability)
             {
                 string message = string.Format(CultureInfo.InvariantCulture, "There is already an option for the {0} capability. Please use that instead.", capabilityName);
                 throw new ArgumentException(message, "capabilityName");
@@ -210,6 +235,7 @@ namespace OpenQA.Selenium.IE
         {
             DesiredCapabilities capabilities = DesiredCapabilities.InternetExplorer();
             capabilities.SetCapability(EnableNativeEventsCapability, this.enableNativeEvents);
+            capabilities.SetCapability(EnablePersistentHoverCapability, this.enablePersistentHover);
             if (this.ignoreProtectedModeSettings)
             {
                 capabilities.SetCapability(IgnoreProtectedModeSettingsCapability, true);

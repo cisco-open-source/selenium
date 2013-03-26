@@ -50,7 +50,7 @@ class ScreenshotCommandHandler : public IECommandHandler {
                        Response* response) {
     BrowserHandle browser_wrapper;
     int status_code = executor.GetCurrentBrowser(&browser_wrapper);
-    if (status_code != SUCCESS) {
+    if (status_code != WD_SUCCESS) {
       response->SetErrorResponse(status_code, "Unable to get browser");
       return;
     }
@@ -102,14 +102,11 @@ class ScreenshotCommandHandler : public IECommandHandler {
     CComPtr<IHTMLDocument2> document;
     browser->GetDocument(&document);
 
-    int image_height(0);
-    int image_width(0);
-    HRESULT hr = this->GetDocumentDimensions(document,
-                                             &image_width,
-                                             &image_height);
-    if (FAILED(hr)) {
-      LOGHR(DEBUG, hr) << "Unable to get document dimensions";
-      return hr;
+    LocationInfo document_info;
+    bool result = DocumentHost::GetDocumentDimensions(document, &document_info);
+    if (!result) {
+      LOG(DEBUG) << "Unable to get document dimensions";
+      return E_FAIL;
     }
 
     int chrome_width(0);
@@ -119,8 +116,8 @@ class ScreenshotCommandHandler : public IECommandHandler {
                                      &chrome_width,
                                      &chrome_height);
 
-    max_width = image_width + chrome_width;
-    max_height = image_height + chrome_height;
+    max_width = document_info.width + chrome_width;
+    max_height = document_info.height + chrome_height;
 
     // For some reason, this technique does not allow the user to resize
     // the browser window to greater than 65536 x 65536. This is pretty
@@ -128,13 +125,13 @@ class ScreenshotCommandHandler : public IECommandHandler {
     if (max_height > 65536) {
       LOG(WARN) << L"Height greater than 65536 pixels. Truncating screenshot height to 65536.";
       max_height = 65536;
-      image_height = max_height - chrome_height;
+      document_info.height = max_height - chrome_height;
     }
 
     if (max_width > 65536) {
       LOG(WARN) << L"Width greater than 65536 pixels. Truncating screenshot width to 65536.";
       max_width = 65536;
-      image_width = max_width - chrome_width;
+      document_info.width = max_width - chrome_width;
     }
 
     long original_width = browser->GetWidth();
@@ -156,7 +153,9 @@ class ScreenshotCommandHandler : public IECommandHandler {
     browser->SetHeight(max_height);
 
     // Capture the window's canvas to a DIB.
-    BOOL created = this->image_->Create(image_width, image_height, /*numbers of bits per pixel = */ 32);
+    BOOL created = this->image_->Create(document_info.width,
+                                        document_info.height,
+                                        /*numbers of bits per pixel = */ 32);
     if (!created) {
       LOG(WARN) << "Unable to create image";
     }
@@ -180,7 +179,7 @@ class ScreenshotCommandHandler : public IECommandHandler {
     }
 
     this->image_->ReleaseDC();
-    return hr;
+    return S_OK;
   }
 
   bool IsSameColour() {
@@ -294,60 +293,6 @@ class ScreenshotCommandHandler : public IECommandHandler {
     ::GetWindowRect(window_handle, &window_rect);
     *width = window_rect.right - window_rect.left;
     *height = window_rect.bottom - window_rect.top;
-  }
-
-  HRESULT GetDocumentDimensions(IHTMLDocument2* document,
-                                int* width,
-                                int* height) {
-    CComVariant document_height;
-    CComVariant document_width;
-
-    CComQIPtr<IHTMLDocument5> html_document5(document);
-    if (!html_document5) {
-      LOG(WARN) << L"Unable to cast document to IHTMLDocument5. IE6 or greater is required.";
-      return E_FAIL;
-    }
-
-    CComBSTR compatibility_mode;
-    html_document5->get_compatMode(&compatibility_mode);
-
-    // In non-standards-compliant mode, the BODY element represents the canvas.
-    // In standards-compliant mode, the HTML element represents the canvas.
-    CComPtr<IHTMLElement> canvas_element;
-    if (compatibility_mode == L"BackCompat") {
-      document->get_body(&canvas_element);
-      if (!canvas_element) {
-        LOG(WARN) << "Unable to get canvas element from document in compatibility mode";
-        return E_FAIL;
-      }
-    } else {
-      CComQIPtr<IHTMLDocument3> html_document3(document);
-      if (!html_document3) {
-        LOG(WARN) << L"Unable to get IHTMLDocument3 handle from document.";
-        return E_FAIL;
-      }
-
-      // The root node should be the HTML element.
-      html_document3->get_documentElement(&canvas_element);
-      if (!canvas_element) {
-        LOG(WARN) << L"Could not retrieve document element.";
-        return E_FAIL;
-      }
-
-      CComQIPtr<IHTMLHtmlElement> html_element(canvas_element);
-      if (!html_element) {
-        LOG(WARN) << L"Document element is not the HTML element.";
-        return E_FAIL;
-      }
-    }
-
-    canvas_element->getAttribute(CComBSTR("scrollHeight"),
-                                 0,
-                                 &document_height);
-    canvas_element->getAttribute(CComBSTR("scrollWidth"), 0, &document_width);
-    *height = document_height.intVal;
-    *width = document_width.intVal;
-    return S_OK;
   }
 
   void InstallWindowsHook() {

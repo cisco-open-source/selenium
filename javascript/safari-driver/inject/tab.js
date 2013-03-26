@@ -29,6 +29,7 @@ goog.require('goog.asserts');
 goog.require('goog.debug.Logger');
 goog.require('goog.object');
 goog.require('safaridriver.Command');
+goog.require('safaridriver.CommandRegistry');
 goog.require('safaridriver.Tab');
 goog.require('safaridriver.alert');
 goog.require('safaridriver.inject.Encoder');
@@ -179,10 +180,6 @@ safaridriver.inject.Tab.prototype.setActive = function(active) {
 safaridriver.inject.Tab.prototype.init = function() {
   this.log('Loaded injected script for: ' + window.location);
 
-  if ('about:blank' !== window.location.href) {
-    this.installPageScript_();
-  }
-
   var tab = this;
   tab.on(safaridriver.inject.message.Activate.TYPE, tab.onActivate_, tab).
       on(safaridriver.message.Alert.TYPE, tab.onAlert_, tab).
@@ -235,6 +232,10 @@ safaridriver.inject.Tab.prototype.init = function() {
       message.sendSync(safari.self.tab);
     }
   }, true);
+
+  if ('about:blank' !== window.location.href) {
+    this.installPageScript_();
+  }
 };
 
 
@@ -254,13 +255,18 @@ safaridriver.inject.Tab.prototype.onAlert_ = function(message, e) {
     safaridriver.message.Message.setSynchronousMessageResponse('1');
   }
 
-  // Abort any pending commands and point users towards the bug for proper
-  // alert handling.
-  var alertText = message.getMessage();
-  goog.object.forEach(this.pendingCommands_, function(cmd) {
-    var response = safaridriver.alert.createResponse(alertText);
-    this.sendResponse_(cmd, response);
-  }, this);
+  if (message.blocksUiThread()) {
+    this.log('Unexpected alert; aborting pending commands');
+
+    // Abort any pending commands and point users towards the bug for proper
+    // alert handling.
+    var alertText = message.getMessage();
+    goog.object.forEach(this.pendingCommands_, function(cmd) {
+      this.log('Aborting ' + cmd);
+      var response = safaridriver.alert.createResponse(alertText);
+      this.sendResponse_(cmd, response);
+    }, this);
+  }
 };
 
 
@@ -353,7 +359,7 @@ safaridriver.inject.Tab.prototype.onLoad_ = function(message, e) {
       // Tell the frame that has just finished loading that it was our last
       // activate frame and should reactivate itself.
       var reactivate = new safaridriver.inject.message.ReactivateFrame();
-      reactivate.send((/** @type {!Window} */e.source));
+      reactivate.send(/** @type {!Window} */ (e.source));
 
       // While we've reactivated the frame, we need to wait for it to
       // acknowledge the message (see #onReactivateFrame_) before calling
@@ -378,11 +384,11 @@ safaridriver.inject.Tab.prototype.onLoad_ = function(message, e) {
  */
 safaridriver.inject.Tab.prototype.onExtensionCommand_ = function(message) {
   var command = message.getCommand();
-  if (command.getName() in safaridriver.inject.Tab.TOP_COMMAND_MAP_) {
-    this.executeCommand_(command, safaridriver.inject.Tab.TOP_COMMAND_MAP_);
+  if (safaridriver.inject.Tab.TOP_COMMAND_MAP_[command.getName()]) {
+    this.executeCommand_(command);
 
   } else if (this.isActive_) {
-    this.executeCommand_(command, safaridriver.inject.Tab.COMMAND_MAP_);
+    this.executeCommand_(command);
 
   } else {
     goog.asserts.assert(!!this.activeFrame_,
@@ -406,7 +412,7 @@ safaridriver.inject.Tab.prototype.onExtensionCommand_ = function(message) {
         this.whenReady(goog.bind(this.executeQueuedCommands_, this));
       }
     } else {
-      message.send((/** @type {!Window} */this.activeFrame_));
+      message.send(/** @type {!Window} */ (this.activeFrame_));
     }
   }
 };
@@ -420,7 +426,7 @@ safaridriver.inject.Tab.prototype.executeQueuedCommands_ = function() {
   goog.object.forEach(this.queuedCommands_, function(command) {
     delete this.queuedCommands_[command.getId()];
     var message = new safaridriver.message.Command(command);
-    message.send((/** @type {!Window} */this.activeFrame_));
+    message.send(/** @type {!Window} */ (this.activeFrame_));
   }, this);
 };
 
@@ -475,36 +481,24 @@ safaridriver.inject.Tab.prototype.checkFrame_ = function() {
 safaridriver.inject.Tab.prototype.onFrameCommand_ = function(message, e) {
   if (message.isSameOrigin() && safaridriver.inject.message.isFromTop(e)) {
     var command = message.getCommand();
-    this.executeCommand_(command, safaridriver.inject.Tab.COMMAND_MAP_);
+    this.executeCommand_(command);
   }
 };
 
 
 /**
  * @param {!safaridriver.Command} command The command to execute.
- * @param {safaridriver.inject.Tab.CommandMap} map The map to use when
- *     retrieving the command handler.
  * @private
  */
-safaridriver.inject.Tab.prototype.executeCommand_ = function(command, map) {
+safaridriver.inject.Tab.prototype.executeCommand_ = function(command) {
   var sendResponse = goog.bind(this.sendResponse_, this, command);
-  var handler = map[command.getName()];
-  if (handler) {
-    try {
-      this.log('Executing ' + command);
+  this.log('Executing ' + command);
 
-      this.pendingCommands_[command.getId()] = command;
+  this.pendingCommands_[command.getId()] = command;
 
-      // Don't schedule through webdriver.promise.Application; just execute the
-      // command immediately. We're assuming the global page is scheduling
-      // commands and only dispatching one at a time.
-      webdriver.promise.when(handler(command, this), sendSuccess, sendError);
-    } catch (ex) {
-      sendError(ex);
-    }
-  } else {
-    sendError(Error('Unknown command: ' + command));
-  }
+  safaridriver.CommandRegistry.getInstance()
+      .execute(command, this)
+      .then(sendSuccess, sendError);
 
   function sendError(error) {
     sendResponse(bot.response.createErrorResponse(error));
@@ -647,91 +641,89 @@ safaridriver.inject.Tab.prototype.onPageResponse_ = function(message, e) {
 
 
 /**
- * @typedef {(function(!safaridriver.Command, !safaridriver.inject.Tab)|
- *            function(!safaridriver.Command)|
- *            function())}
- */
-safaridriver.inject.Tab.CommandHandler;
-
-
-/**
- * @typedef {!Object.<webdriver.CommandName,
- *                    safaridriver.inject.Tab.CommandHandler>}
- */
-safaridriver.inject.Tab.CommandMap;
-
-
-/**
- * Map of command names that should always be handled by the topmost frame,
+ * The set of command names that should always be handled by the topmost frame,
  * regardless of whether it is currently active.
- * @type {safaridriver.inject.Tab.CommandMap}
+ * @type {!Object.<webdriver.CommandName, number>}
  * @const
  * @private
  */
 safaridriver.inject.Tab.TOP_COMMAND_MAP_ = {};
 
 
-/**
- * Maps command names to the function that handles it.
- * @type {safaridriver.inject.Tab.CommandMap}
- * @const
- * @private
- */
-safaridriver.inject.Tab.COMMAND_MAP_ = {};
-
-
 goog.scope(function() {
 var CommandName = webdriver.CommandName;
 var topMap = safaridriver.inject.Tab.TOP_COMMAND_MAP_;
-var map = safaridriver.inject.Tab.COMMAND_MAP_;
 var commands = safaridriver.inject.commands;
 
-topMap[CommandName.GET] = commands.loadUrl;
-topMap[CommandName.REFRESH] = commands.reloadPage;
-topMap[CommandName.GO_BACK] = commands.unsupportedHistoryNavigation;
-topMap[CommandName.GO_FORWARD] = commands.unsupportedHistoryNavigation;
-topMap[CommandName.GET_TITLE] = commands.getTitle;
-// The extension handles window switches. It sends the command to this
-// injected script only as a means of retrieving the window name.
-topMap[CommandName.SWITCH_TO_WINDOW] = commands.getWindowName;
-topMap[CommandName.GET_WINDOW_POSITION] = commands.getWindowPosition;
-topMap[CommandName.GET_WINDOW_SIZE] = commands.getWindowSize;
-topMap[CommandName.SET_WINDOW_POSITION] = commands.setWindowPosition;
-topMap[CommandName.SET_WINDOW_SIZE] = commands.setWindowSize;
-topMap[CommandName.MAXIMIZE_WINDOW] = commands.maximizeWindow;
+  // TODO(jleyba): This is ugly; fix it.
+  (function() {
+    defineTopCommand(CommandName.GET, commands.loadUrl);
+    defineTopCommand(CommandName.REFRESH, commands.reloadPage);
+    defineTopCommand(CommandName.GO_BACK,
+        commands.unsupportedHistoryNavigation);
+    defineTopCommand(CommandName.GO_FORWARD,
+        commands.unsupportedHistoryNavigation);
+    defineTopCommand(CommandName.GET_TITLE, commands.getTitle);
+    // The extension handles window switches. It sends the command to this
+    // injected script only as a means of retrieving the window name.
+    defineTopCommand(CommandName.SWITCH_TO_WINDOW, commands.getWindowName);
+    defineTopCommand(CommandName.GET_WINDOW_POSITION,
+        commands.getWindowPosition);
+    defineTopCommand(CommandName.GET_WINDOW_SIZE, commands.getWindowSize);
+    defineTopCommand(CommandName.SET_WINDOW_POSITION,
+        commands.setWindowPosition);
+    defineTopCommand(CommandName.SET_WINDOW_SIZE, commands.setWindowSize);
+    defineTopCommand(CommandName.MAXIMIZE_WINDOW, commands.maximizeWindow);
 
-map[CommandName.GET_CURRENT_URL] = commands.getCurrentUrl;
-map[CommandName.GET_PAGE_SOURCE] = commands.getPageSource;
+    /**
+     * @param {!webdriver.CommandName} commandName The command name.
+     * @param {!safaridriver.CommandHandler} handler The handler function.
+     */
+    function defineTopCommand(commandName, handler) {
+      topMap[commandName] = 1;
+      safaridriver.CommandRegistry.getInstance()
+          .defineCommand(commandName, handler);
+    }
+  })();
 
-map[CommandName.ADD_COOKIE] = commands.addCookie;
-map[CommandName.GET_ALL_COOKIES] = commands.getCookies;
-map[CommandName.DELETE_ALL_COOKIES] = commands.deleteCookies;
-map[CommandName.DELETE_COOKIE] = commands.deleteCookie;
+  safaridriver.CommandRegistry.getInstance()
+    .defineCommand(CommandName.GET_CURRENT_URL, commands.getCurrentUrl)
+    .defineCommand(CommandName.GET_PAGE_SOURCE, commands.getPageSource)
 
-map[CommandName.FIND_ELEMENT] = commands.findElement;
-map[CommandName.FIND_CHILD_ELEMENT] = commands.findElement;
-map[CommandName.FIND_ELEMENTS] = commands.findElements;
-map[CommandName.FIND_CHILD_ELEMENTS] = commands.findElements;
-map[CommandName.GET_ACTIVE_ELEMENT] = commands.getActiveElement;
+    .defineCommand(CommandName.ADD_COOKIE, commands.addCookie)
+    .defineCommand(CommandName.GET_ALL_COOKIES, commands.getCookies)
+    .defineCommand(CommandName.DELETE_ALL_COOKIES, commands.deleteCookies)
+    .defineCommand(CommandName.DELETE_COOKIE, commands.deleteCookie)
 
-map[CommandName.CLEAR_ELEMENT] = commands.clearElement;
-map[CommandName.CLICK_ELEMENT] = commands.clickElement;
-map[CommandName.SUBMIT_ELEMENT] = commands.submitElement;
-map[CommandName.GET_ELEMENT_ATTRIBUTE] = commands.getElementAttribute;
-map[CommandName.GET_ELEMENT_LOCATION] = commands.getElementLocation;
-map[CommandName.GET_ELEMENT_LOCATION_IN_VIEW] = commands.getLocationInView;
-map[CommandName.GET_ELEMENT_SIZE] = commands.getElementSize;
-map[CommandName.GET_ELEMENT_TEXT] = commands.getElementText;
-map[CommandName.GET_ELEMENT_TAG_NAME] = commands.getElementTagName;
-map[CommandName.IS_ELEMENT_DISPLAYED] = commands.isElementDisplayed;
-map[CommandName.IS_ELEMENT_ENABLED] = commands.isElementEnabled;
-map[CommandName.IS_ELEMENT_SELECTED] = commands.isElementSelected;
-map[CommandName.ELEMENT_EQUALS] = commands.elementEquals;
-map[CommandName.GET_ELEMENT_VALUE_OF_CSS_PROPERTY] = commands.getCssValue;
-map[CommandName.SEND_KEYS_TO_ELEMENT] = commands.executeInPage;
+    .defineCommand(CommandName.FIND_ELEMENT, commands.findElement)
+    .defineCommand(CommandName.FIND_CHILD_ELEMENT, commands.findElement)
+    .defineCommand(CommandName.FIND_ELEMENTS, commands.findElements)
+    .defineCommand(CommandName.FIND_CHILD_ELEMENTS, commands.findElements)
+    .defineCommand(CommandName.GET_ACTIVE_ELEMENT, commands.getActiveElement)
 
-map[CommandName.EXECUTE_SCRIPT] = commands.executeInPage;
-map[CommandName.EXECUTE_ASYNC_SCRIPT] = commands.executeInPage;
+    .defineCommand(CommandName.CLEAR_ELEMENT, commands.clearElement)
+    .defineCommand(CommandName.CLICK_ELEMENT, commands.clickElement)
+    .defineCommand(CommandName.SUBMIT_ELEMENT, commands.submitElement)
+    .defineCommand(CommandName.GET_ELEMENT_ATTRIBUTE,
+        commands.getElementAttribute)
+    .defineCommand(CommandName.GET_ELEMENT_LOCATION,
+        commands.getElementLocation)
+    .defineCommand(CommandName.GET_ELEMENT_LOCATION_IN_VIEW,
+        commands.getLocationInView)
+    .defineCommand(CommandName.GET_ELEMENT_SIZE, commands.getElementSize)
+    .defineCommand(CommandName.GET_ELEMENT_TEXT, commands.getElementText)
+    .defineCommand(CommandName.GET_ELEMENT_TAG_NAME, commands.getElementTagName)
+    .defineCommand(CommandName.IS_ELEMENT_DISPLAYED,
+        commands.isElementDisplayed)
+    .defineCommand(CommandName.IS_ELEMENT_ENABLED, commands.isElementEnabled)
+    .defineCommand(CommandName.IS_ELEMENT_SELECTED, commands.isElementSelected)
+    .defineCommand(CommandName.ELEMENT_EQUALS, commands.elementEquals)
+    .defineCommand(CommandName.GET_ELEMENT_VALUE_OF_CSS_PROPERTY,
+        commands.getCssValue)
+    .defineCommand(CommandName.SEND_KEYS_TO_ELEMENT, commands.executeInPage)
 
-map[CommandName.SWITCH_TO_FRAME] = commands.switchToFrame;
+    .defineCommand(CommandName.EXECUTE_SCRIPT, commands.executeInPage)
+    .defineCommand(CommandName.EXECUTE_ASYNC_SCRIPT, commands.executeInPage)
+
+    .defineCommand(CommandName.SWITCH_TO_FRAME, commands.switchToFrame);
 });  // goog.scope

@@ -17,7 +17,9 @@ limitations under the License.
 
 package org.openqa.selenium;
 
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.CombinableMatcher;
 import org.junit.Test;
 import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.testing.Ignore;
@@ -33,7 +35,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.matchers.JUnitMatchers.either;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementTextToEqual;
 import static org.openqa.selenium.WaitingConditions.elementValueToEqual;
@@ -118,18 +119,6 @@ public class JavascriptEnabledDriverTest extends JUnit4TestBase {
 
     assertThat(location.getX() > 0, is(true));
     assertThat(location.getY() > 0, is(true));
-  }
-
-  @JavascriptEnabled
-  @Test
-  public void testShouldBeAbleToDetermineTheSizeOfAnElement() {
-    driver.get(pages.xhtmlTestPage);
-
-    WebElement element = driver.findElement(By.id("username"));
-    Dimension size = element.getSize();
-
-    assertThat(size.getWidth() > 0, is(true));
-    assertThat(size.getHeight() > 0, is(true));
   }
 
   @JavascriptEnabled
@@ -236,6 +225,10 @@ public class JavascriptEnabledDriverTest extends JUnit4TestBase {
                    .or(is("focus blur change focus blur"))
                    .or(is("focus blur change focus blur change"))
                    .or(is("focus change blur focus change blur"))); // What Chrome does
+  }
+  
+  private static CombinableMatcher.CombinableEitherMatcher<String> either(Matcher<String> matcher) {
+    return Matchers.either(matcher);
   }
 
   /**

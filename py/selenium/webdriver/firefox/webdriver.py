@@ -1,5 +1,4 @@
-# Copyright 2008-2011 WebDriver committers
-# Copyright 2008-2011 Google Inc.
+# Copyright 2008-2013 Software freedom conservancy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,6 +57,7 @@ class WebDriver(RemoteWebDriver):
             command_executor=ExtensionConnection("127.0.0.1", self.profile,
             self.binary, timeout),
             desired_capabilities=capabilities)
+        self._is_remote = False
 
     def create_web_element(self, element_id):
         """Override from RemoteWebDriver to use firefox.WebElement."""
@@ -74,25 +74,11 @@ class WebDriver(RemoteWebDriver):
         self.binary.kill()
         try:
             shutil.rmtree(self.profile.path)
+            if self.profile.tempfolder is not None:
+                shutil.rmtree(self.profile.tempfolder)
         except Exception, e:
             print str(e)
 
     @property
     def firefox_profile(self):
         return self.profile
-
-    def save_screenshot(self, filename):
-        """
-        Gets the screenshot of the current window. Returns False if there is
-        any IOError, else returns True. Use full paths in your filename.
-        """
-        png = RemoteWebDriver.execute(self, Command.SCREENSHOT)['value']
-        try:
-            f = open(filename, 'wb')
-            f.write(base64.decodestring(png))
-            f.close()
-        except IOError:
-            return False
-        finally:
-            del png
-        return True

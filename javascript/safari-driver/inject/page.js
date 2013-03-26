@@ -22,11 +22,9 @@ goog.provide('safaridriver.inject.page');
 
 goog.require('bot.Error');
 goog.require('bot.ErrorCode');
-goog.require('bot.inject');
 goog.require('bot.response');
 goog.require('goog.array');
 goog.require('goog.debug.Logger');
-goog.require('goog.dom');
 goog.require('safaridriver.console');
 goog.require('safaridriver.inject.Encoder');
 goog.require('safaridriver.inject.message');
@@ -66,7 +64,7 @@ safaridriver.inject.page.init = function() {
   safaridriver.inject.page.LOG_.info(
       'Loaded page script for ' + window.location);
 
-  var messageTarget = new safaridriver.message.MessageTarget(window);
+  var messageTarget = new safaridriver.message.MessageTarget(window, true);
   messageTarget.setLogger(safaridriver.inject.page.LOG_);
   messageTarget.on(safaridriver.message.Command.TYPE,
       safaridriver.inject.page.onCommand_);
@@ -81,6 +79,8 @@ safaridriver.inject.page.init = function() {
   wrapDialogFunction('alert', safaridriver.inject.page.wrappedAlert_);
   wrapDialogFunction('confirm', safaridriver.inject.page.wrappedConfirm_);
   wrapDialogFunction('prompt', safaridriver.inject.page.wrappedPrompt_);
+  safaridriver.dom.call(window, 'addEventListener', 'beforeunload',
+      safaridriver.inject.page.onBeforeUnload_, true);
 
   function wrapDialogFunction(name, newFn) {
     var oldFn = window[name];
@@ -101,6 +101,7 @@ goog.exportSymbol('init', safaridriver.inject.page.init);
  */
 safaridriver.inject.page.NativeDialog_ = {
   ALERT: {name: 'alert', fn: window.alert},
+  BEFOREUNLOAD: {name: 'beforeunload', fn: goog.nullFunction},
   CONFIRM: {name: 'confirm', fn: window.confirm},
   PROMPT: {name: 'prompt', fn: window.prompt}
 };
@@ -129,7 +130,7 @@ safaridriver.inject.page.wrappedAlert_ = function(var_args) {
  * @private
  */
 safaridriver.inject.page.wrappedConfirm_ = function(arg) {
-  return (/** @type {boolean} */safaridriver.inject.page.sendAlert_(
+  return /** @type {boolean} */ (safaridriver.inject.page.sendAlert_(
       safaridriver.inject.page.NativeDialog_.CONFIRM, arg));
 };
 
@@ -142,8 +143,20 @@ safaridriver.inject.page.wrappedConfirm_ = function(arg) {
  * @private
  */
 safaridriver.inject.page.wrappedPrompt_ = function(arg) {
-  return (/** @type {?string} */safaridriver.inject.page.sendAlert_(
+  return /** @type {?string} */ (safaridriver.inject.page.sendAlert_(
       safaridriver.inject.page.NativeDialog_.PROMPT, arg));
+};
+
+
+/**
+ * Window beforeunload event listener that intercepts calls to user defined
+ * window.onbeforeunload functions.
+ * @param {Event} event The beforeunload event.
+ * @private
+ */
+safaridriver.inject.page.onBeforeUnload_ = function(event) {
+  safaridriver.inject.page.sendAlert_(
+      safaridriver.inject.page.NativeDialog_.BEFOREUNLOAD, event);
 };
 
 
@@ -156,26 +169,60 @@ safaridriver.inject.page.wrappedPrompt_ = function(arg) {
  */
 safaridriver.inject.page.sendAlert_ = function(dialog, var_args) {
   var args = goog.array.slice(arguments, 1);
+  var alertText = args[0] + '';
+  var blocksUiThread = true;
+
+  var nativeFn = dialog.fn;
+  if (dialog === safaridriver.inject.page.NativeDialog_.BEFOREUNLOAD) {
+    // The user onbeforeunload has not actually been called, so we're not at
+    // risk of blocking the UI thread yet. We just need to query if it's
+    // possible for it to block.
+    blocksUiThread = false;
+    nativeFn = window.onbeforeunload;
+    if (!nativeFn) {
+      // window.onbeforeunload not set, nothing more for us to do.
+      return null;
+    }
+  }
 
   safaridriver.inject.page.LOG_.info('Sending alert notification; ' +
-      'type: ' + dialog.name + ', text: ' + args[0]);
+      'type: ' + dialog.name + ', text: ' + alertText);
 
-  var message = new safaridriver.message.Alert(args[0] + '');
+  var message = new safaridriver.message.Alert(alertText, blocksUiThread);
   var ignoreAlert = message.sendSync(window);
 
   if (ignoreAlert == '1') {
-    safaridriver.inject.page.LOG_.info('Invoking native alert');
-    return dialog.fn.apply(window, args);
+    if (dialog !== safaridriver.inject.page.NativeDialog_.BEFOREUNLOAD) {
+      safaridriver.inject.page.LOG_.info('Invoking native alert');
+      return nativeFn.apply(window, args);
+    }
+    return null;  // Return and let onbeforeunload be called as usual.
   }
 
   safaridriver.inject.page.LOG_.info('Dismissing unexpected alert');
   var response;
   switch (dialog.name) {
-    case 'confirm':
+    case safaridriver.inject.page.NativeDialog_.BEFOREUNLOAD.name:
+      if (nativeFn) {
+        // Call the onbeforeunload handler so user logic executes, but clear
+        // the real deal so the dialog does not popup and hang the UI thread.
+        var ret = nativeFn();
+        window.onbeforeunload = null;
+        if (goog.isDefAndNotNull(ret)) {
+          // Ok, the user's onbeforeunload would block the UI thread so we
+          // need to let the extension know about it.
+          blocksUiThread = true;
+          new safaridriver.message.Alert(ret + '', blocksUiThread).
+              sendSync(window);
+        }
+      }
+      break;
+
+    case safaridriver.inject.page.NativeDialog_.CONFIRM.name:
       response = false;
       break;
 
-    case 'prompt':
+    case safaridriver.inject.page.NativeDialog_.PROMPT.name:
       response = null;
       break;
   }
@@ -253,7 +300,7 @@ safaridriver.inject.page.onCommand_ = function(message, e) {
  * @private
  */
 safaridriver.inject.page.execute_ = function(fn, args) {
-  args = (/** @type {!Array} */safaridriver.inject.page.encoder_.decode(args));
+  args = /** @type {!Array} */ (safaridriver.inject.page.encoder_.decode(args));
   return fn.apply(window, args);
 };
 
@@ -295,15 +342,15 @@ safaridriver.inject.page.executeScript_ = function(command) {
 safaridriver.inject.page.executeAsyncScript_ = function(command) {
   var response = new webdriver.promise.Deferred();
 
-  var script = (/** @type {string} */command.getParameter('script'));
+  var script = /** @type {string} */ (command.getParameter('script'));
   var scriptFn = new Function(script);
 
   var args = command.getParameter('args');
-  args = (/** @type {!Array} */safaridriver.inject.page.encoder_.decode(args));
+  args = /** @type {!Array} */ (safaridriver.inject.page.encoder_.decode(args));
   // The last argument for an async script is the callback that triggers the
   // response.
   args.push(function(value) {
-    window.clearTimeout(timeoutId);
+    safaridriver.dom.call(window, 'clearTimeout', timeoutId);
     if (response.isPending()) {
       response.resolve(value);
     }
@@ -318,8 +365,8 @@ safaridriver.inject.page.executeAsyncScript_ = function(command) {
   // var scriptFn = function(callback) {
   //   setTimeout(callback, 0);
   // };
-  var timeout = (/** @type {number} */command.getParameter('timeout'));
-  var timeoutId = window.setTimeout(function() {
+  var timeout = /** @type {number} */ (command.getParameter('timeout'));
+  var timeoutId = safaridriver.dom.call(window, 'setTimeout', function() {
     if (response.isPending()) {
       response.reject(new bot.Error(bot.ErrorCode.SCRIPT_TIMEOUT,
           'Timed out waiting for an asynchronous script result after ' +

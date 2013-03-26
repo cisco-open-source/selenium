@@ -1,7 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2011 Webdriver_name committers
-# Copyright 2011 Google Inc.
+# Copyright 2011-2013 Software freedom conservancy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +32,7 @@ class WebDriver(RemoteWebDriver):
 
     def __init__(self, executable_path="chromedriver", port=0,
                  chrome_options=None, service_args=None,
-                 desired_capabilities=None):
+                 desired_capabilities=None, service_log_path=None):
         """
         Creates a new instance of the chrome driver.
 
@@ -56,7 +55,8 @@ class WebDriver(RemoteWebDriver):
         else:
           desired_capabilities = options.to_capabilities()
 
-        self.service = Service(executable_path, port=port, service_args=service_args)
+        self.service = Service(executable_path, port=port,
+            service_args=service_args, log_path=service_log_path)
         self.service.start()
 
         try:
@@ -66,6 +66,7 @@ class WebDriver(RemoteWebDriver):
         except:
             self.quit()
             raise 
+        self._is_remote = False
 
     def quit(self):
         """
@@ -79,19 +80,3 @@ class WebDriver(RemoteWebDriver):
             pass
         finally:
             self.service.stop()
-
-    def save_screenshot(self, filename):
-        """
-        Gets the screenshot of the current window. Returns False if there is
-        any IOError, else returns True. Use full paths in your filename.
-        """
-        png = RemoteWebDriver.execute(self, Command.SCREENSHOT)['value']
-        try:
-            f = open(filename, 'wb')
-            f.write(base64.decodestring(png))
-            f.close()
-        except IOError:
-            return False
-        finally:
-            del png
-        return True

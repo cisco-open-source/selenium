@@ -84,7 +84,7 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_path</span><span class="o">=</span><span class="s">&quot;chromedriver&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                  <span class="n">chrome_options</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">service_args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">desired_capabilities</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+                 <span class="n">desired_capabilities</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">service_log_path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a new instance of the chrome driver.</span>
 
@@ -107,7 +107,8 @@
         <span class="k">else</span><span class="p">:</span>
           <span class="n">desired_capabilities</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">to_capabilities</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">service</span> <span class="o">=</span> <span class="n">Service</span><span class="p">(</span><span class="n">executable_path</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">service_args</span><span class="o">=</span><span class="n">service_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service</span> <span class="o">=</span> <span class="n">Service</span><span class="p">(</span><span class="n">executable_path</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">service_args</span><span class="o">=</span><span class="n">service_args</span><span class="p">,</span> <span class="n">log_path</span><span class="o">=</span><span class="n">service_log_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
         <span class="k">try</span><span class="p">:</span>

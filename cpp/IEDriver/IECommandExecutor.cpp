@@ -120,7 +120,6 @@ LRESULT IECommandExecutor::OnCreate(UINT uMsg,
   this->initial_browser_url_ = "";
   this->ignore_protected_mode_settings_ = false;
   this->ignore_zoom_setting_ = false;
-  this->enable_native_events_ = true;
   this->enable_element_cache_cleanup_ = true;
   this->enable_persistent_hover_ = true;
   this->unexpected_alert_behavior_ = IGNORE_UNEXPECTED_ALERTS;
@@ -128,16 +127,9 @@ LRESULT IECommandExecutor::OnCreate(UINT uMsg,
   this->implicit_wait_timeout_ = 0;
   this->async_script_timeout_ = -1;
   this->page_load_timeout_ = -1;
-  this->last_known_mouse_x_ = 0;
-  this->last_known_mouse_y_ = 0;
 
-  CComVariant keyboard_state;
-  keyboard_state.vt = VT_NULL;
-  this->keyboard_state_ = keyboard_state;
-
-  CComVariant mouse_state;
-  mouse_state.vt = VT_NULL;
-  this->mouse_state_ = mouse_state;
+  this->input_manager_ = new InputManager();
+  this->input_manager_->Initialize(&this->managed_elements_);
 
   // Only execute atoms on a separate thread for IE 9 or below.
   // Attempting this on IE 10 crashes unpredictably at the moment
@@ -152,7 +144,8 @@ LRESULT IECommandExecutor::OnClose(UINT uMsg,
                                    LPARAM lParam,
                                    BOOL& bHandled) {
   LOG(TRACE) << "Entering IECommandExecutor::OnClose";
-  this->managed_elements_.clear();
+  this->managed_elements_.Clear();
+  delete this->input_manager_;
   this->DestroyWindow();
   return 0;
 }
@@ -192,8 +185,8 @@ LRESULT IECommandExecutor::OnGetResponseLength(UINT uMsg,
                                                WPARAM wParam,
                                                LPARAM lParam,
                                                BOOL& bHandled) {
-  LOG(TRACE) << "Entering IECommandExecutor::OnGetResponseLength";
-
+  // Not logging trace entering IECommandExecutor::OnGetResponseLength,
+  // because it is polled repeatedly for a non-zero return value.
   size_t response_length = 0;
   if (!this->is_waiting_) {
     response_length = this->serialized_response_.size();
@@ -225,7 +218,7 @@ LRESULT IECommandExecutor::OnWait(UINT uMsg,
 
   BrowserHandle browser;
   int status_code = this->GetCurrentBrowser(&browser);
-  if (status_code == SUCCESS && !browser->is_closing()) {
+  if (status_code == WD_SUCCESS && !browser->is_closing()) {
     if (this->page_load_timeout_ >= 0 && this->wait_timeout_ < clock()) {
       Response timeout_response;
       timeout_response.SetErrorResponse(ETIMEOUT, "Timed out waiting for page to load.");
@@ -344,28 +337,7 @@ LRESULT IECommandExecutor::OnRefreshManagedElements(UINT uMsg,
                                                     LPARAM lParam,
                                                     BOOL& bHandled) {
   if (this->enable_element_cache_cleanup_) {
-    // Logic explanation: We can't just remove the elements from the 
-    // managed elements map, within the loop as that would invalidate
-    // the iterator. So we add the keys to a vector, and use the vector
-    // to remove the elements from the map.
-    std::vector<std::string> bad_elements;
-    ElementMap::const_iterator managed_iterator = this->managed_elements_.begin();
-    ElementMap::const_iterator last_managed_element = this->managed_elements_.end();
-    for(; managed_iterator != last_managed_element; ++managed_iterator) {
-      if (!managed_iterator->second->IsAttachedToDom()) {
-        bad_elements.push_back(managed_iterator->first);
-      }
-    }
-
-    LOG(DEBUG) << "Refreshing managed element cache. Found "
-               << bad_elements.size()
-               << " to remove from cache.";
-  
-    std::vector<std::string>::const_iterator id_iterator = bad_elements.begin();
-    std::vector<std::string>::const_iterator last_id = bad_elements.end();
-    for (; id_iterator != last_id; ++id_iterator) {
-      this->RemoveManagedElement(*id_iterator);
-    }
+    this->managed_elements_.ClearCache();
   }
   return 0;
 }
@@ -428,72 +400,76 @@ void IECommandExecutor::DispatchCommand() {
     response.SetErrorResponse(501, "Command not implemented");
   } else {
     BrowserHandle browser;
-    int status_code = this->GetCurrentBrowser(&browser);
-    if (status_code == SUCCESS) {
-      bool alert_is_active = false;
-      HWND alert_handle = browser->GetActiveDialogWindowHandle();
-      if (alert_handle != NULL) {
-        // Found a window handle, make sure it's an actual alert,
-        // and not a showModalDialog() window.
-        vector<char> window_class_name(34);
-        ::GetClassNameA(alert_handle, &window_class_name[0], 34);
-        if (strcmp(ALERT_WINDOW_CLASS, &window_class_name[0]) == 0) {
-          alert_is_active = true;
+    int status_code = WD_SUCCESS;
+    if (this->current_command_.command_type() != webdriver::CommandType::NewSession) {
+      // There should never be a modal dialog or alert to check for if the command
+      // is the "newSession" command.
+      status_code = this->GetCurrentBrowser(&browser);
+      if (status_code == WD_SUCCESS) {
+        bool alert_is_active = false;
+        HWND alert_handle = browser->GetActiveDialogWindowHandle();
+        if (alert_handle != NULL) {
+          // Found a window handle, make sure it's an actual alert,
+          // and not a showModalDialog() window.
+          vector<char> window_class_name(34);
+          ::GetClassNameA(alert_handle, &window_class_name[0], 34);
+          if (strcmp(ALERT_WINDOW_CLASS, &window_class_name[0]) == 0) {
+            alert_is_active = true;
+          } else {
+            LOG(WARN) << "Found alert handle does not have a window class consistent with an alert";
+          }
         } else {
-          LOG(WARN) << "Found alert handle does not have a window class consistent with an alert";
+          LOG(DEBUG) << "No alert handle is found";
         }
-      } else {
-        LOG(DEBUG) << "No alert handle is found";
-      }
-      if (alert_is_active) {
-        Alert dialog(browser, alert_handle);
-        int command_type = this->current_command_.command_type();
-        if (command_type == GetAlertText ||
-            command_type == SendKeysToAlert ||
-            command_type == AcceptAlert ||
-            command_type == DismissAlert) {
-          LOG(DEBUG) << "Alert is detected, and the sent command is valid";
-        } else {
-          LOG(DEBUG) << "Unexpected alert is detected, and the sent command is invalid when an alert is present";
-          std::string alert_text = dialog.GetText();
-          if (this->unexpected_alert_behavior_ == ACCEPT_UNEXPECTED_ALERTS) {
-            LOG(DEBUG) << "Automatically accepting the alert";
-            dialog.Accept();
-          } else if (this->unexpected_alert_behavior_ == DISMISS_UNEXPECTED_ALERTS || command_type == Quit) {
-            // If a quit command was issued, we should not ignore an unhandled
-            // alert, even if the alert behavior is set to "ignore".
-            LOG(DEBUG) << "Automatically dismissing the alert";
-            if (dialog.is_standard_alert()) {
-              dialog.Dismiss();
-            } else {
-              // The dialog was non-standard. The most common case of this is
-              // an onBeforeUnload dialog, which must be accepted to continue.
+        if (alert_is_active) {
+          Alert dialog(browser, alert_handle);
+          std::string command_type = this->current_command_.command_type();
+          if (command_type == webdriver::CommandType::GetAlertText ||
+              command_type == webdriver::CommandType::SendKeysToAlert ||
+              command_type == webdriver::CommandType::AcceptAlert ||
+              command_type == webdriver::CommandType::DismissAlert) {
+            LOG(DEBUG) << "Alert is detected, and the sent command is valid";
+          } else {
+            LOG(DEBUG) << "Unexpected alert is detected, and the sent command is invalid when an alert is present";
+            std::string alert_text = dialog.GetText();
+            if (this->unexpected_alert_behavior_ == ACCEPT_UNEXPECTED_ALERTS) {
+              LOG(DEBUG) << "Automatically accepting the alert";
               dialog.Accept();
+            } else if (this->unexpected_alert_behavior_ == DISMISS_UNEXPECTED_ALERTS || command_type == webdriver::CommandType::Quit) {
+              // If a quit command was issued, we should not ignore an unhandled
+              // alert, even if the alert behavior is set to "ignore".
+              LOG(DEBUG) << "Automatically dismissing the alert";
+              if (dialog.is_standard_alert()) {
+                dialog.Dismiss();
+              } else {
+                // The dialog was non-standard. The most common case of this is
+                // an onBeforeUnload dialog, which must be accepted to continue.
+                dialog.Accept();
+              }
+            }
+            if (command_type != webdriver::CommandType::Quit) {
+              // To keep pace with what Firefox does, we'll return the text of the
+              // alert in the error response.
+              Json::Value response_value;
+              response_value["message"] = "Modal dialog present";
+              response_value["alert"]["text"] = alert_text;
+              response.SetResponse(EMODALDIALOGOPENED, response_value);
+              this->serialized_response_ = response.Serialize();
+              return;
+            } else {
+              LOG(DEBUG) << "Quit command was issued. Continuing with command after automatically closing alert.";
             }
           }
-          if (command_type != Quit) {
-            // To keep pace with what Firefox does, we'll return the text of the
-            // alert in the error response.
-            Json::Value response_value;
-            response_value["message"] = "Modal dialog present";
-            response_value["alert"]["text"] = alert_text;
-            response.SetResponse(EMODALDIALOGOPENED, response_value);
-            this->serialized_response_ = response.Serialize();
-            return;
-          } else {
-            LOG(DEBUG) << "Quit command was issued. Continuing with command after automatically closing alert.";
-          }
         }
+      } else {
+        LOG(WARN) << "Unable to find current browser";
       }
-    } else {
-      LOG(WARN) << "Unable to find current browser";
     }
-
 	  CommandHandlerHandle command_handler = found_iterator->second;
     command_handler->Execute(*this, this->current_command_, &response);
 
     status_code = this->GetCurrentBrowser(&browser);
-    if (status_code == SUCCESS) {
+    if (status_code == WD_SUCCESS) {
       this->is_waiting_ = browser->wait_required();
       if (this->is_waiting_) {
         if (this->page_load_timeout_ >= 0) {
@@ -502,7 +478,9 @@ void IECommandExecutor::DispatchCommand() {
         ::PostMessage(this->m_hWnd, WD_WAIT, NULL, NULL);
       }
     } else {
-      LOG(WARN) << "Unable to get current browser";
+      if (this->current_command_.command_type() != webdriver::CommandType::Quit) {
+        LOG(WARN) << "Unable to get current browser";
+      }
     }
   }
 
@@ -535,7 +513,7 @@ int IECommandExecutor::GetManagedBrowser(const std::string& browser_id,
   }
 
   *browser_wrapper = found_iterator->second;
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 void IECommandExecutor::GetManagedBrowserHandles(std::vector<std::string>* managed_browser_handles) const {
@@ -605,75 +583,31 @@ int IECommandExecutor::CreateNewBrowser(std::string* error_message) {
                                     this->m_hWnd));
 
   this->AddManagedBrowser(wrapper);
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int IECommandExecutor::GetManagedElement(const std::string& element_id,
                                          ElementHandle* element_wrapper) const {
   LOG(TRACE) << "Entering IECommandExecutor::GetManagedElement";
-
-  ElementMap::const_iterator found_iterator = this->managed_elements_.find(element_id);
-  if (found_iterator == this->managed_elements_.end()) {
-    LOG(DEBUG) << "Unable to find managed element with id " << element_id;
-    return ENOSUCHELEMENT;
-  }
-
-  *element_wrapper = found_iterator->second;
-  return SUCCESS;
+  return this->managed_elements_.GetManagedElement(element_id, element_wrapper);
 }
 
 void IECommandExecutor::AddManagedElement(IHTMLElement* element,
                                           ElementHandle* element_wrapper) {
   LOG(TRACE) << "Entering IECommandExecutor::AddManagedElement";
-
-  // TODO: This method needs much work. If we are already managing a
-  // given element, we don't want to assign it a new ID, but to find
-  // out if we're managing it already, we need to compare to all of 
-  // the elements already in our map, which means iterating through
-  // the map. For long-running tests, this means the addition of a
-  // new managed element may take longer and longer as we have no
-  // good algorithm for removing dead elements from the map.
-  bool element_already_managed = false;
-  ElementMap::iterator it = this->managed_elements_.begin();
-  for (; it != this->managed_elements_.end(); ++it) {
-    if (it->second->element() == element) {
-      *element_wrapper = it->second;
-      element_already_managed = true;
-      break;
-    }
-  }
-
-  if (!element_already_managed) {
-    LOG(DEBUG) << "Element is not yet managed";
-    BrowserHandle current_browser;
-    this->GetCurrentBrowser(&current_browser);
-    ElementHandle new_wrapper(new Element(element,
-                                          current_browser->GetWindowHandle()));
-    this->managed_elements_[new_wrapper->element_id()] = new_wrapper;
-    *element_wrapper = new_wrapper;
-  } else {
-    LOG(DEBUG) << "Element is already managed";
-  }
+  BrowserHandle current_browser;
+  this->GetCurrentBrowser(&current_browser);
+  this->managed_elements_.AddManagedElement(current_browser, element, element_wrapper);
 }
 
 void IECommandExecutor::RemoveManagedElement(const std::string& element_id) {
   LOG(TRACE) << "Entering IECommandExecutor::RemoveManagedElement";
-
-  ElementMap::iterator found_iterator = this->managed_elements_.find(element_id);
-  if (found_iterator != this->managed_elements_.end()) {
-    this->managed_elements_.erase(element_id);
-  } else {
-    LOG(DEBUG) << "Unable to find element to remove with id " << element_id;
-  }
+  this->managed_elements_.RemoveManagedElement(element_id);
 }
 
 void IECommandExecutor::ListManagedElements() {
   LOG(TRACE) << "Entering IECommandExecutor::ListManagedElements";
-
-  ElementMap::iterator it = this->managed_elements_.begin();
-  for (; it != this->managed_elements_.end(); ++it) {
-    LOG(DEBUG) << "Managed element: " << it->first;
-  }
+  this->managed_elements_.ListManagedElements();
 }
 
 int IECommandExecutor::GetElementFindMethod(const std::string& mechanism,
@@ -688,7 +622,7 @@ int IECommandExecutor::GetElementFindMethod(const std::string& mechanism,
   }
 
   *translation = found_iterator->second;
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int IECommandExecutor::LocateElement(const ElementHandle parent_wrapper,
@@ -700,7 +634,7 @@ int IECommandExecutor::LocateElement(const ElementHandle parent_wrapper,
   std::wstring mechanism_translation = L"";
   int status_code = this->GetElementFindMethod(mechanism,
                                                &mechanism_translation);
-  if (status_code != SUCCESS) {
+  if (status_code != WD_SUCCESS) {
     LOG(WARN) << "Unable to determine mechanism translation for " << mechanism;
     return status_code;
   }
@@ -722,7 +656,7 @@ int IECommandExecutor::LocateElements(const ElementHandle parent_wrapper,
   std::wstring mechanism_translation = L"";
   int status_code = this->GetElementFindMethod(mechanism,
                                                &mechanism_translation);
-  if (status_code != SUCCESS) {
+  if (status_code != WD_SUCCESS) {
     LOG(WARN) << "Unable to determine mechanism translation for " << mechanism;
     return status_code;
   }
@@ -751,89 +685,91 @@ void IECommandExecutor::PopulateElementFinderMethods(void) {
 void IECommandExecutor::PopulateCommandHandlers() {
   LOG(TRACE) << "Entering IECommandExecutor::PopulateCommandHandlers";
 
-  this->command_handlers_[NoCommand] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[GetCurrentWindowHandle] = CommandHandlerHandle(new GetCurrentWindowHandleCommandHandler);
-  this->command_handlers_[GetWindowHandles] = CommandHandlerHandle(new GetAllWindowHandlesCommandHandler);
-  this->command_handlers_[SwitchToWindow] = CommandHandlerHandle(new SwitchToWindowCommandHandler);
-  this->command_handlers_[SwitchToFrame] = CommandHandlerHandle(new SwitchToFrameCommandHandler);
-  this->command_handlers_[Get] = CommandHandlerHandle(new GoToUrlCommandHandler);
-  this->command_handlers_[GoForward] = CommandHandlerHandle(new GoForwardCommandHandler);
-  this->command_handlers_[GoBack] = CommandHandlerHandle(new GoBackCommandHandler);
-  this->command_handlers_[Refresh] = CommandHandlerHandle(new RefreshCommandHandler);
-  this->command_handlers_[ImplicitlyWait] = CommandHandlerHandle(new SetImplicitWaitTimeoutCommandHandler);
-  this->command_handlers_[SetAsyncScriptTimeout] = CommandHandlerHandle(new SetAsyncScriptTimeoutCommandHandler);
-  this->command_handlers_[SetTimeout] = CommandHandlerHandle(new SetTimeoutCommandHandler);
-  this->command_handlers_[NewSession] = CommandHandlerHandle(new NewSessionCommandHandler);
-  this->command_handlers_[GetSessionCapabilities] = CommandHandlerHandle(new GetSessionCapabilitiesCommandHandler);
-  this->command_handlers_[Close] = CommandHandlerHandle(new CloseWindowCommandHandler);
-  this->command_handlers_[Quit] = CommandHandlerHandle(new QuitCommandHandler);
-  this->command_handlers_[GetTitle] = CommandHandlerHandle(new GetTitleCommandHandler);
-  this->command_handlers_[GetPageSource] = CommandHandlerHandle(new GetPageSourceCommandHandler);
-  this->command_handlers_[GetCurrentUrl] = CommandHandlerHandle(new GetCurrentUrlCommandHandler);
-  this->command_handlers_[ExecuteAsyncScript] = CommandHandlerHandle(new ExecuteAsyncScriptCommandHandler);
-  this->command_handlers_[ExecuteScript] = CommandHandlerHandle(new ExecuteScriptCommandHandler);
-  this->command_handlers_[GetActiveElement] = CommandHandlerHandle(new GetActiveElementCommandHandler);
-  this->command_handlers_[FindElement] = CommandHandlerHandle(new FindElementCommandHandler);
-  this->command_handlers_[FindElements] = CommandHandlerHandle(new FindElementsCommandHandler);
-  this->command_handlers_[FindChildElement] = CommandHandlerHandle(new FindChildElementCommandHandler);
-  this->command_handlers_[FindChildElements] = CommandHandlerHandle(new FindChildElementsCommandHandler);
-  this->command_handlers_[GetElementTagName] = CommandHandlerHandle(new GetElementTagNameCommandHandler);
-  this->command_handlers_[GetElementLocation] = CommandHandlerHandle(new GetElementLocationCommandHandler);
-  this->command_handlers_[GetElementSize] = CommandHandlerHandle(new GetElementSizeCommandHandler);
-  this->command_handlers_[GetElementLocationOnceScrolledIntoView] = CommandHandlerHandle(new GetElementLocationOnceScrolledIntoViewCommandHandler);
-  this->command_handlers_[GetElementAttribute] = CommandHandlerHandle(new GetElementAttributeCommandHandler);
-  this->command_handlers_[GetElementText] = CommandHandlerHandle(new GetElementTextCommandHandler);
-  this->command_handlers_[GetElementValueOfCssProperty] = CommandHandlerHandle(new GetElementValueOfCssPropertyCommandHandler);
-  this->command_handlers_[ClickElement] = CommandHandlerHandle(new ClickElementCommandHandler);
-  this->command_handlers_[ClearElement] = CommandHandlerHandle(new ClearElementCommandHandler);
-  this->command_handlers_[SubmitElement] = CommandHandlerHandle(new SubmitElementCommandHandler);
-  this->command_handlers_[IsElementDisplayed] = CommandHandlerHandle(new IsElementDisplayedCommandHandler);
-  this->command_handlers_[IsElementSelected] = CommandHandlerHandle(new IsElementSelectedCommandHandler);
-  this->command_handlers_[IsElementEnabled] = CommandHandlerHandle(new IsElementEnabledCommandHandler);
-  this->command_handlers_[SendKeysToElement] = CommandHandlerHandle(new SendKeysCommandHandler);
-  this->command_handlers_[ElementEquals] = CommandHandlerHandle(new ElementEqualsCommandHandler);
-  this->command_handlers_[AddCookie] = CommandHandlerHandle(new AddCookieCommandHandler);
-  this->command_handlers_[GetAllCookies] = CommandHandlerHandle(new GetAllCookiesCommandHandler);
-  this->command_handlers_[DeleteCookie] = CommandHandlerHandle(new DeleteCookieCommandHandler);
-  this->command_handlers_[DeleteAllCookies] = CommandHandlerHandle(new DeleteAllCookiesCommandHandler);
-  this->command_handlers_[Screenshot] = CommandHandlerHandle(new ScreenshotCommandHandler);
+  this->command_handlers_[webdriver::CommandType::NoCommand] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetCurrentWindowHandle] = CommandHandlerHandle(new GetCurrentWindowHandleCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetWindowHandles] = CommandHandlerHandle(new GetAllWindowHandlesCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SwitchToWindow] = CommandHandlerHandle(new SwitchToWindowCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SwitchToFrame] = CommandHandlerHandle(new SwitchToFrameCommandHandler);
+  this->command_handlers_[webdriver::CommandType::Get] = CommandHandlerHandle(new GoToUrlCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GoForward] = CommandHandlerHandle(new GoForwardCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GoBack] = CommandHandlerHandle(new GoBackCommandHandler);
+  this->command_handlers_[webdriver::CommandType::Refresh] = CommandHandlerHandle(new RefreshCommandHandler);
+  this->command_handlers_[webdriver::CommandType::ImplicitlyWait] = CommandHandlerHandle(new SetImplicitWaitTimeoutCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SetAsyncScriptTimeout] = CommandHandlerHandle(new SetAsyncScriptTimeoutCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SetTimeout] = CommandHandlerHandle(new SetTimeoutCommandHandler);
+  this->command_handlers_[webdriver::CommandType::NewSession] = CommandHandlerHandle(new NewSessionCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetSessionCapabilities] = CommandHandlerHandle(new GetSessionCapabilitiesCommandHandler);
+  this->command_handlers_[webdriver::CommandType::Close] = CommandHandlerHandle(new CloseWindowCommandHandler);
+  this->command_handlers_[webdriver::CommandType::Quit] = CommandHandlerHandle(new QuitCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetTitle] = CommandHandlerHandle(new GetTitleCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetPageSource] = CommandHandlerHandle(new GetPageSourceCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetCurrentUrl] = CommandHandlerHandle(new GetCurrentUrlCommandHandler);
+  this->command_handlers_[webdriver::CommandType::ExecuteAsyncScript] = CommandHandlerHandle(new ExecuteAsyncScriptCommandHandler);
+  this->command_handlers_[webdriver::CommandType::ExecuteScript] = CommandHandlerHandle(new ExecuteScriptCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetActiveElement] = CommandHandlerHandle(new GetActiveElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::FindElement] = CommandHandlerHandle(new FindElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::FindElements] = CommandHandlerHandle(new FindElementsCommandHandler);
+  this->command_handlers_[webdriver::CommandType::FindChildElement] = CommandHandlerHandle(new FindChildElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::FindChildElements] = CommandHandlerHandle(new FindChildElementsCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementTagName] = CommandHandlerHandle(new GetElementTagNameCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementLocation] = CommandHandlerHandle(new GetElementLocationCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementSize] = CommandHandlerHandle(new GetElementSizeCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementLocationOnceScrolledIntoView] = CommandHandlerHandle(new GetElementLocationOnceScrolledIntoViewCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementAttribute] = CommandHandlerHandle(new GetElementAttributeCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementText] = CommandHandlerHandle(new GetElementTextCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetElementValueOfCssProperty] = CommandHandlerHandle(new GetElementValueOfCssPropertyCommandHandler);
+  this->command_handlers_[webdriver::CommandType::ClickElement] = CommandHandlerHandle(new ClickElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::ClearElement] = CommandHandlerHandle(new ClearElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SubmitElement] = CommandHandlerHandle(new SubmitElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::IsElementDisplayed] = CommandHandlerHandle(new IsElementDisplayedCommandHandler);
+  this->command_handlers_[webdriver::CommandType::IsElementSelected] = CommandHandlerHandle(new IsElementSelectedCommandHandler);
+  this->command_handlers_[webdriver::CommandType::IsElementEnabled] = CommandHandlerHandle(new IsElementEnabledCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SendKeysToElement] = CommandHandlerHandle(new SendKeysCommandHandler);
+  this->command_handlers_[webdriver::CommandType::ElementEquals] = CommandHandlerHandle(new ElementEqualsCommandHandler);
+  this->command_handlers_[webdriver::CommandType::AddCookie] = CommandHandlerHandle(new AddCookieCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetAllCookies] = CommandHandlerHandle(new GetAllCookiesCommandHandler);
+  this->command_handlers_[webdriver::CommandType::DeleteCookie] = CommandHandlerHandle(new DeleteCookieCommandHandler);
+  this->command_handlers_[webdriver::CommandType::DeleteAllCookies] = CommandHandlerHandle(new DeleteAllCookiesCommandHandler);
+  this->command_handlers_[webdriver::CommandType::Screenshot] = CommandHandlerHandle(new ScreenshotCommandHandler);
 
-  this->command_handlers_[AcceptAlert] = CommandHandlerHandle(new AcceptAlertCommandHandler);
-  this->command_handlers_[DismissAlert] = CommandHandlerHandle(new DismissAlertCommandHandler);
-  this->command_handlers_[GetAlertText] = CommandHandlerHandle(new GetAlertTextCommandHandler);
-  this->command_handlers_[SendKeysToAlert] = CommandHandlerHandle(new SendKeysToAlertCommandHandler);
+  this->command_handlers_[webdriver::CommandType::AcceptAlert] = CommandHandlerHandle(new AcceptAlertCommandHandler);
+  this->command_handlers_[webdriver::CommandType::DismissAlert] = CommandHandlerHandle(new DismissAlertCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetAlertText] = CommandHandlerHandle(new GetAlertTextCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SendKeysToAlert] = CommandHandlerHandle(new SendKeysToAlertCommandHandler);
 
-  this->command_handlers_[MouseMoveTo] = CommandHandlerHandle(new MouseMoveToCommandHandler);
-  this->command_handlers_[MouseClick] = CommandHandlerHandle(new MouseClickCommandHandler);
-  this->command_handlers_[MouseDoubleClick] = CommandHandlerHandle(new MouseDoubleClickCommandHandler);
-  this->command_handlers_[MouseButtonDown] = CommandHandlerHandle(new MouseButtonDownCommandHandler);
-  this->command_handlers_[MouseButtonUp] = CommandHandlerHandle(new MouseButtonUpCommandHandler);
-  this->command_handlers_[SendKeysToActiveElement] = CommandHandlerHandle(new SendKeysToActiveElementCommandHandler);
+  this->command_handlers_[webdriver::CommandType::MouseMoveTo] = CommandHandlerHandle(new MouseMoveToCommandHandler);
+  this->command_handlers_[webdriver::CommandType::MouseClick] = CommandHandlerHandle(new MouseClickCommandHandler);
+  this->command_handlers_[webdriver::CommandType::MouseDoubleClick] = CommandHandlerHandle(new MouseDoubleClickCommandHandler);
+  this->command_handlers_[webdriver::CommandType::MouseButtonDown] = CommandHandlerHandle(new MouseButtonDownCommandHandler);
+  this->command_handlers_[webdriver::CommandType::MouseButtonUp] = CommandHandlerHandle(new MouseButtonUpCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SendKeysToActiveElement] = CommandHandlerHandle(new SendKeysToActiveElementCommandHandler);
 
-  this->command_handlers_[GetWindowSize] = CommandHandlerHandle(new GetWindowSizeCommandHandler);
-  this->command_handlers_[SetWindowSize] = CommandHandlerHandle(new SetWindowSizeCommandHandler);
-  this->command_handlers_[GetWindowPosition] = CommandHandlerHandle(new GetWindowPositionCommandHandler);
-  this->command_handlers_[SetWindowPosition] = CommandHandlerHandle(new SetWindowPositionCommandHandler);
-  this->command_handlers_[MaximizeWindow] = CommandHandlerHandle(new MaximizeWindowCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetWindowSize] = CommandHandlerHandle(new GetWindowSizeCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SetWindowSize] = CommandHandlerHandle(new SetWindowSizeCommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetWindowPosition] = CommandHandlerHandle(new GetWindowPositionCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SetWindowPosition] = CommandHandlerHandle(new SetWindowPositionCommandHandler);
+  this->command_handlers_[webdriver::CommandType::MaximizeWindow] = CommandHandlerHandle(new MaximizeWindowCommandHandler);
 
   // As-yet unimplemented commands
-  this->command_handlers_[Status] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[GetSessionList] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[GetOrientation] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[SetOrientation] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[ListAvailableImeEngines] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[GetActiveImeEngine] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[IsImeActivated] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[ActivateImeEngine] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[DeactivateImeEngine] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchClick] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchDown] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchUp] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchMove] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchScroll] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchDoubleClick] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchLongClick] = CommandHandlerHandle(new IECommandHandler);
-  this->command_handlers_[TouchFlick] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetOrientation] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::SetOrientation] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::ListAvailableImeEngines] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetActiveImeEngine] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::IsImeActivated] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::ActivateImeEngine] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::DeactivateImeEngine] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchClick] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchDown] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchUp] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchMove] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchScroll] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchDoubleClick] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchLongClick] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::TouchFlick] = CommandHandlerHandle(new IECommandHandler);
+
+  // Commands intercepted by the server before reaching the command executor
+  this->command_handlers_[webdriver::CommandType::Status] = CommandHandlerHandle(new IECommandHandler);
+  this->command_handlers_[webdriver::CommandType::GetSessionList] = CommandHandlerHandle(new IECommandHandler);
 }
 
 } // namespace webdriver

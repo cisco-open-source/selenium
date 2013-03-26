@@ -45,7 +45,6 @@ public class DefaultDriverSessions implements DriverSessions {
     put(DesiredCapabilities.iphone(), "org.openqa.selenium.iphone.IPhoneDriver");
     put(DesiredCapabilities.ipad(), "org.openqa.selenium.iphone.IPhoneDriver");
     put(DesiredCapabilities.phantomjs(), "org.openqa.selenium.phantomjs.PhantomJSDriver");
-    put(DesiredCapabilities.remotedriver(), "org.openqa.selenium.remotedriver.RemoteDriver");
   }};
 
   public DefaultDriverSessions() {

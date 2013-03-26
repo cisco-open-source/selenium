@@ -363,7 +363,7 @@ WebElement.getElementSize = function(respond, parameters) {
   var element = Utils.getElementAt(parameters.id,
                                    respond.session.getDocument());
 
-  var box = Utils.getLocationOnceScrolledIntoView(element);
+  var box = Utils.getLocation(element);
 
   respond.value = {
     width: Math.round(box.width),
@@ -386,12 +386,6 @@ WebElement.getElementLocationOnceScrolledIntoView = function(
     respond, parameters) {
   var element = Utils.getElementAt(parameters.id,
                                    respond.session.getDocument());
-
-  if (!bot.dom.isShown(element,/*ignoreOpacity=*/true)) {
-    respond.value = undefined;
-    respond.send();
-    return;
-  }
 
   var theDoc = element.ownerDocument;
   theDoc.body.focus();

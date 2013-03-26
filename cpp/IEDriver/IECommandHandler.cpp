@@ -39,7 +39,7 @@ int IECommandHandler::GetElement(const IECommandExecutor& executor,
 
   ElementHandle candidate_wrapper;
   int result = executor.GetManagedElement(element_id, &candidate_wrapper);
-  if (result != SUCCESS) {
+  if (result != WD_SUCCESS) {
     // This bears some explanation. Technically, passing an invalid ID in the
     // URL for an element command should result in a 404. However, since the
     // language bindings don't make up their own element IDs, any call from
@@ -67,7 +67,7 @@ int IECommandHandler::GetElement(const IECommandExecutor& executor,
 
       if (focused_doc.IsEqualObject(parent_doc_dispatch)) {
         *element_wrapper = candidate_wrapper;
-        return SUCCESS;
+        return WD_SUCCESS;
       } else {
         LOG(WARN) << "Found managed element's document is not currently focused";
       }
@@ -75,6 +75,17 @@ int IECommandHandler::GetElement(const IECommandExecutor& executor,
   }
 
   return EOBSOLETEELEMENT;
+}
+
+Json::Value IECommandHandler::RecreateJsonParameterObject(const ParametersMap& command_parameters) {
+  Json::Value result;
+  ParametersMap::const_iterator param_iterator = command_parameters.begin();
+  for (; param_iterator != command_parameters.end(); ++param_iterator) {
+    std::string key = param_iterator->first;
+    Json::Value value = param_iterator->second;
+    result[key] = value;
+  }
+  return result;
 }
 
 } // namespace webdriver

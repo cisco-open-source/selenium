@@ -1,5 +1,4 @@
-# Copyright 2008-2009 WebDriver committers
-# Copyright 2008-2009 Google Inc.
+# Copyright 2008-2013 Software freedom conservancy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -139,12 +138,9 @@ class WebElement(object):
 
     def send_keys(self, *value):
         """Simulates typing into the element."""
-         # transfer file to another machine only if remote driver is used
-         # the same behaviour as for java binding
-        parent_class = self.parent.__class__
-        fqcn = parent_class.__module__ + "." + parent_class.__name__
-        is_remote = fqcn == "selenium.webdriver.remote.webdriver.WebDriver"
-        if is_remote:
+        # transfer file to another machine only if remote driver is used
+        # the same behaviour as for java binding
+        if self.parent._is_remote:
             local_file = LocalFileDetector.is_local_file(*value)
             if local_file is not None:
                 value = self._upload(local_file)
@@ -193,7 +189,10 @@ class WebElement(object):
     @property
     def location(self):
         """ Returns the location of the element in the renderable canvas"""
-        return self._execute(Command.GET_ELEMENT_LOCATION)['value']
+        old_loc = self._execute(Command.GET_ELEMENT_LOCATION)['value']
+        new_loc = {"x": old_loc['x'],
+                   "y": old_loc['y']}
+        return new_loc
 
     @property
     def parent(self):

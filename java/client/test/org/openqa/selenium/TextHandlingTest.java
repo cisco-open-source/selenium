@@ -359,6 +359,43 @@ public class TextHandlingTest extends JUnit4TestBase {
   }
 
   @Test
+  public void testTextOfAnInputFieldShouldBeEmpty() {
+    driver.get(pages.formPage);
+    WebElement input = driver.findElement(By.id("inputWithText"));
+    assertEquals("", input.getText());
+  }
+
+  @Test
+  public void testTextOfATextAreaShouldBeEqualToItsDefaultText() {
+    driver.get(pages.formPage);
+    WebElement area = driver.findElement(By.id("withText"));
+    assertEquals("Example text", area.getText());
+  }
+
+  @Test
+  @Ignore(value = {IE, SELENESE, IPHONE, ANDROID, HTMLUNIT},
+          reason = "IE, HTMLUNIT: failed, other: untested")
+  public void testTextOfATextAreaShouldBeEqualToItsDefaultTextEvenAfterTyping() {
+    driver.get(pages.formPage);
+    WebElement area = driver.findElement(By.id("withText"));
+    String oldText = area.getText();
+    area.sendKeys("New Text");
+    assertEquals(oldText, area.getText());
+  }
+
+  @Test
+  @JavascriptEnabled
+  @Ignore(value = {IE, SELENESE, IPHONE, ANDROID, HTMLUNIT},
+          reason = "IE, HTMLUNIT: failed, other: untested")
+  public void testTextOfATextAreaShouldBeEqualToItsDefaultTextEvenAfterChangingTheValue() {
+    driver.get(pages.formPage);
+    WebElement area = driver.findElement(By.id("withText"));
+    String oldText = area.getAttribute("value");
+    ((JavascriptExecutor) driver).executeScript("arguments[0].value = arguments[1]", area, "New Text");
+    assertEquals(oldText, area.getText());
+  }
+
+  @Test
   public void testShouldGetTextWhichIsAValidJSONObject() {
     driver.get(pages.simpleTestPage);
     WebElement element = driver.findElement(By.id("simpleJsonText"));
