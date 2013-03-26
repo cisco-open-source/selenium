@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using NMock2;
 using NUnit.Framework;
 
@@ -33,6 +35,15 @@ namespace OpenQA.Selenium.Support.PageObjects
             Assert.Null(page.formElement);
 
             PageFactory.InitElements(mockDriver, page);
+            Assert.NotNull(page.formElement);
+        }
+
+        [Test]
+        public void ElementShouldBeAbleToUseGenericVersionOfInitElements()
+        {
+            IWebDriver driver = mocks.NewMock<IWebDriver>();
+            var page = PageFactory.InitElements<GenericFactoryPage>(driver);
+            Assert.IsInstanceOf<GenericFactoryPage>(page);
             Assert.NotNull(page.formElement);
         }
         
@@ -170,6 +181,75 @@ namespace OpenQA.Selenium.Support.PageObjects
             AssertFoundElement(page.formElement);
         }
 
+        [Test]
+        public void UsingCustomBy()
+        {
+            Expect.Exactly(1).On(mockDriver).Method("FindElement").With(new CustomBy("customCriteria")).Will(Return.Value(mockElement));
+            Expect.Exactly(1).On(mockElement).GetProperty("TagName").Will(Return.Value("form"));
+
+            var page = new CustomByPage();
+
+            AssertFindsElement(page, () => page.customFoundElement);
+        }
+
+        [Test]
+        public void UsingCustomByNotFound()
+        {
+            Expect.Once.On(mockDriver).Method("FindElement").With(new CustomBy("customCriteriaNotFound")).Will(Throw.Exception(new NoSuchElementException()));
+            
+            var page = new CustomByNotFoundPage();
+            PageFactory.InitElements(mockDriver, page);
+            Assert.Throws(typeof(NoSuchElementException), page.customFoundElement.Clear);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "descendent of", MatchType = MessageMatch.Contains)]
+        public void UsingCustomByWithInvalidSuperClass()
+        {
+            var page = new InvalidCustomFinderTypePage();
+            PageFactory.InitElements(mockDriver, page);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "How.Custom", MatchType = MessageMatch.Contains)]
+        public void UsingCustomByWithNoClass()
+        {
+            var page = new NoCustomFinderClassPage();
+            PageFactory.InitElements(mockDriver, page);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "constructor", MatchType = MessageMatch.Contains)]
+        public void UsingCustomByWithInvalidCtor()
+        {
+            var page = new InvalidCtorCustomByPage();
+            PageFactory.InitElements(mockDriver, page);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "is not IWebElement or IList<IWebElement>", MatchType = MessageMatch.Contains)]
+        public void ThrowsIfElementTypeIsInvalid()
+        {
+            var page = new InvalidElementTypePage();
+            PageFactory.InitElements(mockDriver, page);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "is not IWebElement or IList<IWebElement>", MatchType = MessageMatch.Contains)]
+        public void ThrowsIfElementCollectionTypeIsInvalid()
+        {
+            var page = new InvalidCollectionTypePage();
+            PageFactory.InitElements(mockDriver, page);
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException), ExpectedMessage = "is not IWebElement or IList<IWebElement>", MatchType = MessageMatch.Contains)]
+        public void ThrowsIfConcreteCollectionTypeIsUsed()
+        {
+            var page = new ConcreteCollectionTypePage();
+            PageFactory.InitElements(mockDriver, page);
+        }
+
         #region Test helper methods
 
         private void ExpectOneLookup()
@@ -303,6 +383,108 @@ namespace OpenQA.Selenium.Support.PageObjects
         {
             [FindsBy(How = How.Name, Using = "someForm")]
             public IWebElement formElement;
+        }
+
+        private class CustomBy : By
+        {
+            Mockery mocks = new Mockery();
+            private string criteria;
+
+            public CustomBy(string customByString)
+            {
+                criteria = customByString;
+                this.FindElementMethod = (context) =>
+                {
+                    if (this.criteria != "customCriteria")
+                    {
+                        throw new NoSuchElementException();
+                    }
+
+                    IWebElement mockElement =  mocks.NewMock<IWebElement>();
+                    return mockElement;
+                };
+            }
+        }
+
+        private class CustomByNoCtor : By
+        {
+            Mockery mocks = new Mockery();
+            private string criteria;
+
+            public CustomByNoCtor()
+            {
+                criteria = "customCriteria";
+                this.FindElementMethod = (context) =>
+                {
+                    if (this.criteria != "customCriteria")
+                    {
+                        throw new NoSuchElementException();
+                    }
+
+                    IWebElement mockElement =  mocks.NewMock<IWebElement>();
+                    return mockElement;
+                };
+            }
+        }
+
+        private class CustomByPage
+        {
+            [FindsBy(How = How.Custom, Using = "customCriteria", CustomFinderType = typeof(CustomBy))]
+            public IWebElement customFoundElement;
+        }
+
+        private class CustomByNotFoundPage
+        {
+            [FindsBy(How = How.Custom, Using = "customCriteriaNotFound", CustomFinderType = typeof(CustomBy))]
+            public IWebElement customFoundElement;
+        }
+
+        private class NoCustomFinderClassPage
+        {
+            [FindsBy(How = How.Custom, Using = "custom")]
+            public IWebElement customFoundElement;
+        }
+
+        private class InvalidCustomFinderTypePage
+        {
+            [FindsBy(How = How.Custom, Using = "custom", CustomFinderType = typeof(string))]
+            public IWebElement customFoundElement;
+        }
+
+        private class InvalidCtorCustomByPage
+        {
+            [FindsBy(How = How.Custom, Using = "custom", CustomFinderType = typeof(CustomByNoCtor))]
+            public IWebElement customFoundElement;
+        }
+
+        private class GenericFactoryPage
+        {
+            private IWebDriver driver;
+            public GenericFactoryPage(IWebDriver driver)
+            {
+                this.driver = driver;
+            }
+
+            [FindsBy(How = How.Name, Using = "someForm")]
+            public IWebElement formElement;
+        }
+
+        private class InvalidElementTypePage
+        {
+            [FindsBy(How = How.Name, Using = "someForm")]
+            public string myElement;
+        }
+
+        private class InvalidCollectionTypePage
+        {
+            [FindsBy(How = How.Name, Using = "someForm")]
+            public List<string> myElement;
+        }
+
+        private class ConcreteCollectionTypePage
+        {
+            [FindsBy(How = How.Name, Using = "someForm")]
+            public ReadOnlyCollection<IWebElement> myElement;
         }
 
         #pragma warning restore 649

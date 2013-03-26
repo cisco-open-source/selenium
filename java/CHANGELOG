@@ -1,3 +1,83 @@
+v2.28.0
+=======
+
+WebDriver:
+  * "null" can now be passed to executeScript
+  * .Net: Corrected FileUtilities.FindFile() to correctly return the
+    current directory if the specified file is located there.
+  * .Net: Introduces the Updating the CustomFinderType property to the
+    .NET FindsByAttribute. This allows use of custom By subclasses in
+    the PageFactory. The custom finder must be a subclass of By, and
+    it must expose a public constructor that takes a string argument.
+  * SafariDriver: better attempts to catch native dialogs from user
+    defined onbeforeunload handlers.
+  * Updating HtmlUnit to 2.11
+  * Added the PhantomJS bindings to the release. You'll still need to
+    download PhantomJS itself separately.
+
+RC:
+  * Implemented getAllWindowNames in WebDriverBackedSelenium
+  * Implemented openWindow in WebDriverBackedSelenium to allow opening
+    relative URLs
+
+
+v2.27.0
+=======
+
+WebDriver:
+  * Added support for native events for Firefox 17. 
+  * Added support for ghostdriver (PhantomJS)
+  * Adding new capability "enableElementCacheCleanup" to the IE
+    driver. When set to true, the IE driver will clean the
+    known-element cache of invalid elements after every page
+    load. This is intended to keep memory usage down and improve
+    performance. However, it is an intrusive change, so this
+    capability is provided temporarily to allow disabling this
+    behavior if problems arise. The default of this new capability is
+    "true", meaning this behavior is turned on by default.
+  * Added shift key handling to the synthetic keyboard actions.
+  * Modifying scroll behavior in IE driver SendKeysCommandHandler to
+    call Element::GetLocationOnceScrolledIntoView() instead of calling
+    the DOM scrollIntoView() function. Should result in less page
+    scrolling during test runs.
+  * Checking if CSS transforms on elements, or their parents, are
+    hiding them and therefore returning they arent visible.
+  * Add not, refreshed, invisibilityOfElementWithText to
+    ExpectedConditions.
+  * Added support for new IE10 pointer events.
+  * FIXED: 1543: Allowing equal sign in a cookie value.
+  * FIXED: 2103, 3508: Modified to no longer hang on alerts triggered
+    by onchange of <select> elements or by onsubmit of <form>
+    elements.
+  * FIXED: 2035: Returning a simple result (null) after opening a new
+    window instead of the window object (that can't be serialized to
+    JSON).
+  * FIXED: 2353: Only call blur() for IE if the element is not the
+    <body> element.
+  * FIXED: 3043: Better error message reporting when browser launch
+    fails.
+  * FIXED: 4490: Checking script evaluation result to prevent null
+    reference exception.
+  * FIXED: 4736: Added all of the extended colour keywords to the
+    Colors enum in support of
+    http://www.w3.org/wiki/CSS3/Color/Extended_color_keywords.
+  * FIXED: 4800: Fixed calculation of coordinates for elements in
+    frames/iframes where the element is scrolled out of view within
+    the frame.
+
+Grid:
+  * FIXED: 3818: Generating session identifiers with UUID to prevent duplication.
+
+RC:
+  * FIXED: 4668: Fixing ability to open relative URLs in WDBS.
+  * FIXED: 4273: Added getCssCount to the list of the methods
+    supported by WebDriverBackedSelenium.
+  * FIXED: 4055: WDBS implementation of getValue for radio buttons now
+    reflects behaviour of RC.
+  * FIXED: 4784: Processing locators before use in getCssCount and
+    getXpathCount.
+
+
 v2.26.0
 =======
 WebDriver:
@@ -769,3 +849,4 @@ Grid:
   * Track when a session has become orphaned.  I.e., when the client sends no
     commands after the initial session creation.  This almost always indicates
     the client is no longer connected and the session is unusable immediately.
+r18261 | david.burns@theautomatedtester.co.uk | 2012-12-05 11:30:23 -0800 (Wed, 05 Dec 2012) | 1 line

@@ -43,18 +43,26 @@ class GetElementLocationOnceScrolledIntoViewCommandHandler : public IECommandHan
 
       BrowserHandle browser_wrapper;
       int status_code = executor.GetCurrentBrowser(&browser_wrapper);
-      if (status_code != SUCCESS) {
+      if (status_code != WD_SUCCESS) {
         response->SetErrorResponse(status_code, "Unable to get browser");
         return;
       }
 
       ElementHandle element_wrapper;
       status_code = this->GetElement(executor, element_id, &element_wrapper);
-      if (status_code == SUCCESS) {
+      if (status_code == WD_SUCCESS) {
         LocationInfo location = {};
-        status_code = element_wrapper->GetLocationOnceScrolledIntoView(executor.scroll_behavior(),
+        status_code = element_wrapper->GetLocationOnceScrolledIntoView(executor.input_manager()->scroll_behavior(),
                                                                        &location);
-        if (status_code == SUCCESS) {
+        if (status_code == WD_SUCCESS) {
+          CComPtr<IHTMLDocument2> doc;
+          browser_wrapper->GetDocument(&doc);
+          bool browser_appears_before_ie8 = executor.browser_version() < 8 || DocumentHost::GetDocumentMode(doc) <= 7;
+          bool is_quirks_mode = !DocumentHost::IsStandardsMode(doc);
+          if (browser_appears_before_ie8 && !is_quirks_mode) {
+            location.x -= 2;
+            location.y -= 2;
+          }
           Json::Value response_value;
           response_value["x"] = location.x;
           response_value["y"] = location.y;

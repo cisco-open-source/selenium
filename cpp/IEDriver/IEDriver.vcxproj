@@ -229,11 +229,13 @@
     <ClCompile Include="DocumentHost.cpp" />
     <ClCompile Include="Element.cpp" />
     <ClCompile Include="ElementFinder.cpp" />
+    <ClCompile Include="ElementRepository.cpp" />
     <ClCompile Include="HtmlDialog.cpp" />
     <ClCompile Include="IECommandExecutor.cpp" />
     <ClCompile Include="IECommandHandler.cpp" />
     <ClCompile Include="IEServer.cpp" />
     <ClCompile Include="IESession.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -257,11 +259,14 @@
     <ClInclude Include="DocumentHost.h" />
     <ClInclude Include="Element.h" />
     <ClInclude Include="ElementFinder.h" />
+    <ClInclude Include="ElementRepository.h" />
     <ClInclude Include="HtmlDialog.h" />
     <ClInclude Include="IECommandExecutor.h" />
     <ClInclude Include="IECommandHandler.h" />
     <ClInclude Include="IEServer.h" />
     <ClInclude Include="IESession.h" />
+    <ClInclude Include="InputManager.h" />
+    <ClInclude Include="LocationInfo.h" />
     <ClInclude Include="messages.h" />
     <ClInclude Include="Script.h" />
     <ClInclude Include="stdafx.h" />

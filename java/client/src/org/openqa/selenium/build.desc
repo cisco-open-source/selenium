@@ -36,7 +36,6 @@ java_library(name = "webdriver-api",
     "HasCapabilities.java",
     "HasInputDevices.java",
     "HasTouchScreen.java",
-    "IllegalLocatorException.java",
     "ImeActivationFailedException.java",
     "ImeNotAvailableException.java",
     "InvalidCookieDomainException.java",
@@ -151,6 +150,7 @@ java_library(name = "client-combined",
     "//java/client/src/org/openqa/selenium:webdriver-backed-selenium",
     "//java/client/src/org/openqa/selenium/qtwebkit",
     "//third_party/java/opera-driver",
+    "//third_party/java/phantomjs-driver"
   ])
 
 java_library(name = "codecs",

@@ -104,7 +104,9 @@ safaridriver.extension.numConnections_ = 0;
 
 
 /**
- * Responds to a message from an injected script.
+ * Responds to a message from an injected script. Note this event listener is
+ * attached to the {@code safari.application} object and will receive messages
+ * <em>after</em> any listeners attached directly to a tab or browser.
  * @param {!SafariExtensionMessageEvent} e The event.
  * @private
  */
@@ -112,7 +114,7 @@ safaridriver.extension.onMessage_ = function(e) {
   var message = safaridriver.message.fromEvent(e);
   switch (message.getType()) {
     case safaridriver.message.Connect.TYPE:
-      var url = (/** @type {!safaridriver.message.Connect} */ message).getUrl();
+      var url = /** @type {!safaridriver.message.Connect} */ (message).getUrl();
       var server = safaridriver.extension.createSessionServer_();
       server.connect(url).
           then(function() {
@@ -130,7 +132,10 @@ safaridriver.extension.onMessage_ = function(e) {
     case safaridriver.message.Alert.TYPE:
       goog.asserts.assert(e.name === 'canLoad',
           'Received an async alert message');
-      if (!safaridriver.extension.session_.isExecutingCommand()) {
+      if (message.blocksUiThread() &&
+          !safaridriver.extension.session_.isExecutingCommand()) {
+        safaridriver.extension.LOG_.warning(
+            'Saving unhandled alert text: ' + message.getMessage());
         safaridriver.extension.session_.setUnhandledAlertText(
             message.getMessage());
       }
@@ -138,7 +143,6 @@ safaridriver.extension.onMessage_ = function(e) {
       // TODO: Fully support alerts. See
       // http://code.google.com/p/selenium/issues/detail?id=3862
       e.message = !!safaridriver.extension.numConnections_;
-      e.stopPropagation();
       break;
   }
 };

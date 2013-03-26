@@ -17,19 +17,13 @@
 #include <string>
 #include <vector>
 #include "json.h"
+#include "LocationInfo.h"
 
 namespace webdriver {
 
 enum ELEMENT_SCROLL_BEHAVIOR {
   TOP,
   BOTTOM
-};
-
-struct LocationInfo {
-  long x;
-  long y;
-  long width;
-  long height;
 };
 
 typedef unsigned int (__stdcall *ASYNCEXECPROC)(void*);
@@ -49,6 +43,10 @@ class Element {
   int GetAttributeValue(const std::string& attribute_name,
                         std::string* attribute_value,
                         bool* value_is_null);
+
+  bool HasOnlySingleTextNodeChild(void);
+  bool GetTextBoundaries(LocationInfo* text_info);
+
   int IsDisplayed(bool* result);
   bool IsEnabled(void);
   bool IsSelected(void);
@@ -64,13 +62,13 @@ class Element {
  private:
   int GetLocation(LocationInfo* location, std::vector<LocationInfo>* frame_locations);
   LocationInfo GetClickPoint(const LocationInfo location);
-  bool IsLocationInViewPort(const LocationInfo location);
+  bool IsLocationInViewPort(const LocationInfo location, const bool document_contains_frames);
   bool IsLocationVisibleInFrames(const LocationInfo location, const std::vector<LocationInfo> frame_locations);
   bool IsHiddenByOverflow();
   bool GetFrameDetails(LocationInfo* location, std::vector<LocationInfo>* frame_locations);
   int GetContainingDocument(const bool use_dom_node, IHTMLDocument2** doc);
-  int GetParentDocument(IHTMLWindow2* parent_window,
-                        IHTMLDocument2** parent_doc);
+  int GetDocumentFromWindow(IHTMLWindow2* parent_window,
+                            IHTMLDocument2** parent_doc);
   bool IsInline(void);
   static bool Element::RectHasNonZeroDimensions(const CComPtr<IHTMLRect> rect);
 

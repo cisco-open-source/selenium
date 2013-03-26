@@ -146,7 +146,7 @@ public class SelfRegisteringRemote {
     nodeConfig.getCapabilities().clear();
   }
 
-  // TODO freynaud keep specified platfrom if specified. At least for unit test purpose.
+  // TODO freynaud keep specified platform if specified. At least for unit test purpose.
   /**
    * Adding the browser described by the capability, automatically finding out what platform the
    * node is launched from ( and overriding it if it was specified )
@@ -309,9 +309,11 @@ public class SelfRegisteringRemote {
       URL api = new URL(tmp);
       HttpHost host = new HttpHost(api.getHost(), api.getPort());
 
-      BasicHttpRequest r =
-          new BasicHttpRequest("GET", api.toExternalForm() + "?id="
-              + node.getConfiguration().get(RegistrationRequest.REMOTE_HOST));
+      String id = (String) node.getConfiguration().get(RegistrationRequest.ID);
+      if (id == null) {
+        id = (String) node.getConfiguration().get(RegistrationRequest.REMOTE_HOST);
+      }
+      BasicHttpRequest r = new BasicHttpRequest("GET", api.toExternalForm() + "?id=" + id);
 
       HttpResponse response = client.execute(host, r);
       if (response.getStatusLine().getStatusCode() != 200) {

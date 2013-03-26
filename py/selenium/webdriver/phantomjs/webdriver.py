@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2012 Software freedom conservancy
+# Copyright 2012-2013 Software freedom conservancy
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,9 @@ class WebDriver(RemoteWebDriver):
                 desired_capabilities=desired_capabilities)
         except:
             self.quit()
-            raise 
+            raise
+
+        self._is_remote = False
 
     def quit(self):
         """

@@ -336,7 +336,6 @@ public class SeleniumServer implements SslCertificateGenerator {
     context.addHandler(new SingleTestSuiteResourceHandler());
     postResultsHandler = new SeleniumHTMLRunnerResultsHandler();
     context.addHandler(postResultsHandler);
-    context.addHandler(new CachedContentTestHandler());
     server.addContext(context);
 
     // Both the selenium and webdriver contexts must be able to share sessions
@@ -407,7 +406,7 @@ public class SeleniumServer implements SslCertificateGenerator {
     constraint.addRole("user");
     constraint.setAuthenticate(true);
 
-    context.addSecurityConstraint("/tests/html/basicAuth/*", constraint);
+    context.addSecurityConstraint("/org/openqa/selenium/tests/html/basicAuth/*", constraint);
     HashUserRealm realm = new HashUserRealm("MyRealm");
     realm.put("alice", "foo");
     realm.addUserToRole("alice", "user");

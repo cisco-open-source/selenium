@@ -215,7 +215,7 @@ this.options = {
           '        self.driver.implicitly_wait(30)\n' +
           '        self.base_url = "${baseURL}"\n' +
           '        self.verificationErrors = []\n' +
-          '        self.accept_next_alert = true\n' +
+          '        self.accept_next_alert = True\n' +
           '    \n' +
           '    def ${methodName}(self):\n' +
           '        ${receiver} = self.driver\n',
@@ -358,7 +358,7 @@ WDAPI.Driver.prototype.getAlert = function() {
 };
 
 WDAPI.Driver.prototype.chooseOkOnNextConfirmation = function() {
-  return "self.accept_next_alert = true";
+  return "self.accept_next_alert = True";
 };
 
 WDAPI.Driver.prototype.chooseCancelOnNextConfirmation = function() {
@@ -406,7 +406,13 @@ WDAPI.Element.prototype.submit = function() {
 };
 
 WDAPI.Element.prototype.select = function(label) {
-  return "Select(" + this.ref + ").select_by_visible_text(" + xlateArgument(label) + ")";
+  if (selectLocator.type == 'index') {
+    return "Select(" + this.ref + ").select_by_index(" + selectLocator.string + ")";
+  }
+  if (selectLocator.type == 'value') {
+    return "Select(" + this.ref + ").select_by_value(" + xlateArgument(selectLocator.string) + ")";
+  }
+  return "Select(" + this.ref + ").select_by_visible_text(" + xlateArgument(selectLocator.string) + ")";
 };
 
 WDAPI.ElementList = function(ref) {

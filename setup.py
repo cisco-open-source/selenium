@@ -59,7 +59,7 @@ else:
 setup(
     cmdclass={'install': install},
     name='selenium',
-    version="2.26.0",
+    version="2.28.0",
     description='Python bindings for Selenium',
     long_description=open(join(abspath(dirname(__file__)), "py", "README")).read(),
     url='http://code.google.com/p/selenium/',
@@ -97,6 +97,7 @@ setup(
               'selenium.webdriver.firefox',
               'selenium.webdriver.ie',
               'selenium.webdriver.opera',
+              'selenium.webdriver.phantomjs',
               'selenium.webdriver.remote',
               'selenium.webdriver.support', ],
     package_data={

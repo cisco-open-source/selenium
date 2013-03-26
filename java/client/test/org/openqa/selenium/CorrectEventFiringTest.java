@@ -43,6 +43,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.ALL;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
+import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
@@ -216,6 +217,25 @@ public class CorrectEventFiringTest extends JUnit4TestBase {
     foo.click();
     assertThat(driver.findElement(By.id("result")).getText(),
         equalTo(initialTextValue));
+    bar.click();
+    assertThat(driver.findElement(By.id("result")).getText(),
+        equalTo("bar"));
+  }
+
+  @JavascriptEnabled
+  @Ignore(value = {IPHONE, SELENESE, ANDROID, HTMLUNIT})
+  @Test
+  public void testShouldEmitOnClickEventsWhenSelectingElements() {
+    driver.get(pages.javascriptPage);
+    // Intentionally not looking up the select tag. See selenium r7937 for details.
+    List<WebElement> allOptions = driver.findElements(By.xpath("//select[@id='selector2']//option"));
+
+    WebElement foo = allOptions.get(0);
+    WebElement bar = allOptions.get(1);
+
+    foo.click();
+    assertThat(driver.findElement(By.id("result")).getText(),
+        equalTo("foo"));
     bar.click();
     assertThat(driver.findElement(By.id("result")).getText(),
         equalTo("bar"));

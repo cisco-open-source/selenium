@@ -44,10 +44,11 @@ import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
-@Ignore(value = {IPHONE, OPERA, ANDROID, OPERA_MOBILE},
+@Ignore(value = {IPHONE, OPERA, ANDROID, OPERA_MOBILE, PHANTOMJS},
         reason = "Opera: not implemented yet")
 public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
 

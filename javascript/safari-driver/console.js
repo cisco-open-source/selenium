@@ -20,7 +20,7 @@
 goog.provide('safaridriver.console');
 
 goog.require('goog.debug.LogManager');
-goog.require('goog.debug.Logger.Level');
+goog.require('goog.debug.Logger');
 goog.require('goog.debug.TextFormatter');
 
 
@@ -51,7 +51,6 @@ safaridriver.console.init = function() {
 
   goog.debug.LogManager.getRoot().addHandler(function(logRecord) {
     var record = formatter.formatRecord(logRecord);
-
 
     switch (logRecord.getLevel()) {
       case goog.debug.Logger.Level.SHOUT:

@@ -41,6 +41,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
 public class FrameSwitchingTest extends JUnit4TestBase {
@@ -345,23 +346,6 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     assertThat(driver.findElement(By.id("greeting")).getText(), equalTo("Success!"));
   }
 
-  @NoDriverAfterTest
-  @Ignore({IPHONE})
-  @Test
-  public void testClosingTheFinalBrowserWindowShouldNotCauseAnExceptionToBeThrown() {
-    driver.get(pages.simpleTestPage);
-    try {
-      driver.close();
-    } catch (Exception e) {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      e.printStackTrace(pw);
-      pw.flush();
-      pw.close();
-      fail("This is not expected. " + sw);
-    }
-  }
-
   @Ignore(ANDROID)
   @Test
   public void testShouldBeAbleToFindElementsInIframesByXPath() {
@@ -393,7 +377,7 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     assertThat(driver.getCurrentUrl(), equalTo(url));
   }
 
-  @Ignore(value = {ANDROID, OPERA, OPERA_MOBILE})
+  @Ignore(value = {ANDROID, OPERA, OPERA_MOBILE, PHANTOMJS})
   @JavascriptEnabled
   @Test
   public void testShouldBeAbleToCarryOnWorkingIfTheFrameIsDeletedFromUnderUs() {

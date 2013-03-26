@@ -16,6 +16,7 @@ support/build
 iphone/lib/buildtime-src/cocoahttpserver/build/CocoaHTTPServerLibrary.build/Release-iphonesimulator/CocoaHTTPServer.build
 iphone/lib/buildtime-src/build/
 iphone/build/
+iphone/src/objc/atoms.h
 /build/
 android/client/bin/
 android/server/bin/
@@ -59,6 +60,12 @@ maven/*/src
 maven/*/target
 java/client/build/
 java/server/build/
+*.pyc
+dist/
+py/selenium/webdriver/firefox/amd64/
+py/selenium/webdriver/firefox/webdriver.xpi
+py/selenium/webdriver/firefox/x86/
+selenium.egg-info/
 
 *.user
 *.cache
@@ -67,4 +74,4 @@ obj/
 *.suo
 *.sdf
 Generated/
-
+ipch/

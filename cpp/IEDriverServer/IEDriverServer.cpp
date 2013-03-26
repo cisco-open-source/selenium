@@ -22,7 +22,7 @@
 
 // TODO(JimEvans): Change the prototypes of these functions in the
 // IEDriver project to match the prototype specified here.
-typedef void* (__cdecl *STARTSERVEREXPROC)(int, const std::string&, const std::string&, const std::string&);
+typedef void* (__cdecl *STARTSERVEREXPROC)(int, const std::string&, const std::string&, const std::string&, const std::string&);
 typedef void (__cdecl *STOPSERVERPROC)(void);
 
 #define ERR_DLL_EXTRACT_FAIL 1
@@ -149,8 +149,36 @@ std::string GetExecutableVersion() {
   return static_cast<char*>(value);
 }
 
+void ShowUsage(void) {
+  std::wcout << L"Launches the WebDriver server for the Internet Explorer driver" << std::endl
+             << std::endl
+             << L"IEDriverServer [/port=<port>] [/host=<host>] [/log-level=<level>]" << std::endl
+             << L"               [/log-file=<file>] [/extract-path=<path>] [/silent]" << std::endl
+             << std::endl
+             << L"  /port=<port>  Specifies the port on which the server will listen for" << std::endl
+             << L"                commands. Defaults to 5555 if not specified." << std::endl
+             << L"  /host=<host>  Specifies the address of the host adapter on which the server" << std::endl
+             << L"                will listen for commands." << std::endl
+             << L"  /log-level=<level>" << std::endl
+             << L"                Specifies the log level used by the server. Valid values are:" << std::endl
+             << L"                TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. Defaults to FATAL" << std::endl
+             << L"                if not specified." << std::endl
+             << L"  /log-file=<file>" << std::endl
+             << L"                Specifies the full path and file name of the log file used by" << std::endl
+             << L"                the server. Defaults logging to stdout if not specified. " << std::endl
+             << L"  /extract-path=<path>" << std::endl
+             << L"                Specifies the full path to the directory used to extract" << std::endl
+             << L"                supporting files used by the server. Defaults to the TEMP" << std::endl
+             << L"                directory if not specified." << std::endl
+             << L"  /silent       Suppresses diagnostic output when the server is started." << std::endl;
+}
+
 int _tmain(int argc, _TCHAR* argv[]) {
   CommandLineArguments args(argc, argv);
+  if (args.is_help_requested()) {
+    ShowUsage();
+    return 0;
+  }
   vector<TCHAR> temp_file_name_buffer(MAX_PATH);
   vector<TCHAR> temp_path_buffer(MAX_PATH);
 
@@ -200,10 +228,12 @@ int _tmain(int argc, _TCHAR* argv[]) {
   std::string log_file = args.GetValue(LOGFILE_COMMAND_LINE_ARG, "");
   bool silent = args.GetValue(SILENT_COMMAND_LINE_ARG,
       BOOLEAN_COMMAND_LINE_ARG_MISSING_VALUE).size() == 0;
+  std::string executable_version = GetExecutableVersion();
   void* server_value = start_server_ex_proc(port,
                                             host_address,
                                             log_level,
-                                            log_file);
+                                            log_file,
+                                            executable_version);
   if (server_value == NULL) {
     std::cout << L"Failed to start the server with: "
               << L"port = '" << port << "', "
@@ -216,7 +246,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
     std::cout << "Started InternetExplorerDriver server"
               << " (" << GetProcessArchitectureDescription() << ")"
               << std::endl;
-    std::cout << GetExecutableVersion()
+    std::cout << executable_version
               << std::endl;
     std::cout << "Listening on port " << port << std::endl;
     if (host_address.size() > 0) {

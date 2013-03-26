@@ -1,5 +1,6 @@
 /*
-Copyright 2007-2009 Selenium committers
+Copyright 2012 Software Freedom Conservancy
+Copyright 2007-2012 Selenium committers
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +17,6 @@ limitations under the License.
 
 // Generated source.
 package org.openqa.selenium.lift;
-
 
 public class Matchers {
 
@@ -46,4 +46,7 @@ public class Matchers {
     return org.openqa.selenium.lift.match.ValueMatcher.value(value);
   }
 
+  public static org.hamcrest.Matcher<org.openqa.selenium.WebElement> displayed() {
+    return org.openqa.selenium.lift.match.DisplayedMatcher.displayed();
+  }
 }

@@ -66,7 +66,7 @@ Json::Value Element::ConvertToJson() {
 int Element::IsDisplayed(bool* result) {
   LOG(TRACE) << "Entering Element::IsDisplayed";
 
-  int status_code = SUCCESS;
+  int status_code = WD_SUCCESS;
 
   // The atom is just the definition of an anonymous
   // function: "function() {...}"; Wrap it in another function so we can
@@ -83,7 +83,7 @@ int Element::IsDisplayed(bool* result) {
   script_wrapper.AddArgument(true);
   status_code = script_wrapper.Execute();
 
-  if (status_code == SUCCESS) {
+  if (status_code == WD_SUCCESS) {
     *result = script_wrapper.result().boolVal == VARIANT_TRUE;
   } else {
     LOG(WARN) << "Failed to determine is element displayed";
@@ -120,7 +120,7 @@ bool Element::IsEnabled() {
   script_wrapper.AddArgument(this->element_);
   int status_code = script_wrapper.Execute();
 
-  if (status_code == SUCCESS) {
+  if (status_code == WD_SUCCESS) {
     result = script_wrapper.result().boolVal == VARIANT_TRUE;
   } else {
     LOG(WARN) << "Failed to determine is element enabled";
@@ -135,7 +135,7 @@ int Element::Click(const ELEMENT_SCROLL_BEHAVIOR scroll_behavior) {
   LocationInfo location = {};
   int status_code = this->GetLocationOnceScrolledIntoView(scroll_behavior, &location);
 
-  if (status_code == SUCCESS) {
+  if (status_code == WD_SUCCESS) {
     LocationInfo click_location = GetClickPoint(location);
 
     // Create a mouse move, mouse down, mouse up OS event
@@ -145,7 +145,7 @@ int Element::Click(const ELEMENT_SCROLL_BEHAVIOR scroll_behavior) {
                                  location.y,
                                  click_location.x,
                                  click_location.y);
-    if (result != SUCCESS) {
+    if (result != WD_SUCCESS) {
       LOG(WARN) << "Unable to move mouse, mouseMoveTo returned non-zero value";
       return static_cast<int>(result);
     }
@@ -154,7 +154,7 @@ int Element::Click(const ELEMENT_SCROLL_BEHAVIOR scroll_behavior) {
                      click_location.x,
                      click_location.y,
                      MOUSEBUTTON_LEFT);
-    if (result != SUCCESS) {
+    if (result != WD_SUCCESS) {
       LOG(WARN) << "Unable to click at by mouse, clickAt returned non-zero value";
       return static_cast<int>(result);
     }
@@ -173,7 +173,7 @@ int Element::GetAttributeValue(const std::string& attribute_name,
   LOG(TRACE) << "Entering Element::GetAttributeValue";
 
   std::wstring wide_attribute_name = CA2W(attribute_name.c_str(), CP_UTF8);
-  int status_code = SUCCESS;
+  int status_code = WD_SUCCESS;
 
   // The atom is just the definition of an anonymous
   // function: "function() {...}"; Wrap it in another function so we can
@@ -190,20 +190,20 @@ int Element::GetAttributeValue(const std::string& attribute_name,
   status_code = script_wrapper.Execute();
   
   CComVariant value_variant;
-  if (status_code == SUCCESS) {
+  if (status_code == WD_SUCCESS) {
     *value_is_null = !script_wrapper.ConvertResultToString(attribute_value);
   } else {
     LOG(WARN) << "Failed to determine element attribute";
   }
 
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int Element::GetLocationOnceScrolledIntoView(const ELEMENT_SCROLL_BEHAVIOR scroll,
                                              LocationInfo* location) {
   LOG(TRACE) << "Entering Element::GetLocationOnceScrolledIntoView";
 
-  int status_code = SUCCESS;
+  int status_code = WD_SUCCESS;
   CComPtr<IHTMLDOMNode2> node;
   HRESULT hr = this->element_->QueryInterface(&node);
 
@@ -214,7 +214,7 @@ int Element::GetLocationOnceScrolledIntoView(const ELEMENT_SCROLL_BEHAVIOR scrol
 
   bool displayed;
   int result = this->IsDisplayed(&displayed);
-  if (result != SUCCESS) {
+  if (result != WD_SUCCESS) {
     LOG(WARN) << "Unable to determine element is displayed";
     return result;
   } 
@@ -228,9 +228,10 @@ int Element::GetLocationOnceScrolledIntoView(const ELEMENT_SCROLL_BEHAVIOR scrol
   std::vector<LocationInfo> frame_locations;
   result = this->GetLocation(&element_location, &frame_locations);
   LocationInfo click_location = this->GetClickPoint(element_location);
+  bool document_contains_frames = frame_locations.size() != 0;
 
-  if (result != SUCCESS ||
-      !this->IsLocationInViewPort(click_location) ||
+  if (result != WD_SUCCESS ||
+      !this->IsLocationInViewPort(click_location, document_contains_frames) ||
       this->IsHiddenByOverflow() ||
       !this->IsLocationVisibleInFrames(click_location, frame_locations)) {
     // Scroll the element into view
@@ -247,13 +248,13 @@ int Element::GetLocationOnceScrolledIntoView(const ELEMENT_SCROLL_BEHAVIOR scrol
 
     std::vector<LocationInfo> scrolled_frame_locations;
     result = this->GetLocation(&element_location, &scrolled_frame_locations);
-    if (result != SUCCESS) {
+    if (result != WD_SUCCESS) {
       LOG(WARN) << "Unable to get location of scrolled to element";
       return result;
     }
 
     click_location = this->GetClickPoint(element_location);
-    if (!this->IsLocationInViewPort(click_location)) {
+    if (!this->IsLocationInViewPort(click_location, document_contains_frames)) {
       LOG(WARN) << "Scrolled element is not in view";
       status_code = EELEMENTCLICKPOINTNOTSCROLLED;
     }
@@ -318,7 +319,7 @@ bool Element::IsHiddenByOverflow() {
   Script script_wrapper(doc, script_source, 1);
   script_wrapper.AddArgument(this->element_);
   int status_code = script_wrapper.Execute();
-  if (status_code == SUCCESS) {
+  if (status_code == WD_SUCCESS) {
     isOverflow = script_wrapper.result().boolVal == VARIANT_TRUE;
   } else {
     LOG(WARN) << "Unable to determine is element hidden by overflow";
@@ -357,7 +358,7 @@ bool Element::IsSelected() {
   script_wrapper.AddArgument(this->element_);
   int status_code = script_wrapper.Execute();
 
-  if (status_code == SUCCESS && script_wrapper.ResultIsBoolean()) {
+  if (status_code == WD_SUCCESS && script_wrapper.ResultIsBoolean()) {
     selected = script_wrapper.result().boolVal == VARIANT_TRUE;
   } else {
     LOG(WARN) << "Unable to determine is element selected";
@@ -442,7 +443,7 @@ int Element::GetLocation(LocationInfo* location, std::vector<LocationInfo>* fram
           Element childElement(child, this->containing_window_handle_);
           std::vector<LocationInfo> child_frame_locations;
           int result = childElement.GetLocation(location, &child_frame_locations);
-          if (result == SUCCESS) {
+          if (result == WD_SUCCESS) {
             return result;
           }
         }
@@ -489,7 +490,7 @@ int Element::GetLocation(LocationInfo* location, std::vector<LocationInfo>* fram
   location->width = w;
   location->height = h;
 
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 bool Element::IsInline() {
@@ -534,7 +535,7 @@ bool Element::GetFrameDetails(LocationInfo* location, std::vector<LocationInfo>*
 
   CComPtr<IHTMLDocument2> owner_doc;
   int status_code = this->GetContainingDocument(true, &owner_doc);
-  if (status_code != SUCCESS) {
+  if (status_code != WD_SUCCESS) {
     LOG(WARN) << "Unable to get containing document";
     return false;
   }
@@ -555,8 +556,9 @@ bool Element::GetFrameDetails(LocationInfo* location, std::vector<LocationInfo>*
   CComPtr<IHTMLWindow2> parent_window;
   hr = owner_doc_window->get_parent(&parent_window);
   if (parent_window && !owner_doc_window.IsEqualObject(parent_window)) {
+    LOG(DEBUG) << "Element is in a frame.";
     CComPtr<IHTMLDocument2> parent_doc;
-    status_code = this->GetParentDocument(parent_window, &parent_doc);
+    status_code = this->GetDocumentFromWindow(parent_window, &parent_doc);
 
     CComPtr<IHTMLFramesCollection2> frames;
     hr = parent_doc->get_frames(&frames);
@@ -578,7 +580,7 @@ bool Element::GetFrameDetails(LocationInfo* location, std::vector<LocationInfo>*
       }
 
       CComPtr<IHTMLDocument2> frame_doc;
-      hr = frame_window->get_document(&frame_doc);
+      status_code = this->GetDocumentFromWindow(frame_window, &frame_doc);
 
       if (frame_doc.IsEqualObject(owner_doc)) {
         // The document in this frame *is* this element's owner
@@ -586,27 +588,97 @@ bool Element::GetFrameDetails(LocationInfo* location, std::vector<LocationInfo>*
         // containing window (which is itself an HTML element, either
         // a frame or an iframe). Then get the x and y coordinates of
         // that frame element.
+        // N.B. We must use JavaScript here, as directly using
+        // IHTMLWindow4.get_frameElement() returns E_NOINTERFACE under
+        // some circumstances.
+        LOG(DEBUG) << "Located host frame. Attempting to get hosting element";
         std::wstring script_source = L"(function(){ return function() { return arguments[0].frameElement };})();";
         Script script_wrapper(frame_doc, script_source, 1);
         CComVariant window_variant(frame_window);
         script_wrapper.AddArgument(window_variant);
-        script_wrapper.Execute();
-        CComQIPtr<IHTMLElement> frame_element(script_wrapper.result().pdispVal);
-
-        // Wrap the element so we can find its location. Note that
-        // GetLocation() may recursively call into this method.
-        Element element_wrapper(frame_element, this->containing_window_handle_);
-        LocationInfo frame_location = {};
-        bool frame_requires_frame_scroll = false;
-        status_code = element_wrapper.GetLocation(&frame_location,
-                                                  frame_locations);
-        if (status_code == SUCCESS) {
-          location->x = frame_location.x;
-          location->y = frame_location.y;
-          location->width = frame_location.width;
-          location->height = frame_location.height;
+        status_code = script_wrapper.Execute();
+        CComPtr<IHTMLFrameBase> frame_base;
+        if (status_code == WD_SUCCESS) {
+          hr = script_wrapper.result().pdispVal->QueryInterface<IHTMLFrameBase>(&frame_base);
+          if (FAILED(hr)) {
+            LOG(WARN) << "Found the frame element, but could not QueryInterface to IHTMLFrameBase.";
+          }
+        } else {
+          // Can't get the frameElement property, likely because the frames are from different
+          // domains. So start at the parent document, and use getElementsByTagName to retrieve
+          // all of the iframe elements (if there are no iframe elements, get the frame elements)
+          // **** BIG HUGE ASSUMPTION!!! ****
+          // The index of the frame from the document.frames collection will correspond to the 
+          // index into the collection of iframe/frame elements returned by getElementsByTagName.
+          LOG(WARN) << "Attempting to get frameElement via JavaScript failed. "
+                    << "This usually means the frame is in a different domain than the parent frame. "
+                    << "Browser security against cross-site scripting attacks will not allow this. "
+                    << "Attempting alternative method.";
+          long collection_count = 0;
+          CComPtr<IDispatch> element_dispatch;
+          CComQIPtr<IHTMLDocument3> doc(parent_doc);
+          if (doc) {
+            LOG(DEBUG) << "Looking for <iframe> elements in parent document.";
+            CComPtr<IHTMLElementCollection> iframe_collection;
+            hr = doc->getElementsByTagName(L"iframe", &iframe_collection);
+            hr = iframe_collection->get_length(&collection_count);
+            if (collection_count != 0) {
+              if (collection_count > index.lVal) {
+                LOG(DEBUG) << "Found <iframe> elements in parent document, retrieving element" << index.lVal << ".";
+                hr = iframe_collection->item(index, index, &element_dispatch);
+                hr = element_dispatch->QueryInterface<IHTMLFrameBase>(&frame_base);
+              }
+            } else {
+              LOG(DEBUG) << "No <iframe> elements, looking for <frame> elements in parent document.";
+              CComPtr<IHTMLElementCollection> frame_collection;
+              hr = doc->getElementsByTagName(L"frame", &frame_collection);
+              hr = frame_collection->get_length(&collection_count);
+              if (collection_count > index.lVal) {
+                LOG(DEBUG) << "Found <frame> elements in parent document, retrieving element" << index.lVal << ".";
+                hr = frame_collection->item(index, index, &element_dispatch);
+                hr = element_dispatch->QueryInterface<IHTMLFrameBase>(&frame_base);
+              }
+            }
+          } else {
+            LOG(WARN) << "QueryInterface of parent document to IHTMLDocument3 failed.";
+          }
         }
-        return true;
+
+        if (frame_base) {
+          LOG(DEBUG) << "Successfully found frame hosting element";
+          LocationInfo frame_doc_info;
+          bool doc_dimensions_success = DocumentHost::GetDocumentDimensions(
+              frame_doc,
+              &frame_doc_info);
+
+          // Wrap the element so we can find its location. Note that
+          // GetLocation() may recursively call into this method.
+          CComQIPtr<IHTMLElement> frame_element(frame_base);
+          Element element_wrapper(frame_element, this->containing_window_handle_);
+          LocationInfo frame_location = {};
+          status_code = element_wrapper.GetLocation(&frame_location,
+                                                    frame_locations);
+          if (status_code == WD_SUCCESS) {
+            // Take into account the presence of scrollbars in the frame.
+            long frame_element_width = frame_location.width;
+            long frame_element_height = frame_location.height;
+            if (doc_dimensions_success) {
+              if (frame_doc_info.height > frame_element_height) {
+                int horizontal_scrollbar_height = ::GetSystemMetrics(SM_CYHSCROLL);
+                frame_element_height -= horizontal_scrollbar_height;
+              }
+              if (frame_doc_info.width > frame_element_width) {
+                int vertical_scrollbar_width = ::GetSystemMetrics(SM_CXVSCROLL);
+                frame_element_width -= vertical_scrollbar_width;
+              }
+            }
+            location->x = frame_location.x;
+            location->y = frame_location.y;
+            location->width = frame_element_width;
+            location->height = frame_element_height;
+          }
+          return true;
+        }
       }
     }
   }
@@ -625,7 +697,7 @@ LocationInfo Element::GetClickPoint(const LocationInfo location) {
   return click_location;
 }
 
-bool Element::IsLocationInViewPort(const LocationInfo location) {
+bool Element::IsLocationInViewPort(const LocationInfo location, const bool document_contains_frames) {
   LOG(TRACE) << "Entering Element::IsLocationInViewPort";
 
   WINDOWINFO window_info;
@@ -637,9 +709,24 @@ bool Element::IsLocationInViewPort(const LocationInfo location) {
   long window_width = window_info.rcClient.right - window_info.rcClient.left;
   long window_height = window_info.rcClient.bottom - window_info.rcClient.top;
 
-  long window_x_border = window_info.cxWindowBorders;
-  long window_y_border = window_info.cyWindowBorders;
-  LOG(DEBUG) << "x border: " << window_x_border << ", y border: " << window_y_border;
+  if (!document_contains_frames) {
+    // ASSUMPTION! IE **always** draws a vertical scroll bar, even if it's not
+    // required. This means the viewport width is always smaller than the window
+    // width by at least the width of the vertical scroll bar.
+    int vertical_scrollbar_width = ::GetSystemMetrics(SM_CXVSCROLL);
+    window_width -= vertical_scrollbar_width;
+
+    // Horizontal scrollbar will only appear if the document is wider than the
+    // viewport.
+    CComPtr<IHTMLDocument2> doc;
+    this->GetContainingDocument(false, &doc);
+    LocationInfo document_info;
+    DocumentHost::GetDocumentDimensions(doc, &document_info);
+    if (document_info.width > window_width) {
+      int horizontal_scrollbar_height = ::GetSystemMetrics(SM_CYHSCROLL);
+      window_height -= horizontal_scrollbar_height;
+    }
+  }
 
   // Hurrah! Now we know what the visible area of the viewport is
   // Is the element visible in the X axis?
@@ -701,11 +788,11 @@ int Element::GetContainingDocument(const bool use_dom_node,
     return ENOSUCHDOCUMENT;
   }
 
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
-int Element::GetParentDocument(IHTMLWindow2* parent_window,
-                               IHTMLDocument2** parent_doc) {
+int Element::GetDocumentFromWindow(IHTMLWindow2* parent_window,
+                                   IHTMLDocument2** parent_doc) {
   LOG(TRACE) << "Entering Element::GetParentDocument";
 
   HRESULT hr = parent_window->get_document(parent_doc);
@@ -741,7 +828,7 @@ int Element::GetParentDocument(IHTMLWindow2* parent_window,
       return ENOSUCHDOCUMENT;
     }
   }
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int Element::ExecuteAsyncAtom(const std::wstring& sync_event_name, ASYNCEXECPROC execute_proc, std::string* error_msg) {
@@ -812,7 +899,7 @@ int Element::ExecuteAsyncAtom(const std::wstring& sync_event_name, ASYNCEXECPROC
     // verify the success or failure of the called function, so we have to
     // assume we just succeeded.
     LOG(DEBUG) << "Marshaling element to stream to send to thread";
-    int status_code = SUCCESS;
+    int status_code = WD_SUCCESS;
     LPSTREAM element_stream;
     hr = ::CoMarshalInterThreadInterfaceInStream(IID_IDispatch, this->element_, &element_stream);
     if (FAILED(hr)) {
@@ -868,6 +955,116 @@ bool Element::IsAttachedToDom() {
     }
   }
   return false;
+}
+
+bool Element::HasOnlySingleTextNodeChild() {
+  CComPtr<IHTMLDOMNode> element_node;
+  HRESULT hr = this->element_.QueryInterface<IHTMLDOMNode>(&element_node);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "QueryInterface for IHTMLDOMNode on element failed.";
+    return false;
+  }
+
+  CComPtr<IDispatch> child_nodes_dispatch;
+  hr = element_node->get_childNodes(&child_nodes_dispatch);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to get_childNodes on element failed.";
+    return false;
+  }
+
+  CComPtr<IHTMLDOMChildrenCollection> child_nodes;
+  hr = child_nodes_dispatch.QueryInterface<IHTMLDOMChildrenCollection>(&child_nodes);
+
+  long length = 0;
+  hr = child_nodes->get_length(&length);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to get_length on child nodes collection failed.";
+    return false;
+  }
+
+  if (length > 1) {
+    CComPtr<IDispatch> child_dispatch;
+    hr = child_nodes->item(0, &child_dispatch);
+    if (FAILED(hr)) {
+      LOGHR(WARN, hr) << "Call to item(0) on child nodes collection failed.";
+      return false;
+    }
+
+    CComPtr<IHTMLDOMNode> child_node;
+    hr = child_dispatch.QueryInterface<IHTMLDOMNode>(&child_node);
+    if (FAILED(hr)) {
+      LOGHR(WARN, hr) << "QueryInterface for IHTMLDOMNode on child node failed.";
+      return false;
+    }
+
+    long node_type = 0;
+    hr = child_node->get_nodeType(&node_type);
+    if (FAILED(hr)) {
+      LOGHR(WARN, hr) << "Call to get_nodeType on child node failed.";
+      return false;
+    }
+
+    if (node_type == 3) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Element::GetTextBoundaries(LocationInfo* text_info) {
+  CComPtr<IHTMLDocument2> doc;
+  this->GetContainingDocument(false, &doc);
+  CComPtr<IHTMLElement> body_element;
+  HRESULT hr = doc->get_body(&body_element);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to get_body on document failed.";
+    return false;
+  }
+
+  CComPtr<IHTMLBodyElement> body;
+  hr = body_element.QueryInterface<IHTMLBodyElement>(&body);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "QueryInterface for IHTMLBodyElement on body element failed.";
+    return false;
+  }
+
+  CComPtr<IHTMLTxtRange> range;
+  hr = body->createTextRange(&range);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to createTextRange on body failed.";
+    return false;
+  }
+
+  hr = range->moveToElementText(this->element_);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to moveToElementText on range failed.";
+    return false;
+  }
+
+  CComPtr<IHTMLTextRangeMetrics> range_metrics;
+  hr = range.QueryInterface<IHTMLTextRangeMetrics>(&range_metrics);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "QueryInterface for IHTMLTextRangeMetrics on range failed.";
+    return false;
+  }
+
+  long height = 0;
+  hr = range_metrics->get_boundingHeight(&height);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to get_boundingHeight on range metrics failed.";
+    return false;
+  }
+
+  long width = 0;
+  hr = range_metrics->get_boundingWidth(&width);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Call to get_boundingWidth on range metrics failed.";
+    return false;
+  }
+
+  text_info->height = height;
+  text_info->width = width;
+  return true;
 }
 
 } // namespace webdriver

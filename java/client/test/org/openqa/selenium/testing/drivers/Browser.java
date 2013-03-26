@@ -39,6 +39,7 @@ public enum Browser {
   none, // For those cases where you don't actually want a browser
   opera,
   opera_mobile,
+  phantomjs,
   safari,
   qtwebkit;
 

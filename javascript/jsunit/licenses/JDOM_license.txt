@@ -1,6 +1,6 @@
 /*-- 
 
- $Id: JDOM_license.txt 2140 2006-04-25 07:41:01Z ddeboer $
+ $Id$
 
  Copyright (C) 2000-2003 Jason Hunter & Brett McLaughlin.
  All rights reserved.

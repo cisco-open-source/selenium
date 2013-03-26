@@ -107,7 +107,7 @@ int DocumentHost::SetFocusedFrameByElement(IHTMLElement* frame_element) {
   HRESULT hr = S_OK;
   if (!frame_element) {
     this->focused_frame_window_ = NULL;
-    return SUCCESS;
+    return WD_SUCCESS;
   }
 
   CComQIPtr<IHTMLFrameBase2> frame_base(frame_element);
@@ -124,7 +124,7 @@ int DocumentHost::SetFocusedFrameByElement(IHTMLElement* frame_element) {
   }
 
   this->focused_frame_window_ = interim_result;
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int DocumentHost::SetFocusedFrameByName(const std::string& frame_name) {
@@ -168,7 +168,7 @@ int DocumentHost::SetFocusedFrameByName(const std::string& frame_name) {
   }
 
   this->focused_frame_window_ = interim_result;
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int DocumentHost::SetFocusedFrameByIndex(const int frame_index) {
@@ -212,7 +212,7 @@ int DocumentHost::SetFocusedFrameByIndex(const int frame_index) {
   }
 
   this->focused_frame_window_ = interim_result;
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 void DocumentHost::GetCookies(std::map<std::string, std::string>* cookies) {
@@ -273,7 +273,7 @@ int DocumentHost::AddCookie(const std::string& cookie) {
     return EUNHANDLEDERROR;
   }
 
-  return SUCCESS;
+  return WD_SUCCESS;
 }
 
 int DocumentHost::DeleteCookie(const std::string& cookie_name) {
@@ -403,6 +403,84 @@ HWND DocumentHost::FindContentWindowHandle(HWND top_level_window_handle) {
                      &BrowserFactory::FindChildWindowForProcess,
                      reinterpret_cast<LPARAM>(&process_window_info));
   return process_window_info.hwndBrowser;
+}
+
+int DocumentHost::GetDocumentMode(IHTMLDocument2* doc) {
+  LOG(TRACE) << "Entering DocumentHost::GetDocumentMode";
+  CComQIPtr<IHTMLDocument6> mode_doc(doc);
+  if (!mode_doc) {
+    LOG(DEBUG) << "QueryInterface for IHTMLDocument6 fails, so document mode must be 7 or less.";
+    return 5;
+  }
+  CComVariant mode;
+  HRESULT hr = mode_doc->get_documentMode(&mode);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "get_documentMode failed.";
+    return 5;
+  }
+  return mode.lVal;
+}
+
+bool DocumentHost::IsStandardsMode(IHTMLDocument2* doc) {
+  LOG(TRACE) << "Entering DocumentHost::IsStandardsMode";
+  CComQIPtr<IHTMLDocument5> compatibility_mode_doc(doc);
+  if (!compatibility_mode_doc) {
+    LOG(WARN) << L"Unable to cast document to IHTMLDocument5. IE6 or greater is required.";
+    return false;
+  }
+
+  CComBSTR compatibility_mode;
+  HRESULT hr = compatibility_mode_doc->get_compatMode(&compatibility_mode);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << L"Failed calling get_compatMode.";
+    return false;
+  }
+  // Compatibility mode should be "BackCompat" for quirks mode, and
+  // "CSS1Compat" for standards mode. Check for "BackCompat" because
+  // that's less likely to change.
+  return compatibility_mode != L"BackCompat";
+}
+
+bool DocumentHost::GetDocumentDimensions(IHTMLDocument2* doc, LocationInfo* info) {
+  LOG(TRACE) << "Entering DocumentHost::GetDocumentDimensions";
+  CComVariant document_height;
+  CComVariant document_width;
+
+  // In non-standards-compliant mode, the BODY element represents the canvas.
+  // In standards-compliant mode, the HTML element represents the canvas.
+  CComPtr<IHTMLElement> canvas_element;
+  if (!IsStandardsMode(doc)) {
+    doc->get_body(&canvas_element);
+    if (!canvas_element) {
+      LOG(WARN) << "Unable to get canvas element from document in compatibility mode";
+      return false;
+    }
+  } else {
+    CComQIPtr<IHTMLDocument3> document_element_doc(doc);
+    if (!document_element_doc) {
+      LOG(WARN) << L"Unable to get IHTMLDocument3 handle from document.";
+      return false;
+    }
+
+    // The root node should be the HTML element.
+    document_element_doc->get_documentElement(&canvas_element);
+    if (!canvas_element) {
+      LOG(WARN) << L"Could not retrieve document element.";
+      return false;
+    }
+
+    CComQIPtr<IHTMLHtmlElement> html_element(canvas_element);
+    if (!html_element) {
+      LOG(WARN) << L"Document element is not the HTML element.";
+      return false;
+    }
+  }
+
+  canvas_element->getAttribute(CComBSTR("scrollHeight"), 0, &document_height);
+  canvas_element->getAttribute(CComBSTR("scrollWidth"), 0, &document_width);
+  info->height = document_height.lVal;
+  info->width = document_width.lVal;
+  return true;
 }
 
 } // namespace webdriver

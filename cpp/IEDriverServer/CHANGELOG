@@ -9,6 +9,76 @@ available via the project downloads page. Changes in "revision" field indicate
 private releases checked into the prebuilts directory of the source tree, but
 not made generally available on the downloads page.
 
+v2.29.0.0
+=========
+ * Updates to JavaScript automation atoms.
+ * Dampened excessive noise in IE driver logging.
+ * Modified to initialize value_ member of Response to Json::Value::null upon
+   creation.
+ * Updated IEDriverServer.exe to correctly return the current version in the 
+   JSON response for the /status end point of the JSON wire protocol.
+ * Added usage info to IEDriverServer.exe when using /? /h or /help.
+ * Removed dead code from ScreenshotCommandHandler.
+
+v2.28.0.4
+=========
+ * Initialized value_ member of Response to Json::Value::null upon creation.
+ * Suppressed warnings written to console during browser startup and shutdown.
+ * Updated to correctly return the current version in the JSON response for the
+   /status end point of the JSON wire protocol.
+ * Added usage info to IEDriverServer.exe when using /? /h or /help. Also
+   removed dead code from ScreenshotCommandHandler.
+
+v2.28.0.3
+=========
+ * Introduced the "requireWindowFocus" capability into the IE driver. When used
+   in conjunction with the "nativeEvents" capability, the driver will attempt 
+   to bring the current IE window to the foreground before executing a mouse
+   or keyboard event. Also, when the requireWindowFocus capability is set to
+   true, advanced user interactions will now use the Windows SendInput() API to
+   execute the interactions. To enable this behavior, set the value of the
+   requiresWindowFocus capability to "true" when creating an instance of the IE
+   driver. The default for this new capability is "false". This functionality
+   is currently considered extremely experimental; use at your own risk.
+
+v2.28.0.2
+=========
+ * Changed view port calculations to allow for always-present vertical scroll
+   bar, and to test for horizontal scroll bar and adjust as required by page
+   content. Fixes issue #3602.
+ * Changed IE GetLocationOnceScrolledIntoView behavior to take the 2-pixel
+   border of the <html> element used by IE7 and below (and document modes that
+   emulate that).
+ * Extracted map of managed elements in IE driver to ElementRepository class.
+   First step in a potentially larger refactor.
+
+v2.28.0.1
+=========
+ * Attempted to change coordinate calculations due to frame offsets to handle
+   the cross-domain frame case. This change rests on the assumption that the
+   order of frames returned by the JavaScript document.frames collection is
+   the same as that returned by document.getElementByTagName("frame") or
+   document.getElementByTagName("iframe"). Fixes issue #4948.
+
+v2.28.0.0
+=========
+ * Changed the shared WebDriver C++ server component to use strings in
+   serialized commands instead of integers. Testing does not seem to indicate
+   this will introduce a performance issue, and it makes logs more intelligible
+   when logging the raw JSON of a received command. As far as anyone can
+   determine, the only consumer of this component is the IEDriverServer.exe, so
+   this should be a completely internal change.
+
+v2.27.0.0
+=========
+ * Release to coincide with full Selenium release.
+
+v2.26.3.0
+=========
+ * Updates to JavaScript automation atoms.
+ * Define document on goog.global for fragments, as the closure library now
+   depends on it. Fixes issue #4802.
+
 v2.26.2.6
 =========
  * Fixed SendKeysCommandHandler to check that the focus is in the HTML display
@@ -57,7 +127,8 @@ v2.26.2.0
 =========
  * Fixed synchronization issues. These issues were always present, but never
    manifested until the IE driver was used with IE 10.
- * Reinstating functionality to run JavaScript on a separate thread on Windows 8.
+ * Reinstating functionality to run JavaScript on a separate thread on Windows
+   8.
 
 v2.26.1.2
 =========

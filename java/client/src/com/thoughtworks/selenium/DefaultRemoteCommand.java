@@ -24,7 +24,7 @@ import org.openqa.selenium.net.Urls;
  * 
  * @see com.thoughtworks.selenium.RemoteCommand
  * @author Paul Hammant
- * @version $Revision: 15204 $
+ * @version $Revision$
  */
 public class DefaultRemoteCommand implements RemoteCommand {
   // as we have beginning and ending pipes, we will have 1 more entry than we need

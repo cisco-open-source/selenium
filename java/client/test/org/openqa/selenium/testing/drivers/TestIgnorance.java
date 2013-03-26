@@ -44,6 +44,7 @@ import static org.openqa.selenium.testing.drivers.Browser.ie;
 import static org.openqa.selenium.testing.drivers.Browser.ipad;
 import static org.openqa.selenium.testing.drivers.Browser.iphone;
 import static org.openqa.selenium.testing.drivers.Browser.opera;
+import static org.openqa.selenium.testing.drivers.Browser.phantomjs;
 
 /**
  * Class that decides whether a test class or method should be ignored.
@@ -196,6 +197,10 @@ public class TestIgnorance {
       case opera_mobile:
         comparator.addDriver(OPERA_MOBILE);
         comparator.addDriver(REMOTE);
+        break;
+
+      case phantomjs:
+        comparator.addDriver(PHANTOMJS);
         break;
 
       case safari:

@@ -216,14 +216,14 @@ module Javascript
     end
 
     def calc_deps(src_files, js_files)
-      all_js = js_files.collect {|f| File.expand_path(f)}
-      all_js.uniq!
+      all_js = js_files
       all_js += Dir['third_party/closure/goog/**/*.js']
+      all_js = all_js.collect {|f| File.expand_path(f)}
       all_deps = build_deps_from_files(all_js)
 
       search_hash = build_deps_hash(all_deps)
 
-      result_list = ["third_party/closure/goog/base.js"]
+      result_list = [File.expand_path("third_party/closure/goog/base.js")]
       seen_list = []
       src_files.each do |input_file|
         seen_list.push(input_file)
@@ -537,13 +537,14 @@ module Javascript
         # compiled fragment never pollutes the global scope by using its
         # own scope on each invocation. We must import window.navigator into
         # this unique scope since Closure's goog.userAgent package assumes
-        # the navigator is defined from goog.global. Normally, this would be
-        # window, but we are explicitly defining the fragment so that
+        # navigator and document are defined on goog.global. Normally, this
+        # would be window, but we are explicitly defining the fragment so that
         # goog.global is _not_ window.
         #     See http://code.google.com/p/selenium/issues/detail?id=1333
         wrapper = "function(){%output%; return this._.apply(null,arguments);}"
         wrapper = "function(){return #{wrapper}.apply({" +
-                  "navigator:typeof window!='undefined'?window.navigator:null" +
+                  "navigator:typeof window!='undefined'?window.navigator:null," +
+                  "document:typeof window!='undefined'?window.document:null" +
                   "}, arguments);}"
 
         cmd = "" <<

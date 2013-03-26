@@ -27,7 +27,9 @@
 #include "IECommandHandler.h"
 #include "Element.h"
 #include "ElementFinder.h"
+#include "ElementRepository.h"
 #include "HtmlDialog.h"
+#include "InputManager.h"
 #include "messages.h"
 #include "response.h"
 
@@ -145,16 +147,6 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
     this->page_load_timeout_ = timeout;
   }
 
-  long last_known_mouse_x(void) const { return this->last_known_mouse_x_;  }
-  void set_last_known_mouse_x(const long x_coordinate) {
-    this->last_known_mouse_x_ = x_coordinate; 
-  }
-
-  long last_known_mouse_y(void) const { return this->last_known_mouse_y_; }
-  void set_last_known_mouse_y(const long y_coordinate) {
-    this->last_known_mouse_y_ = y_coordinate;
-  }
-
   bool is_valid(void) const { return this->is_valid_; }
   void set_is_valid(const bool session_is_valid) {
     this->is_valid_ = session_is_valid; 
@@ -179,13 +171,6 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
     this->ignore_zoom_setting_ = ignore_zoom;
   }
 
-  bool enable_native_events(void) const {
-    return this->enable_native_events_;
-  }
-  void set_enable_native_events(const bool enable_native_events) {
-    this->enable_native_events_ = enable_native_events;
-  }
-
   bool enable_element_cache_cleanup(void) const {
     return this->enable_element_cache_cleanup_;
   }
@@ -193,6 +178,9 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
     this->enable_element_cache_cleanup_ = enable_element_cache_cleanup;
   }
 
+  bool enable_persistent_hover(void) const {
+    return this->enable_persistent_hover_;
+  }
   void set_enable_persistent_hover(const bool enable_persistent_hover) {
     this->enable_persistent_hover_ = enable_persistent_hover;
   }
@@ -212,28 +200,17 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   }
 
   ElementFinder element_finder(void) const { return this->element_finder_; }
+  InputManager* input_manager(void) const { return this->input_manager_; }
 
   int browser_version(void) const { return this->factory_.browser_version(); }
   size_t managed_window_count(void) const {
     return this->managed_browsers_.size();
   }
 
-  ELEMENT_SCROLL_BEHAVIOR scroll_behavior(void) const { return this->scroll_behavior_; }
-  void set_scroll_behavior(const ELEMENT_SCROLL_BEHAVIOR scroll_behavior) {
-    this->scroll_behavior_ = scroll_behavior;
-  }
-
-  CComVariant keyboard_state(void) const { return this->keyboard_state_; }
-  void set_keyboard_state(VARIANT state) { this->keyboard_state_ = state; }
-
-  CComVariant mouse_state(void) const { return this->mouse_state_; }
-  void set_mouse_state(VARIANT state) { this->mouse_state_ = state; }
-
  private:
-  typedef std::tr1::unordered_map<std::string, ElementHandle> ElementMap;
   typedef std::tr1::unordered_map<std::string, BrowserHandle> BrowserMap;
   typedef std::map<std::string, std::wstring> ElementFindMethodMap;
-  typedef std::map<int, CommandHandlerHandle> CommandHandlerMap;
+  typedef std::map<std::string, CommandHandlerHandle> CommandHandlerMap;
 
   void AddManagedBrowser(BrowserHandle browser_wrapper);
 
@@ -243,7 +220,7 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   void PopulateElementFinderMethods(void);
 
   BrowserMap managed_browsers_;
-  ElementMap managed_elements_;
+  ElementRepository managed_elements_;
   ElementFindMethodMap element_find_methods_;
 
   BrowserFactory factory_;
@@ -275,13 +252,7 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   bool is_valid_;
   bool is_quitting_;
 
-  long last_known_mouse_x_;
-  long last_known_mouse_y_;
-
-  ELEMENT_SCROLL_BEHAVIOR scroll_behavior_;
-
-  CComVariant keyboard_state_;
-  CComVariant mouse_state_;
+  InputManager* input_manager_;
 };
 
 } // namespace webdriver

@@ -202,12 +202,14 @@ public class WebDriverCommandProcessor implements CommandProcessor, WrapsDriver 
     seleneseMethods.put("doubleClick", new DoubleClick(alertOverride, elementFinder));
     seleneseMethods.put("dragdrop", new DragAndDrop(elementFinder));
     seleneseMethods.put("dragAndDrop", new DragAndDrop(elementFinder));
+    seleneseMethods.put("dragAndDropToObject", new DragAndDropToObject(elementFinder));
     seleneseMethods.put("fireEvent", new FireEvent(elementFinder, javascriptLibrary));
     seleneseMethods.put("focus", new FireNamedEvent(elementFinder, javascriptLibrary, "focus"));
     seleneseMethods.put("getAlert", new GetAlert(alertOverride));
     seleneseMethods.put("getAllButtons", new GetAllButtons());
     seleneseMethods.put("getAllFields", new GetAllFields());
     seleneseMethods.put("getAllLinks", new GetAllLinks());
+    seleneseMethods.put("getAllWindowNames", new GetAllWindowNames());
     seleneseMethods.put("getAllWindowTitles", new GetAllWindowTitles());
     seleneseMethods.put("getAttribute", new GetAttribute(javascriptLibrary, elementFinder));
     seleneseMethods.put("getAttributeFromAllWindows", new GetAttributeFromAllWindows());
@@ -279,7 +281,7 @@ public class WebDriverCommandProcessor implements CommandProcessor, WrapsDriver 
     seleneseMethods.put("mouseUp", new MouseEvent(elementFinder, javascriptLibrary, "mouseup"));
     seleneseMethods.put("mouseUpAt", new MouseEventAt(elementFinder, javascriptLibrary, "mouseup"));
     seleneseMethods.put("open", new Open(baseUrl));
-    seleneseMethods.put("openWindow", new OpenWindow(new GetEval(scriptMutator)));
+    seleneseMethods.put("openWindow", new OpenWindow(baseUrl, new GetEval(scriptMutator)));
     seleneseMethods.put("refresh", new Refresh());
     seleneseMethods.put("removeAllSelections", new RemoveAllSelections(elementFinder));
     seleneseMethods.put("removeSelection", new RemoveSelection(javascriptLibrary, elementFinder));

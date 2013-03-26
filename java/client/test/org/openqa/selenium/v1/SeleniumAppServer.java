@@ -16,62 +16,30 @@ limitations under the License.
 
 package org.openqa.selenium.v1;
 
-import org.openqa.selenium.environment.webserver.AppServer;
+import java.io.File;
 
-import javax.servlet.Servlet;
+import org.openqa.selenium.environment.webserver.Jetty7AppServer;
+import org.openqa.selenium.testing.InProject;
+import org.seleniumhq.jetty7.webapp.WebAppContext;
 
-public class SeleniumAppServer implements AppServer {
-  private final int port;
+public class SeleniumAppServer extends Jetty7AppServer {
 
-  public SeleniumAppServer(int port) {
-    this.port = port;
+  private static final String RC_CONTEXT_PATH = "/selenium-server";
+
+  public SeleniumAppServer() {
+    super();
+    WebAppContext rcWebApp = addWebApplication(RC_CONTEXT_PATH, findRootOfRcTestPages());
+    addServlet(rcWebApp, "Cached Content", "/cachedContentTest", CachedContentServlet.class);
   }
 
-  public String getHostName() {
-    return "localhost";
+  protected File findRootOfRcTestPages() {
+    return InProject.locate("java/server/test/org/openqa/selenium");
   }
 
-  public String getAlternateHostName() {
-    throw new UnsupportedOperationException("getAlternateHostName");
-  }
-
-  public String whereIs(String relativeUrl) {
-    return "http://localhost:" + port + relativeUrl;
-  }
-
-  public String whereElseIs(String relativeUrl) {
-    throw new UnsupportedOperationException("whereElseIs");
-  }
-
-  public String whereIsSecure(String relativeUrl) {
-    throw new UnsupportedOperationException("whereIsSecure");
-  }
-
-  public String whereIsWithCredentials(String relativeUrl, String user, String password) {
-    throw new UnsupportedOperationException("whereIsWithCredentials");
-  }
-
-  public void start() {
-    // does nothing
-  }
-
-  public void stop() {
-    // does nothing
-  }
-
-  public void addAdditionalWebApplication(String context, String absolutePath) {
-    throw new UnsupportedOperationException("addAdditionalWebApplication");
-  }
-
-  public void addServlet(String name, String url, Class<? extends Servlet> servletClass) {
-    throw new UnsupportedOperationException("addServlet");
-  }
-
-  public void listenOn(int port) {
-    throw new UnsupportedOperationException("listenOn");
-  }
-
-  public void listenSecurelyOn(int port) {
-    throw new UnsupportedOperationException("listenSecurelyOn");
+  protected String getMainContextPath(String relativeUrl) {
+    if (!relativeUrl.startsWith("/")) {
+      relativeUrl = RC_CONTEXT_PATH + "/" + relativeUrl;
+    }
+    return relativeUrl;
   }
 }
