@@ -167,6 +167,12 @@ task :test_remote => [
   '//java/client/test/org/openqa/selenium/remote:client-tests:run',
   :test_remote_server
 ]
+task :test_qtwebkit => [
+  '//java/client/test/org/openqa/selenium/chrome:test_qtwebkit:run',
+  '//java/client/test/org/openqa/selenium/remote:common-tests:run',
+  '//java/client/test/org/openqa/selenium/remote:client-tests:run',
+  '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
+]
 task :test_safari => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
 task :test_phantomjs => [ "//java/client/test/org/openqa/selenium/phantomjs:test:run" ]
 task :test_support => [

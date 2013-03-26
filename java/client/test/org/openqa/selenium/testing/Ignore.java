@@ -41,6 +41,7 @@ public @interface Ignore {
     PHANTOMJS,
     REMOTE,
     SAFARI,
+    QTWEBKIT,
   }
 
   Driver[] value() default {Driver.ALL};
