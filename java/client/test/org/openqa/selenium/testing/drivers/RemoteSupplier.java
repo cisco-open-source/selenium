@@ -24,6 +24,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.net.MalformedURLException;
+
 public class RemoteSupplier implements Supplier<WebDriver> {
 
   private static OutOfProcessSeleniumServer server = new OutOfProcessSeleniumServer();
@@ -47,7 +49,7 @@ public class RemoteSupplier implements Supplier<WebDriver> {
     }
 
     RemoteWebDriver driver = new RemoteWebDriver(
-        server.getWebDriverUrl(), desiredCapabilities, requiredCapabilities);  
+        server.getWebDriverUrl(), desiredCapabilities, requiredCapabilities);
     driver.setFileDetector(new LocalFileDetector());
     return driver;
   }

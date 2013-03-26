@@ -10,3 +10,16 @@ java_test(name = "test",
     "//third_party/java/junit",
   ]
 )
+
+java_test(name = "test_qtwebkit",
+  srcs = [ "*.java" ],
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit" },
+    { "selenium.browser.qtwebkit" : "true" },
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/chrome",
+    "//java/client/test/org/openqa/selenium:tests",
+    "//third_party/java/junit",
+  ]
+)

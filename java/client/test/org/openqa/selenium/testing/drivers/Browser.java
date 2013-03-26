@@ -39,7 +39,8 @@ public enum Browser {
   none, // For those cases where you don't actually want a browser
   opera,
   opera_mobile,
-  safari;
+  safari,
+  qtwebkit;
 
   private static final Logger log = Logger.getLogger(Browser.class.getName());
 

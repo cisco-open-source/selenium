@@ -39,8 +39,9 @@ public @interface Ignore {
     OPERA,
     OPERA_MOBILE,
     REMOTE,
+    QTWEBKIT,
     SAFARI,
-    SELENESE,
+    SELENESE
   }
 
   Driver[] value() default {Driver.ALL};
