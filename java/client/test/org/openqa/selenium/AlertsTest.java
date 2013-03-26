@@ -35,6 +35,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -238,7 +239,9 @@ public class AlertsTest extends JUnit4TestBase {
     assertEquals("Testing Alerts", driver.getTitle());
   }
 
-  @Ignore({ANDROID, CHROME})
+  // Andrii Moroz: On our WebDriver test return title even when alert present
+  // To change this - add checking for alert in Automation::ExecuteScript
+@Ignore({ANDROID, CHROME, HTMLUNIT, QTWEBKIT})
   @Test
   public void testShouldThrowAnExceptionIfAnAlertHasNotBeenDealtWithAndDismissTheAlert() {
     driver.findElement(By.id("alert")).click();
@@ -340,9 +343,10 @@ public class AlertsTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(driver, By.tagName("p"), "Page with onload event handler"));
   }
 
+  // Andrii Moroz : test stuck due to synchronous downloading
   @JavascriptEnabled
   @Test
-  @Ignore(CHROME)
+  @Ignore({CHROME, QTWEBKIT})
   public void testShouldHandleAlertOnPageLoadUsingGet() {
     driver.get(appServer.whereIs("pageWithOnLoad.html"));
 
@@ -354,8 +358,9 @@ public class AlertsTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(driver, By.tagName("p"), "Page with onload event handler"));
   }
 
+  // Andrii Moroz : new windows doesn't supported
   @JavascriptEnabled
-  @Ignore(value = {FIREFOX, IE, CHROME}, reason = "FF waits too long, may be hangs out." +
+  @Ignore(value = {FIREFOX, IE, CHROME, QTWEBKIT}, reason = "FF waits too long, may be hangs out." +
       "Android currently does not store the source of the alert. IE8: Not confirmed working.")
   @Test
   public void testShouldNotHandleAlertInAnotherWindow() {
@@ -384,8 +389,9 @@ public class AlertsTest extends JUnit4TestBase {
     }
   }
 
+  // Andrii Moroz : stuck on synchronous loading
   @JavascriptEnabled
-  @Ignore(value = {CHROME})
+  @Ignore(value = {CHROME, QTWEBKIT})
   @Test
   public void testShouldHandleAlertOnPageUnload() {
     driver.findElement(By.id("open-page-with-onunload-alert")).click();
@@ -399,9 +405,10 @@ public class AlertsTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(driver, By.id("open-page-with-onunload-alert"), "open new page"));
   }
 
+  // Andrii Moroz : new windows not supported
   @JavascriptEnabled
-  @Ignore(value = {IE, ANDROID, CHROME}, reason = "IE crashes. On Android, alerts do not pop up" +
-      " when a window is closed.")
+  @Ignore(value = {IE, ANDROID, CHROME, QTWEBKIT}, reason = "IE crashes. On Android, alerts do not pop up" +
+     " when a window is closed.")
   @Test
   public void testShouldHandleAlertOnWindowClose() {
     if (TestUtilities.isFirefox(driver) &&
@@ -428,8 +435,9 @@ public class AlertsTest extends JUnit4TestBase {
     }
   }
 
+  // Andrii Moroz : our webdriver returns title even alert present
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, SELENESE})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, SELENESE, QTWEBKIT})
   @Test
   public void testIncludesAlertInUnhandledAlertException() {
     driver.findElement(By.id("alert")).click();
