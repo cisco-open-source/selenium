@@ -44,6 +44,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.assumeFalse;
 
 @Ignore(
@@ -117,7 +118,7 @@ public class DragAndDropTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({CHROME, IE, OPERA, PHANTOMJS})
+  @Ignore({CHROME, IE, OPERA, PHANTOMJS, QTWEBKIT})
   @Test
   public void testDragTooFar() {
     driver.get(pages.dragAndDropPage);

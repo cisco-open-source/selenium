@@ -52,6 +52,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class PageLoadingTest extends JUnit4TestBase {
 
@@ -185,7 +186,7 @@ public class PageLoadingTest extends JUnit4TestBase {
     assertThat(driver.getTitle(), equalTo("We Arrive Here"));
   }
 
-  @Ignore(value = {IE, CHROME, SELENESE, IPHONE, OPERA, ANDROID, SAFARI, OPERA_MOBILE, PHANTOMJS},
+  @Ignore(value = {IE, CHROME, SELENESE, IPHONE, OPERA, ANDROID, SAFARI, OPERA_MOBILE, PHANTOMJS, QTWEBKIT},
           reason = "Safari: does not support insecure SSL")
   @Test
   public void testShouldBeAbleToAccessPagesWithAnInsecureSslCertificate() {
@@ -272,7 +273,7 @@ public class PageLoadingTest extends JUnit4TestBase {
     assertTrue("Took too long to load page: " + duration, duration < 5 * 1000);
   }
 
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, PHANTOMJS, SAFARI, SELENESE, OPERA_MOBILE},
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, PHANTOMJS, SAFARI, SELENESE, OPERA_MOBILE, QTWEBKIT},
           reason = "Not implemented; Safari: see issue 687, comment 41",
           issues = {687})
   @NeedsLocalEnvironment

@@ -30,6 +30,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import org.junit.After;
 import org.junit.Test;
@@ -47,7 +48,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE})
+//Not supported in chromedriver, so not supported in qtwebkit
+@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE, QTWEBKIT})
 public class GetLogsTest extends JUnit4TestBase {
 
   private WebDriver localDriver;
