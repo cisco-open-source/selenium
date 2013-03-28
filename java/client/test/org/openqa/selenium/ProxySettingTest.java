@@ -40,6 +40,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class ProxySettingTest extends JUnit4TestBase {
 
@@ -56,7 +57,8 @@ public class ProxySettingTest extends JUnit4TestBase {
     assumeTrue(TestUtilities.isLocal());
   }
 
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI})
+  //Required Capabilities not supported
+  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT})
   @Test
   public void canConfigureProxyWithRequiredCapability() {
     Proxy proxyToUse = proxyServer.asProxy();
@@ -70,7 +72,8 @@ public class ProxySettingTest extends JUnit4TestBase {
     assertTrue("Proxy should have been called", proxyServer.hasBeenCalled("simpleTest.html"));
   }
 
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI})
+  //Required Capabilities not supported
+  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT})
   @Test
   public void requiredProxyCapabilityShouldHavePriority() {
     ProxyServer desiredProxyServer = new ProxyServer();

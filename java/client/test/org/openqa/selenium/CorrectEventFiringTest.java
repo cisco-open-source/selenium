@@ -49,6 +49,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class CorrectEventFiringTest extends JUnit4TestBase {
 
@@ -109,7 +110,7 @@ public class CorrectEventFiringTest extends JUnit4TestBase {
   // TODO: this is a bad test: mousemove should not fire in a perfect click (e.g. mouse did not move
   // while doing down, up, click
   @JavascriptEnabled
-  @Ignore({CHROME, FIREFOX})
+  @Ignore({CHROME, FIREFOX, QTWEBKIT})
   @Test
   public void testShouldFireMouseMoveEventWhenClicking() {
     driver.get(pages.javascriptPage);

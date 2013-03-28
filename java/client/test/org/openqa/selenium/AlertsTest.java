@@ -92,7 +92,8 @@ public class AlertsTest extends JUnit4TestBase {
     assertEquals("Testing Alerts", driver.getTitle());
   }
 
-  @Ignore(CHROME)
+    //QtWebkit doesn't perform wait for loading
+  @Ignore({CHROME, QTWEBKIT})
   @JavascriptEnabled
   @NeedsLocalEnvironment(reason = "Carefully timing based")
   @Test

@@ -26,6 +26,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 import org.junit.Test;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
@@ -98,7 +99,7 @@ public class I18nTest extends JUnit4TestBase {
   }
 
   @NeedsFreshDriver
-  @Ignore(value = {IE, CHROME, HTMLUNIT, FIREFOX, OPERA, ANDROID, IPHONE},
+  @Ignore(value = {IE, CHROME, HTMLUNIT, FIREFOX, OPERA, ANDROID, IPHONE, QTWEBKIT},
       reason = "Not implemented on anything other than"
           + "Firefox/Linux at the moment.")
   @Test

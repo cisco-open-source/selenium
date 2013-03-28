@@ -39,6 +39,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 @Ignore(value = {ANDROID, HTMLUNIT}, reason = "Android: Race condition when click returns, "
     + "the UI did not finish scrolling..\nHtmlUnit: Scrolling requires rendering")
@@ -124,7 +125,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI},
+  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, QTWEBKIT},
       reason = "Safari: button1 is scrolled to the bottom edge of the view, " +
           "so additonal scrolling is still required for button2")
   @Test

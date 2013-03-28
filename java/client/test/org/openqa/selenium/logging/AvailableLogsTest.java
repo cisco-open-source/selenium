@@ -43,9 +43,10 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.isOldChromedriver;
 
-@Ignore({ANDROID, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS})
+@Ignore({ANDROID, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT})
 public class AvailableLogsTest extends JUnit4TestBase {
 
   private WebDriver localDriver;

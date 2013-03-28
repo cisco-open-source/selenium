@@ -46,6 +46,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class RenderedWebElementTest extends JUnit4TestBase {
 
@@ -87,7 +88,7 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   // should handle sub-pixel rendering, and every browser seems to be different anyhow:
   // http://ejohn.org/blog/sub-pixel-problems-in-css/
   @JavascriptEnabled
-  @Ignore({IE, CHROME, IPHONE, OPERA, ANDROID, SAFARI, OPERA_MOBILE, PHANTOMJS})
+  @Ignore({IE, CHROME, IPHONE, OPERA, ANDROID, SAFARI, OPERA_MOBILE, PHANTOMJS, QTWEBKIT})
   // Reason for Chrome: WebKit bug 28804
   @Test
   public void testShouldHandleNonIntegerPositionAndSize() {
@@ -422,7 +423,7 @@ public class RenderedWebElementTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @NeedsFreshDriver
-  @Ignore(value = {HTMLUNIT}, reason = "Advanced mouse actions only implemented in rendered browsers")
+  @Ignore(value = {HTMLUNIT, QTWEBKIT}, reason = "Advanced mouse actions only implemented in rendered browsers")
   @Test
   public void testMoveRelativeToBody() {
     if (!hasInputDevices() || !TestUtilities.isNativeEventsEnabled(driver)) {

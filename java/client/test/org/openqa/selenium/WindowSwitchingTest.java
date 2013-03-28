@@ -46,6 +46,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.assumeFalse;
 
 @Ignore(value = {IPHONE}, reason = "The iPhone only supports one window")
@@ -95,7 +96,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
     driver.switchTo().window(current);
   }
 
-  @Ignore({OPERA, CHROME, OPERA_MOBILE})
+  @Ignore({OPERA, CHROME, OPERA_MOBILE, QTWEBKIT})
   @Test
   public void testShouldThrowNoSuchWindowExceptionOnAnAttemptToGetItsHandle() {
     driver.get(pages.xhtmlTestPage);
