@@ -8,7 +8,7 @@
   	<target name="test">
 		<junitreport todir="${report}">
 			<fileset dir="${report}">
-				<include name="TEST*.xml" />
+				<include name="TEST-*.xml" />
 			</fileset>
 			<report format="frames" todir="${report}/html" />
 		</junitreport>
