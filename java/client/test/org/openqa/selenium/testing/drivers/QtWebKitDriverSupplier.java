@@ -10,6 +10,7 @@ package org.openqa.selenium.testing.drivers;
 import com.google.common.base.Supplier;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import java.net.MalformedURLException;
@@ -27,7 +28,13 @@ public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
     }
 
     public WebDriver get() {
-        if (desiredCapabilities == null || !Boolean.getBoolean("selenium.browser.qtwebkit")) {
+        if (desiredCapabilities == null ){
+            System.out.println("Wrong capability was set!");
+            Thread.dumpStack();
+            return null;
+        }
+
+        if (!DesiredCapabilities.qtwebkit().getBrowserName().equals(desiredCapabilities.getBrowserName())) {
             System.out.println("Wrong capability was set!");
             Thread.dumpStack();
             return null;
