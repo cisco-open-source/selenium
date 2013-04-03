@@ -1,0 +1,12 @@
+java_test(name = "NativeTests",
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit" },
+  ],
+  srcs = [
+    "NativeWebDriverTests.java",
+    "WindowTest.java"
+  ],
+  deps = [
+    "//third_party/java/junit",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+  ])
