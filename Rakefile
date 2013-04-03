@@ -40,10 +40,11 @@ require 'rake-tasks/ci'
 
 require 'rake-tasks/gecko_sdks'
 
-$DEBUG = orig_verbose != :default ? true : false
-if (ENV['debug'] == 'true') 
-  $DEBUG = true
-end
+#$DEBUG = orig_verbose != :default ? true : false
+#if (ENV['debug'] == 'true') 
+#  $DEBUG = true
+#end
+$DEBUG = true
 verbose($DEBUG)
 
 def version
@@ -168,7 +169,7 @@ task :test_remote => [
   :test_remote_server
 ]
 task :test_qtwebkit => [
-  '//java/client/test/org/openqa/selenium/chrome:test_qtwebkit:run',
+  '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run',
   '//java/client/test/org/openqa/selenium/remote:common-tests:run',
   '//java/client/test/org/openqa/selenium/remote:client-tests:run',
   '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'

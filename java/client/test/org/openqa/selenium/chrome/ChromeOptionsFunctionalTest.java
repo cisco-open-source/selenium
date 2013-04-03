@@ -42,7 +42,6 @@ public class ChromeOptionsFunctionalTest extends JUnit4TestBase {
     }
   }
 
-  @Ignore({QTWEBKIT})
   @NeedsLocalEnvironment
   @Test
   public void canStartChromeWithCustomOptions() {
