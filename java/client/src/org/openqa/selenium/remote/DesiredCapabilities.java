@@ -219,7 +219,7 @@ public class DesiredCapabilities implements Serializable, Capabilities {
   }
 
     public static DesiredCapabilities qtwebkit() {
-        return new DesiredCapabilities("QtWebKit", "", Platform.ANY);
+        return new DesiredCapabilities("qtwebkit", "", Platform.ANY);
     }
 
   @Override
