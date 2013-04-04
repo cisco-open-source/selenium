@@ -1,4 +1,4 @@
-package NativeTests;
+package org.openqa.selenium.qtwebkit.NativeTests;
 
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.testing.JUnit4TestBase;

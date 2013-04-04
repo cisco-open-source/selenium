@@ -1,4 +1,4 @@
-package NativeTests;
+package org.openqa.selenium.qtwebkit.NativeTests;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +15,6 @@ import org.junit.runners.Suite;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.ParallelSuite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
