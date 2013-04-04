@@ -1,11 +1,15 @@
 package org.openqa.selenium.qtwebkit.NativeTests;
 
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import java.util.logging.Logger;
 
 import org.junit.Test;
+import org.junit.Before;
+import org.openqa.selenium.testing.drivers.WebDriverBuilder;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -22,6 +26,18 @@ import static org.junit.Assert.assertThat;
 public class WindowTest extends JUnit4TestBase {
 
     private static Logger log = Logger.getLogger(WindowTest.class.getName());
+
+
+    @Before
+    public void createWebDriver()
+    {
+        DesiredCapabilities caps = new DesiredCapabilities();
+        WebDriverBuilder builder = new WebDriverBuilder();
+
+        caps.setCapability("browserStartWindow", "WindowTestWidget");
+        builder.setRequiredCapabilities(caps);
+        driver = builder.get();
+    }
 
     @Test
     public void testGetsTheSizeOfTheCurrentWindow() {
