@@ -32,18 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementValueToEqual;
-import static org.openqa.selenium.testing.Ignore.Driver.ALL;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 import static org.openqa.selenium.testing.TestUtilities.assumeFalse;
 
 public class TypingTest extends JUnit4TestBase {
@@ -348,7 +337,7 @@ public class TypingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT, ANDROID, OPERA, OPERA_MOBILE},
+  @Ignore(value = {HTMLUNIT, ANDROID, OPERA, OPERA_MOBILE, QTWEBKIT},
           reason = "untested user agent")
   @Test
   public void testNumericShiftKeys() {
@@ -379,7 +368,7 @@ public class TypingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID},
+  @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, QTWEBKIT},
           reason = "untested user agents")
   @Test
   public void testUppercaseAlphaKeys() {
@@ -396,7 +385,7 @@ public class TypingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT, SELENESE, OPERA, ANDROID, OPERA_MOBILE},
+  @Ignore(value = {HTMLUNIT, SELENESE, OPERA, ANDROID, OPERA_MOBILE, QTWEBKIT},
           reason = "untested user agents")
   @Test
   public void testAllPrintableKeys() {
@@ -479,7 +468,7 @@ public class TypingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT, IPHONE, SELENESE, ANDROID},
+  @Ignore(value = {HTMLUNIT, IPHONE, SELENESE, ANDROID, QTWEBKIT},
           reason = "untested user agents")
   @Test
   public void testNumberpadKeys() {
@@ -589,7 +578,7 @@ public class TypingTest extends JUnit4TestBase {
   // and linux, but not on the MAC.
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA, OPERA_MOBILE},
+  @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA, OPERA_MOBILE, QTWEBKIT},
           reason = "untested user agents")
   @Test
   public void testChordControlCutAndPaste() {
@@ -663,7 +652,7 @@ public class TypingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, CHROME, IE, IPHONE, SAFARI, OPERA, OPERA_MOBILE, PHANTOMJS},
+  @Ignore(value = {ANDROID, CHROME, IE, IPHONE, SAFARI, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT},
           reason = "firefox-specific")
   @Test
   public void testGenerateKeyPressEventEvenWhenElementPreventsDefault() {
