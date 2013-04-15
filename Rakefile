@@ -168,11 +168,11 @@ task :test_remote => [
   :test_remote_server
 ]
 task :test_qtwebkit => [
-  '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run',
-  '//java/client/test/org/openqa/selenium/remote:common-tests:run',
-  '//java/client/test/org/openqa/selenium/remote:client-tests:run',
-  '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
+  '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run'
 ]
+#  '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
+  #'//java/client/test/org/openqa/selenium/remote:common-tests:run',
+  #'//java/client/test/org/openqa/selenium/remote:client-tests:run',
 task :test_safari => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
 task :test_support => [
   "//java/client/test/org/openqa/selenium/lift:test:run",
