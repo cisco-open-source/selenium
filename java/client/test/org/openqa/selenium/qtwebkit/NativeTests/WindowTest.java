@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.junit.Before;
+import org.junit.After;
 import org.openqa.selenium.testing.TestUtilities;
 import org.openqa.selenium.testing.drivers.SauceDriver;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
@@ -38,6 +39,12 @@ public class WindowTest extends JUnit4TestBase {
         driver = builder.get();
     }
 
+    @After
+    public void closeDriver()
+    {
+        driver.close();
+    }
+
     @Test
     public void testGetsTheSizeOfTheCurrentWindow() {
         Dimension size = driver.manage().window().getSize();
@@ -54,30 +61,6 @@ public class WindowTest extends JUnit4TestBase {
         changeSizeBy(-20, -20);
     }
 
-//    @Test
-//    public void testSetsTheSizeOfTheCurrentWindowFromFrame() {
-//        driver.get(pages.framesetPage);
-//        driver.switchTo().frame("fourth");
-//        try {
-//            // resize relative to the initial size, since we don't know what it is
-//            changeSizeBy(-20, -20);
-//        } finally {
-//            driver.switchTo().defaultContent();
-//        }
-//    }
-
-//    @Test
-//    public void testSetsTheSizeOfTheCurrentWindowFromIframe() {
-//        driver.get(pages.iframePage);
-//        driver.switchTo().frame("iframe1-name");
-//        try {
-//            // resize relative to the initial size, since we don't know what it is
-//            changeSizeBy(-20, -20);
-//        } finally {
-//            driver.switchTo().defaultContent();
-//        }
-//    }
-//
     @Test
     public void testGetsThePositionOfTheCurrentWindow() {
         Point position = driver.manage().window().getPosition();
@@ -122,44 +105,6 @@ public class WindowTest extends JUnit4TestBase {
         maximize();
     }
 
-//    @Ignore(value = {CHROME, PHANTOMJS}, reason = "Not yet implemented.")
-//    @Test
-//    public void testCanMaximizeTheWindowFromFrame() throws InterruptedException {
-//        if(SauceDriver.shouldUseSauce() && TestUtilities.getEffectivePlatform().is(Platform.LINUX)) {
-//            // This test requires a window manager on Linux, and Sauce currently doesn't have one.
-//            return;
-//        }
-//
-//        driver.get(pages.framesetPage);
-//        changeSizeTo(new Dimension(275, 275));
-//
-//        driver.switchTo().frame("fourth");
-//        try {
-//            maximize();
-//        } finally {
-//            driver.switchTo().defaultContent();
-//        }
-//    }
-//
-//    @Ignore(value = {CHROME, PHANTOMJS}, reason = "Not yet implemented.")
-//    @Test
-//    public void testCanMaximizeTheWindowFromIframe() throws InterruptedException {
-//        if(SauceDriver.shouldUseSauce() && TestUtilities.getEffectivePlatform().is(Platform.LINUX)) {
-//            // This test requires a window manager on Linux, and Sauce currently doesn't have one.
-//            return;
-//        }
-//
-//        driver.get(pages.iframePage);
-//        changeSizeTo(new Dimension(275, 275));
-//
-//        driver.switchTo().frame("iframe1-name");
-//        try {
-//            maximize();
-//        } finally {
-//            driver.switchTo().defaultContent();
-//        }
-//    }
-
     private void changeSizeBy(int deltaX, int deltaY) {
         WebDriver.Window window = driver.manage().window();
         Dimension size = window.getSize();
@@ -195,6 +140,7 @@ public class WindowTest extends JUnit4TestBase {
             }
         };
     }
+
     private Callable<Boolean> windowHeightToEqual(final WebDriver driver, final Dimension size) {
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
