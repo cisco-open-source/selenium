@@ -16,34 +16,19 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
 import org.openqa.selenium.testing.TestUtilities;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
+import org.testng.annotations.BeforeClass;
 
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.windowHandleCountToBe;
 import static org.openqa.selenium.testing.Ignore.Driver.*;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 4/5/13
- * Time: 2:19 PM
- * To change this template use File | Settings | File Templates.
- */
 public class ClickTest extends JUnit4TestBase {
 
+
     @Before
-    public void setUp() throws Exception {
-        DesiredCapabilities caps = new DesiredCapabilities();
-        WebDriverBuilder builder = new WebDriverBuilder();
-
-        caps.setCapability("browserStartWindow", "ClickTestWidget");
-        builder.setRequiredCapabilities(caps);
-        driver = builder.get();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        driver.close();
+     public void setUp() throws Exception {
+        driver.get("ClickTestWidget");
     }
 
     @Test

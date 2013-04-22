@@ -32,6 +32,7 @@ import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.environment.TestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -91,7 +92,12 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     WebDriver driver = storedDriver.get();
 
     if (driver == null) {
-      driver = new WebDriverBuilder().get();
+        DesiredCapabilities caps = new DesiredCapabilities();
+        WebDriverBuilder builder = new WebDriverBuilder();
+
+        caps.setCapability("browserClass", "QWidget");
+        builder.setDesiredCapabilities(caps);
+        driver = builder.get();
       storedDriver.set(driver);
     }
     return storedDriver.get();

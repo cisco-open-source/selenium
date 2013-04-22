@@ -29,20 +29,9 @@ public class WindowTest extends JUnit4TestBase {
     private static Logger log = Logger.getLogger(WindowTest.class.getName());
 
     @Before
-    public void createWebDriver()
+    public void setUp()
     {
-        DesiredCapabilities caps = new DesiredCapabilities();
-        WebDriverBuilder builder = new WebDriverBuilder();
-
-        caps.setCapability("browserClass", "QWidget");
-        builder.setRequiredCapabilities(caps);
-        driver = builder.get();
-    }
-
-    @After
-    public void closeDriver()
-    {
-        driver.close();
+        driver.get("WindowTestWidget");
     }
 
     @Test
