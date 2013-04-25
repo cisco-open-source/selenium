@@ -19,7 +19,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         WindowTest.class,
-        ClickTest.class
+        ClickTest.class,
+        FindingTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass

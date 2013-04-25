@@ -5,7 +5,8 @@ java_test(name = "NativeTests",
   srcs = [
     "NativeWebDriverTests.java",
     "WindowTest.java",
-    "ClickTest.java"
+    "ClickTest.java",
+    "FindingTest.java"
   ],
   deps = [
     "//third_party/java/junit",
