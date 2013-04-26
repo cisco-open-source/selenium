@@ -1,13 +1,5 @@
 package org.openqa.selenium.qtwebkit.NativeTests;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 4/1/13
- * Time: 3:21 PM
- * To change this template use File | Settings | File Templates.
- */
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
