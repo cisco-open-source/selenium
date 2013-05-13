@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-@Ignore({ANDROID, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT})
+@Ignore({ANDROID, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS})
 public class GetLogsTest extends JUnit4TestBase {
 
   private WebDriver localDriver;
@@ -99,6 +99,7 @@ public class GetLogsTest extends JUnit4TestBase {
 
   @Test
   @NeedsLocalEnvironment
+  @Ignore(QTWEBKIT)
   public void turningOffLogShouldMeanNoLogMessages() {
     assumeFalse(TestUtilities.isOldChromedriver(driver));  // Only chromedriver2 supports logging.
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
