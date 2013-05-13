@@ -45,7 +45,8 @@ import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 //Not supported in chromedriver, so not supported in qtwebkit
-@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE, QTWEBKIT})
+//@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE, QTWEBKIT})
+@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE})
 public class AvailableLogsTest extends JUnit4TestBase {
 
   private WebDriver localDriver;
@@ -59,6 +60,7 @@ public class AvailableLogsTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(QTWEBKIT)
   public void browserLogShouldBeEnabledByDefault() {
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
     assertTrue("Browser logs should be enabled by default",
@@ -99,6 +101,7 @@ public class AvailableLogsTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(QTWEBKIT)
   public void shouldBeAbleToEnableProfilerLog() {
     DesiredCapabilities caps = new DesiredCapabilities();
     caps.setCapability(ENABLE_PROFILING_CAPABILITY, true);

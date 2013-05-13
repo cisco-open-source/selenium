@@ -49,7 +49,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 //Not supported in chromedriver, so not supported in qtwebkit
-@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE, QTWEBKIT})
+@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE})
 public class GetLogsTest extends JUnit4TestBase {
 
   private WebDriver localDriver;
@@ -98,6 +98,7 @@ public class GetLogsTest extends JUnit4TestBase {
 
   @Test
   @NeedsLocalEnvironment
+  @Ignore(QTWEBKIT)
   public void turningOffLogShouldMeanNoLogMessages() {
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
     for (String logType : logTypes) {
