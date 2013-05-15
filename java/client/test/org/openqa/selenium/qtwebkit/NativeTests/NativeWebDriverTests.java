@@ -13,7 +13,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         WindowTest.class,
         ClickTest.class,
         FindingTest.class,
-        CoordinatesTest.class
+        CoordinatesTest.class,
+        ElementAttributeTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
