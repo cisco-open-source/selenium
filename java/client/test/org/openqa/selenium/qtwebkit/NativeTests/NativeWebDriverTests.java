@@ -4,6 +4,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.openqa.selenium.TakesScreenshotTest;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -15,7 +16,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         FindingTest.class,
         CoordinatesTest.class,
         ClickScrollingTest.class,
-        TakesScreenshotTest.class
+        TakesScreenshotTest.class,
+        ElementSelectingTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
