@@ -49,6 +49,15 @@ public class ElementAttributeTest extends JUnit4TestBase {
     {
         WebElement element = driver.findElement(By.id("workingButton"));
         assertThat(element.getAttribute("text"), is("Working Button"));
+        assertThat(element.getText(), is("Working Button"));
+    }
+
+    @Test
+    public void testGetTextFromRadioButton()
+    {
+        WebElement element = driver.findElement(By.id("defaultSelected"));
+        assertThat(element.getAttribute("text"), is("Blue"));
+        assertThat(element.getText(), is("Blue"));
     }
 
     @Ignore(value = {IPHONE, SELENESE},
@@ -116,12 +125,12 @@ public class ElementAttributeTest extends JUnit4TestBase {
         assertThat(textArea.getText(), is("Example text"));
     }
 
-    @Test
-    public void testCanRetrieveTheCurrentTextFormTextArea() {
-        WebElement textArea = driver.findElement(By.id("workingArea"));
-        textArea.sendKeys("hello world");
-        assertEquals("hello world", textArea.getText());
-    }
+     @Test
+     public void testCanRetrieveTheCurrentTextFormTextArea() {
+         WebElement textArea = driver.findElement(By.id("workingArea"));
+         textArea.sendKeys("hello world");
+         assertEquals("hello world", textArea.getText());
+     }
 
     @Test
     public void testCanRetrieveTheCurrentTextFormLineEdit() {
@@ -149,6 +158,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
     public void testReturnTextOfLabel() {
         WebElement element = driver.findElement(By.id("displayedLabel"));
         assertThat(element.getAttribute("text"), is("Visible Label"));
+        assertThat(element.getText(), is("Visible Label"));
     }
 
 }

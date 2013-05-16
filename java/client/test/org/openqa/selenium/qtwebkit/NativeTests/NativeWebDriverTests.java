@@ -10,11 +10,13 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        WindowTest.class,
-        ClickTest.class,
-        FindingTest.class,
-        CoordinatesTest.class,
-        ElementAttributeTest.class
+//        WindowTest.class,
+//        ClickTest.class,
+//        FindingTest.class,
+//        CoordinatesTest.class,
+        ClickScrollingTest.class,
+        TakesScreenshotTest.class,
+		ElementAttributeTest.class		
 })
 public class NativeWebDriverTests {
     @BeforeClass
