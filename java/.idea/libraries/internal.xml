@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="internal">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/client/test/org/openqa/selenium/internal/subfolders.zip!/" />
+      <root url="jar://$PROJECT_DIR$/client/test/org/openqa/selenium/internal/single-file.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
