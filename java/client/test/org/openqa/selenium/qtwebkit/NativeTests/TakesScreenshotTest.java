@@ -11,13 +11,6 @@ import java.io.File;
 import static org.junit.Assert.assertTrue;
 import static org.openqa.selenium.OutputType.BASE64;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 5/14/13
- * Time: 2:43 PM
- * To change this template use File | Settings | File Templates.
- */
 public class TakesScreenshotTest extends JUnit4TestBase {
     @Test
     public void testSaveScreenshotAsFile() throws Exception {
