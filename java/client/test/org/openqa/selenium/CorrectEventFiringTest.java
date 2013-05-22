@@ -390,7 +390,7 @@ public class CorrectEventFiringTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, IPHONE, ANDROID, OPERA, SAFARI, OPERA_MOBILE},
+  @Ignore(value = {CHROME, IPHONE, ANDROID, OPERA, SAFARI, OPERA_MOBILE, QTWEBKIT},
       reason = "Does not yet support file uploads", issues = { 4220 })
   @Test
   public void testUploadingFileShouldFireOnChangeEvent() throws IOException {
