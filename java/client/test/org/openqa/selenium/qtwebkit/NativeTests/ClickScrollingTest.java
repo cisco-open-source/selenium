@@ -81,7 +81,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   @Test
   public void testShouldScrollOverflowElementsIfClickPointIsOutOfViewButElementIsInView() {
     driver.findElement(By.id("partiallyVisibleRadioButton")).click();
-    assertEquals("clicked", driver.findElement(By.id("clicked")).getText());
+    assertEquals("clicked", driver.findElement(By.id("partiallyVisibleRadioButton")).getText());
   }
 
   @Test(expected = MoveTargetOutOfBoundsException.class)
