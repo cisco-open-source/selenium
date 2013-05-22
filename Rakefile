@@ -173,7 +173,7 @@ task :test_qtwebkit => [
   '//java/client/test/org/openqa/selenium/remote:client-tests:run',
   '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
 ]
-task :native_tests => [  '//java/client/test/org/openqa/selenium/qtwebkit/NativeTests:NativeTests:run' ]
+task :test_wd_native => [  '//java/client/test/org/openqa/selenium/qtwebkit/NativeTests:NativeTests:run' ]
 task :test_safari => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
 task :test_support => [
   "//java/client/test/org/openqa/selenium/lift:test:run",
