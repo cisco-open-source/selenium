@@ -33,12 +33,7 @@ import java.util.concurrent.TimeUnit;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementTextToEqual;
 import static org.openqa.selenium.WaitingConditions.elementToBeHidden;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 /**
  * Demonstrates how to use WebDriver with a file input element.
@@ -58,7 +53,7 @@ public class UploadTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {SELENESE, OPERA, OPERA_MOBILE},
+  @Ignore(value = {SELENESE, OPERA, OPERA_MOBILE, QTWEBKIT},
           reason = "Opera/Opera Mobile: File input elements are not supported yet")
   @Test
   public void testFileUploading() throws Exception {
