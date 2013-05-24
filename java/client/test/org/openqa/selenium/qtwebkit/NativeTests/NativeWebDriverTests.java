@@ -16,10 +16,11 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         FindingTest.class,
         CoordinatesTest.class,
         ClickScrollingTest.class,
-        TakesScreenshotTest.class,
-		ElementAttributeTest.class,
+		TakesScreenshotTest.class,
+		ElementAttributeTest.class,		
         ElementSelectingTest.class,
-        TypingTest.class
+		TypingTest.class,
+		TextHandlingTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
