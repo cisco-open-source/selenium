@@ -19,7 +19,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         TakesScreenshotTest.class,
 		ElementAttributeTest.class,
         ElementSelectingTest.class,
-        TypingTest.class
+        TypingTest.class,
+        BasicKeyboardInterfaceTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
