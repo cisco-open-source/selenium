@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 
@@ -15,8 +14,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
 public class ElementAttributeTest extends JUnit4TestBase {
 
@@ -60,8 +57,6 @@ public class ElementAttributeTest extends JUnit4TestBase {
         assertThat(element.getText(), is("Blue"));
     }
 
-    @Ignore(value = {IPHONE, SELENESE},
-            reason = "sendKeys does not determine whether the element is disabled")
     @Test
     public void testShouldThrowExceptionIfSendingKeysToElementDisabled() {
         WebElement disabledTextElement1 = driver.findElement(By.id("disabledTextElement1"));

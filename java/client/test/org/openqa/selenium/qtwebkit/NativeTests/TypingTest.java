@@ -3,24 +3,14 @@ package org.openqa.selenium.qtwebkit.NativeTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Platform;
-import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.JavascriptEnabled;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
 import org.openqa.selenium.Keys;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
 public class TypingTest extends JUnit4TestBase {
 
@@ -84,8 +74,6 @@ public class TypingTest extends JUnit4TestBase {
 
     }
 
-    @JavascriptEnabled
-    @Ignore({IPHONE, SELENESE})
     @Test
     public void testArrowNotPrintable() {
 
@@ -101,7 +89,6 @@ public class TypingTest extends JUnit4TestBase {
 
     }
 
-    @Ignore(value = {HTMLUNIT, IPHONE, SELENESE, OPERA_MOBILE})
     @Test
     public void testMixArrowAndOtherKeys() {
 
@@ -117,8 +104,6 @@ public class TypingTest extends JUnit4TestBase {
 
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {SELENESE, ANDROID}, reason = "untested user agent")
     @Test
     public void testNumericNonShiftKeys() {
 
@@ -131,9 +116,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is(numericLineCharsNonShifted));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, ANDROID, OPERA, OPERA_MOBILE},
-            reason = "untested user agent")
     @Test
     public void testNumericShiftKeys() {
 
@@ -148,8 +130,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(result.getText(), is(numericShiftsEtc));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = ANDROID, reason = "untested user agent")
     @Test
     public void testLowerCaseAlphaKeys() {
 
@@ -162,9 +142,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is(lowerAlphas));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID},
-            reason = "untested user agents")
     @Test
     public void testUppercaseAlphaKeys() {
         WebElement element = driver.findElement(By.id("enabeledTextElement"));
@@ -176,9 +153,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is(upperAlphas));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, SELENESE, OPERA, ANDROID, OPERA_MOBILE},
-            reason = "untested user agents")
     @Test
     public void testAllPrintableKeys() {
 
@@ -193,8 +167,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is(allPrintable));
     }
 
-    @Ignore(value = {HTMLUNIT, IPHONE, SELENESE, ANDROID, OPERA_MOBILE},
-            reason = "untested user agents")
     @Test
     public void testArrowKeysAndPageUpAndDown() {
 
@@ -206,9 +178,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("ba1"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA_MOBILE},
-            reason = "untested user agents")
     @Test
     public void testHomeAndEndAndPageUpAndPageDownKeys() {
         // FIXME: macs don't have HOME keys, would PGUP work?
@@ -224,9 +193,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("0000abc1111"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {OPERA, HTMLUNIT, IPHONE, SELENESE, ANDROID, OPERA_MOBILE},
-            reason = "untested user agents")
     @Test
     public void testDeleteAndBackspaceKeys() {
 
@@ -243,8 +209,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("abcdfgi"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, IPHONE, SELENESE}, reason = "untested user agents")
     @Test
     public void testSpecialSpaceKeys() {
         WebElement element = driver.findElement(By.id("enabeledTextElement"));
@@ -254,9 +218,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("abcd fgh ij"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, IPHONE, SELENESE, ANDROID},
-            reason = "untested user agents")
     @Test
     public void testSignsKeys() {
 
@@ -269,9 +230,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("abcd*-+.,+;=/abcd"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {OPERA, IPHONE, SELENESE, ANDROID},
-            reason = "untested user agents, Opera: F4 triggers sidebar")
     @Test
     public void testFunctionKeys() {
 
@@ -283,11 +241,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("FUNCTION-KEYS-TOO"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, IPHONE, SELENESE, ANDROID, OPERA, SAFARI, OPERA_MOBILE},
-            reason = "untested user agents. Opera: F2 focuses location bar" +
-                    "Safari: issue 4221",
-            issues = {4221})
     @Test
     public void testShiftSelectionDeletes() {
         WebElement element = driver.findElement(By.id("enabeledTextElement"));
@@ -301,9 +254,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is("abcd e"));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA, OPERA_MOBILE},
-            reason = "untested user agents")
     @Test
     public void testChordControlHomeShiftEndDelete() {
         // FIXME: macs don't have HOME keys, would PGUP work?
@@ -322,9 +272,6 @@ public class TypingTest extends JUnit4TestBase {
         assertThat(element.getText(), is(""));
     }
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA, OPERA_MOBILE},
-            reason = "untested user agents")
     @Test
     public void testChordReveseShiftHomeSelectionDeletes() {
         // FIXME: macs don't have HOME keys, would PGUP work?
@@ -353,9 +300,8 @@ public class TypingTest extends JUnit4TestBase {
     // control-x control-v here for cut & paste tests, these work on windows
     // and linux, but not on the MAC.
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA, OPERA_MOBILE},
-            reason = "untested user agents")
+    // TO DO:implement identification keys letters
+    // Issue MHA-659
     @Test
     public void testChordControlCutAndPaste() {
         // FIXME: macs don't have HOME keys, would PGUP work?
@@ -399,11 +345,10 @@ public class TypingTest extends JUnit4TestBase {
     }
 
     // control-c control-v here for copy & paste tests, these work on windows
-    // and linux, but not on the MAC.
+    // and linux, but not on the MAC
 
-    @JavascriptEnabled
-    @Ignore(value = {HTMLUNIT, SELENESE, ANDROID, OPERA, OPERA_MOBILE},
-            reason = "untested user agents")
+    // TO DO:implement identification keys letters
+    // Issue MHA-659
     @Test
     public void testChordControlCopyAndPaste() {
         // FIXME: macs don't have HOME keys, would PGUP work?

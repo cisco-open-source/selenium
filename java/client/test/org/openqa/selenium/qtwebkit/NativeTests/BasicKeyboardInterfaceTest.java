@@ -25,7 +25,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
         driver.get("BasicKeyboardInterfaceTestWidget");
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE})
     @Test
     public void testBasicKeyboardInput() {
 
@@ -35,7 +34,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
         assertThat(inputElement.getText(), is("abc def"));
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeyDownOnly() {
 
@@ -47,7 +45,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeyUp() {
 
@@ -58,7 +55,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
        assertThat(resultElement.getText(), is("Key Up"));
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeysShiftOnly() {
 
@@ -71,7 +67,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeyCtrlOnly() {
 
@@ -84,7 +79,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeyAltOnly() {
 
@@ -97,7 +91,8 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
+    // TO DO:implement identification keys letters
+    // Issue MHA-659
     @Test
     public void testSendingKeysWithShiftPressed() {
 
@@ -106,11 +101,11 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
         inputElement.sendKeys("ab" + Keys.SHIFT);
         assertThat(resultElement.getText(), is("Shift"));
+
         assertThat(inputElement.getText(), is("AB"));
 
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeysWithCtrlPressed() {
 
@@ -123,7 +118,6 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     }
 
-    @Ignore({ANDROID, IPHONE, SELENESE, IE, OPERA, OPERA_MOBILE})
     @Test
     public void testSendingKeysWithAltPressed() {
 
