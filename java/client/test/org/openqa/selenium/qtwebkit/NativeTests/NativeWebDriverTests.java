@@ -8,6 +8,8 @@ import org.openqa.selenium.qtwebkit.NativeTests.TakesScreenshotTest;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.qtwebkit.NativeTests.interactions.ActionsTest;
+import org.openqa.selenium.qtwebkit.NativeTests.interactions.IndividualKeyboardActionsTest;
+import org.openqa.selenium.qtwebkit.NativeTests.interactions.IndividualMouseActionsTest;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 @RunWith(Suite.class)
@@ -25,7 +27,9 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         TextHandlingTest.class,
         FormHandlingTest.class,
         ActionsTest.class,
-        MiscTest.class
+        MiscTest.class,
+        IndividualKeyboardActionsTest.class,
+        IndividualMouseActionsTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
