@@ -43,12 +43,6 @@ public class FormHandlingTest extends JUnit4TestBase {
     @Test
     public void testShouldBeAbleToClickImageButtons() {
         driver.findElement(By.id("imageButton")).click();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
         assertThat(driver.getTitle(), equalTo("We Arrive Here"));
     }
 
