@@ -218,6 +218,10 @@ public class DesiredCapabilities implements Serializable, Capabilities {
     return new DesiredCapabilities(BrowserType.PHANTOMJS, "", Platform.ANY);
   }
 
+    public static DesiredCapabilities remotedriver() {
+        return new DesiredCapabilities("remotedriver", "", Platform.ANY);
+    }
+
   @Override
   public String toString() {
     return String.format("Capabilities [%s]", capabilities);
