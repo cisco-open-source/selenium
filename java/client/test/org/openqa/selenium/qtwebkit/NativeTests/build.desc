@@ -2,8 +2,11 @@ java_test(name = "NativeTests",
   sysproperties = [
     { "selenium.browser" : "qtwebkit" },
   ],
-  srcs = ["*.java" ],
+  srcs = ["*.java",
+          "interactions/*.java",],
   deps = [
     "//third_party/java/junit",
     "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//third_party/java/jmock",
+    "//third_party/java/junit"
   ])
