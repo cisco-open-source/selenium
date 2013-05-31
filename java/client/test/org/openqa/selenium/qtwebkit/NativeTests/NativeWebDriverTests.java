@@ -25,7 +25,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         TextHandlingTest.class,
         FormHandlingTest.class,
         ActionsTest.class,
-        MiscTest.class
+        MiscTest.class,
+        XPathElementFindingTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
