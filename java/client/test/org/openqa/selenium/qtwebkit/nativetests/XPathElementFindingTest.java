@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +11,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class XPathElementFindingTest extends JUnit4TestBase {
 

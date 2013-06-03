@@ -273,6 +273,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
   }
 
   public void get(String url) {
+      if(url.startsWith("qtwidget://"))
+          url.replaceFirst("qtwidget:////", "");
     execute(DriverCommand.GET, ImmutableMap.of("url", url));
   }
 
