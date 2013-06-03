@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.openqa.selenium.qtwebkit.NativeTests.interactions;
+package org.openqa.selenium.qtwebkit.nativetests.interactions;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StubDriver;

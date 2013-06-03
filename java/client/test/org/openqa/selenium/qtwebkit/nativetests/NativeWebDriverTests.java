@@ -1,15 +1,14 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.openqa.selenium.qtwebkit.NativeTests.TakesScreenshotTest;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
-import org.openqa.selenium.qtwebkit.NativeTests.interactions.ActionsTest;
-import org.openqa.selenium.qtwebkit.NativeTests.interactions.IndividualKeyboardActionsTest;
-import org.openqa.selenium.qtwebkit.NativeTests.interactions.IndividualMouseActionsTest;
+import org.openqa.selenium.qtwebkit.nativetests.interactions.ActionsTest;
+import org.openqa.selenium.qtwebkit.nativetests.interactions.IndividualKeyboardActionsTest;
+import org.openqa.selenium.qtwebkit.nativetests.interactions.IndividualMouseActionsTest;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 @RunWith(Suite.class)

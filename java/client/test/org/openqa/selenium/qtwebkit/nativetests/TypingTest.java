@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.junit.Before;
 import org.junit.Test;

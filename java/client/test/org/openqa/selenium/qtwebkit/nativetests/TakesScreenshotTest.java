@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.junit.Test;
 import org.openqa.selenium.OutputType;
