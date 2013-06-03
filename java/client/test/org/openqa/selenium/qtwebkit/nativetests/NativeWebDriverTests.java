@@ -27,6 +27,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         FormHandlingTest.class,
         ActionsTest.class,
         MiscTest.class,
+        XPathElementFindingTest.class,
         IndividualKeyboardActionsTest.class,
         IndividualMouseActionsTest.class
 })
