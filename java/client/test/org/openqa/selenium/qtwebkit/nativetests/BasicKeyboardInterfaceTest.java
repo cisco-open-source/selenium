@@ -15,7 +15,7 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("BasicKeyboardInterfaceTestWidget");
+        driver.get("qtwidget://BasicKeyboardInterfaceTestWidget");
     }
 
     @Test

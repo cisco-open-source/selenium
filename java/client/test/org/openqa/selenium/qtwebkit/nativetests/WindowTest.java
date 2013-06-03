@@ -28,7 +28,7 @@ public class WindowTest extends JUnit4TestBase {
     @Before
     public void setUp()
     {
-        driver.get("WindowTestWidget");
+        driver.get("qtwidget://WindowTestWidget");
     }
 
     @Test

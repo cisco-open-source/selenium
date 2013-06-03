@@ -40,7 +40,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 public class ClickScrollingTest extends JUnit4TestBase {
     @Before
     public void setUp() throws Exception {
-        driver.get("ClickScrollingTest");
+        driver.get("qtwidget://ClickScrollingTest");
     }
 
   @Test

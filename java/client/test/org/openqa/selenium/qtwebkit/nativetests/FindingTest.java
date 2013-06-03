@@ -12,20 +12,14 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 4/22/13
- * Time: 3:13 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class FindingTest extends JUnit4TestBase {
 
     private static Logger log = Logger.getLogger(FindingTest.class.getName());
 
     @Before
     public void createWebDriver() {
-        driver.get("FindingTestWidget");
+        driver.get("qtwidget://FindingTestWidget");
     }
 
     @Test

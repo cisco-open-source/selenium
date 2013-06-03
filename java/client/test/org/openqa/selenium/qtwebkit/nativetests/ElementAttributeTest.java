@@ -19,7 +19,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("ElementAttributeTestWidget");
+        driver.get("qtwidget://ElementAttributeTestWidget");
     }
 
     @Test

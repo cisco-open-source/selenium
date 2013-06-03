@@ -17,7 +17,7 @@ public class ClickTest extends JUnit4TestBase {
 
     @Before
      public void setUp() throws Exception {
-        driver.get("ClickTestWidget");
+        driver.get("qtwidget://ClickTestWidget");
     }
 
     @Test

@@ -17,7 +17,7 @@ public class FormHandlingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("FormHandlingTestWidget");
+        driver.get("qtwidget://FormHandlingTestWidget");
     }
 
     @Test

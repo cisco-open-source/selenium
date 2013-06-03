@@ -18,7 +18,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
             return;
         }
 
-        driver.get("QWidget");
+        driver.get("qtwidget://QWidget");
         File tempFile = getScreenshot().getScreenshotAs(OutputType.FILE);
         assertTrue(tempFile.exists());
         assertTrue(tempFile.length() > 0);
@@ -31,7 +31,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
             return;
         }
 
-        driver.get(pages.simpleTestPage);
+        driver.get("qtwidget://QWidget");
         String screenshot = getScreenshot().getScreenshotAs(BASE64);
         assertTrue(screenshot.length() > 0);
     }

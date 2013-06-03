@@ -16,7 +16,7 @@ public class TypingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("TypingTestWidget");
+        driver.get("qtwidget://TypingTestWidget");
     }
 
     @Test

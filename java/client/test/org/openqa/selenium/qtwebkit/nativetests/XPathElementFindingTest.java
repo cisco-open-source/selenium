@@ -18,7 +18,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("XPathElementFindingTestWidget");
+        driver.get("qtwidget://XPathElementFindingTestWidget");
     }
 
     @Test

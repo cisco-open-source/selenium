@@ -23,13 +23,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 5/14/13
- * Time: 3:38 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class TextHandlingTest extends JUnit4TestBase {
 
     private final String newLine = "\n";
@@ -37,7 +31,7 @@ public class TextHandlingTest extends JUnit4TestBase {
     @Before
     public void setUp() throws Exception
     {
-        driver.get("TextHandlingWidget");
+        driver.get("qtwidget://TextHandlingWidget");
     }
 
     @Test

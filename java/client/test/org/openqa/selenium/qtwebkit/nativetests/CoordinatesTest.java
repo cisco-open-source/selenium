@@ -12,19 +12,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 4/25/13
- * Time: 1:49 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class CoordinatesTest extends JUnit4TestBase {
 
     @Before
     public void setUpWebDriver()
     {
-        driver.get("CoordinatesTestWidget");
+        driver.get("qtwidget://CoordinatesTestWidget");
     }
 
     @Test
