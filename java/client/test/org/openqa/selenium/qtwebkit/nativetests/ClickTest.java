@@ -1,27 +1,16 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.After;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.JavascriptEnabled;
-import org.openqa.selenium.testing.TestUtilities;
-import org.openqa.selenium.testing.drivers.WebDriverBuilder;
-import org.testng.annotations.BeforeClass;
 
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.windowHandleCountToBe;
-import static org.openqa.selenium.testing.Ignore.Driver.*;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 
 public class ClickTest extends JUnit4TestBase {
 

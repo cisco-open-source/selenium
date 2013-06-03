@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.testing.Ignore;
@@ -9,11 +9,8 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.After;
 import org.openqa.selenium.testing.TestUtilities;
 import org.openqa.selenium.testing.drivers.SauceDriver;
-import org.openqa.selenium.testing.drivers.WebDriverBuilder;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;

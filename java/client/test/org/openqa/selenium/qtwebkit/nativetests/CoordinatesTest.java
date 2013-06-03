@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -6,13 +6,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.Locatable;
-import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
 
 /**
  * Created with IntelliJ IDEA.

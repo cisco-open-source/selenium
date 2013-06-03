@@ -1,14 +1,11 @@
-package org.openqa.selenium.qtwebkit.NativeTests;
+package org.openqa.selenium.qtwebkit.nativetests;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
-import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.JavascriptEnabled;
-import org.openqa.selenium.testing.TestUtilities;
 
 import java.util.regex.Pattern;
 
@@ -18,7 +15,6 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;

@@ -1,4 +1,4 @@
-java_test(name = "NativeTests",
+java_test(name = "nativetests",
   sysproperties = [
     { "selenium.browser" : "qtwebkit" },
   ],
