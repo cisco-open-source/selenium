@@ -53,7 +53,7 @@ public class FormHandlingTest extends JUnit4TestBase {
             driver.findElement(By.id("there is no spoon")).click();
             fail("Should not have succeeded");
         } catch (RuntimeException e) {
-            assertThat(e, is(instanceOf(NullPointerException.class)));
+            assertThat(e, is(instanceOf(NoSuchElementException.class)));
         }
     }
 

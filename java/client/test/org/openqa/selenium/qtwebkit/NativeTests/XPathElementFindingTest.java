@@ -33,7 +33,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
             WebElement element = driver.findElement(By.xpath("//QLabel[@id='Not here']"));
             assertThat(element.getText(), equalTo(""));
             fail("Should not have succeeded");
-        } catch (RuntimeException e) {
+        } catch (NoSuchElementException e) {
             // this is expected
         }
     }
@@ -57,7 +57,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
             WebElement element = driver.findElement(By.xpath("//*[@id='not valid']"));
             assertThat(element.getText(), equalTo(""));
             fail("Should not have succeeded");
-        } catch (RuntimeException e) {
+        } catch (NoSuchElementException e) {
             // this is expected
         }
     }
@@ -78,7 +78,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
             WebElement element = driver.findElement(By.xpath("//*[@name='not valid']"));
             assertThat(element.getText(), equalTo(""));
             fail("Should not have succeeded");
-        } catch (RuntimeException e) {
+        } catch (NoSuchElementException e) {
             // this is expected
         }
     }
@@ -102,6 +102,8 @@ public class XPathElementFindingTest extends JUnit4TestBase {
     public void testShouldBeAbleToFindManyElementsRepeatedlyByXPath() {
         String xpathString = "//node()[contains(@id,'input')]";
         assertThat(driver.findElements(By.xpath(xpathString)).size(), equalTo(3));
+
+
 
         xpathString = "//node()[contains(@id,'nope')]";
         assertThat(driver.findElements(By.xpath(xpathString)).size(), equalTo(0));
