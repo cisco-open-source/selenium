@@ -68,7 +68,6 @@ java_library(name = "augmenter",
 
 java_library(name = "remote",
   srcs = [
-    "CiscoWebDriverExecutor.java",
     "CommandInfo.java",
     "CoordinatesUtils.java",
     "ExecuteMethod.java",

@@ -9,7 +9,6 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.openqa.selenium.StandardSeleniumTests;
-import org.openqa.selenium.remote.CiscoWebDriverExecutor;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.*;
 
@@ -21,7 +20,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -84,54 +82,6 @@ public class QtWebkitDriverTests {
         }
     }
 
-    @Rule
-    public TestRule traceMethodName = new TestWatcher() {
-        @Override
-        protected void starting(Description description) {
-            super.starting(description);
-
-            ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
-            for (int i=0; i<commands.size(); i++)
-            {
-                ReportSupplier.addCommand(commands.get(i));
-            }
-        }
-
-        @Override
-        protected void finished(Description description) {
-            super.finished(description);
-
-            ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
-            for (int i=0; i<commands.size(); i++)
-            {
-                ReportSupplier.addCommand(commands.get(i));
-            }
-        }
-
-        @Override
-        protected void succeeded(org.junit.runner.Description description)
-        {
-            ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
-            for (int i=0; i<commands.size(); i++)
-            {
-                ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
-            }
-
-            CiscoWebDriverExecutor.clearExecutedList();
-        }
-
-        @Override
-        protected void failed(java.lang.Throwable e, org.junit.runner.Description description)
-        {
-            ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
-            for (int i=0; i<commands.size(); i++)
-            {
-                ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
-            }
-
-            CiscoWebDriverExecutor.clearExecutedList();
-        }
-    };
 
     private static Document generateXmlReport()
     {
@@ -153,8 +103,8 @@ public class QtWebkitDriverTests {
             while (it.hasNext())
             {
                 String key = (String)it.next();
-                String path = CiscoWebDriverExecutor.getCommandPath(key);
-                String method = CiscoWebDriverExecutor.getCommandMethod(key);
+                String path = QtWebDriverExecutor.getCommandPath(key);
+                String method = QtWebDriverExecutor.getCommandMethod(key);
 
                 if (null != path && null != method)
                 {

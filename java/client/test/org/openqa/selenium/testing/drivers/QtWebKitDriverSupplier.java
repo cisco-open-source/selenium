@@ -10,12 +10,10 @@ package org.openqa.selenium.testing.drivers;
 import com.google.common.base.Supplier;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.CiscoWebDriverExecutor;
+import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import java.net.MalformedURLException;
-import java.util.logging.Logger;
 
 
 public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
@@ -53,7 +51,7 @@ public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
 
         /*RemoteWebDriver driver = new RemoteWebDriver(
                 hostURL, desiredCapabilities, requiredCapabilities);*/
-        CiscoWebDriverExecutor executor = new CiscoWebDriverExecutor(hostURL);
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         RemoteWebDriver driver = new RemoteWebDriver(
                 executor, desiredCapabilities, requiredCapabilities);
         driver.setFileDetector(new LocalFileDetector());

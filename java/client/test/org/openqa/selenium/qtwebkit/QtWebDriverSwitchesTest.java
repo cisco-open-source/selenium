@@ -7,7 +7,6 @@ import java.util.Arrays;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.CiscoWebDriverExecutor;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -48,7 +47,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return;
         }
-        CiscoWebDriverExecutor executor = new CiscoWebDriverExecutor(hostURL);
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         driver = new RemoteWebDriver(
                 executor, capabilities);
 
@@ -78,7 +77,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return;
         }
-        CiscoWebDriverExecutor executor = new CiscoWebDriverExecutor(hostURL);
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         driver = new RemoteWebDriver(
                 executor, capabilities);
 
@@ -105,7 +104,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return;
         }
-        CiscoWebDriverExecutor executor = new CiscoWebDriverExecutor(hostURL);
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         driver = new RemoteWebDriver(
                 executor, capabilities);
 
