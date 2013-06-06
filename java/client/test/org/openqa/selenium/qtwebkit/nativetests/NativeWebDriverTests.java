@@ -30,7 +30,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         XPathElementFindingTest.class,
         IndividualKeyboardActionsTest.class,
         IndividualMouseActionsTest.class,
-        StaleElementReferenceTest.class
+        StaleElementReferenceTest.class,
+        VisibilityTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
