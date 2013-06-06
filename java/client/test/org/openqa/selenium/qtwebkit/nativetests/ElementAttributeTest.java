@@ -9,6 +9,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -25,9 +26,11 @@ public class ElementAttributeTest extends JUnit4TestBase {
     @Test
     public void testElementsDisabledOrEnabled() {
         WebElement inputElement = driver.findElement(By.id("notWorkingButton"));
+        assertThat(inputElement.getAttribute("disabled"), equalTo(null));
         assertThat(inputElement.isEnabled(), is(false));
 
         inputElement = driver.findElement(By.id("workingButton"));
+        assertThat(inputElement.getAttribute("disabled"), equalTo(null));
         assertThat(inputElement.isEnabled(), is(true));
     }
 
@@ -94,6 +97,15 @@ public class ElementAttributeTest extends JUnit4TestBase {
     }
 
     @Test
+    public void testShouldOnlyReturnTheValueOfCheckedForRadioButtonsIfItIsSet() {
+        WebElement noSelected = driver.findElement(By.id("noSelected"));
+        WebElement initiallySelected = driver.findElement(By.id("defaultSelected"));
+
+        assertThat(noSelected.getAttribute("checked"), equalTo("false"));
+        assertThat(initiallySelected.getAttribute("checked"), equalTo("true"));
+    }
+
+    @Test
     public void testShouldIndicateWhenCheckButtonSelect() {
 
         WebElement check1 = driver.findElement(By.id("checkBoxWithText"));
@@ -123,6 +135,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
      @Test
      public void testCanRetrieveTheCurrentTextFormTextArea() {
          WebElement textArea = driver.findElement(By.id("workingArea"));
+         assertEquals("", textArea.getText());
          textArea.sendKeys("hello world");
          assertEquals("hello world", textArea.getText());
      }
@@ -134,10 +147,19 @@ public class ElementAttributeTest extends JUnit4TestBase {
         assertEquals("Hello", txt.getText());
         assertThat(txt.getText(), is("Hello"));
         txt.clear();
+        assertEquals("", txt.getText());
         txt.sendKeys("hello world");
 
         assertEquals("hello world", txt.getText());
         assertThat(txt.getText(), is("hello world"));
+    }
+
+    @Test
+    public void testCanRetrieveTheCurrentValueOfATextFormFieldAsEmailInput() {
+        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        assertEquals("", element.getText());
+        element.sendKeys("hello@example.com");
+        assertEquals("hello@example.com", element.getText());
     }
 
     @Test
