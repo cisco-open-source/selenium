@@ -17,6 +17,7 @@ limitations under the License.
 
 package org.openqa.selenium.testing;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.environment.TestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
+import org.openqa.selenium.remote.CiscoWebDriverExecutor;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -78,13 +80,57 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     protected void starting(Description description) {
       super.starting(description);
       logger.info(">>> Starting " + description);
+
+        ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addCommand(commands.get(i));
+        }
     }
 
     @Override
     protected void finished(Description description) {
       super.finished(description);
       logger.info("<<< Finished " + description);
+
+        ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+        }
+
+        if(description.toString().contains("org.openqa.selenium.html5"))
+            logger.info("####[JUnit4TestBase] Finished and have commands: " + commands.size());
+
+        CiscoWebDriverExecutor.clearExecutedList();
     }
+
+    @Override
+    protected void succeeded(org.junit.runner.Description description)
+    {
+        ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
+        }
+
+        if(description.toString().contains("org.openqa.selenium.html5"))
+            logger.info("####[JUnit4TestBase] Succeded and have commands: " + commands.size());
+
+        CiscoWebDriverExecutor.clearExecutedList();
+    }
+
+      @Override
+      protected void failed(java.lang.Throwable e, org.junit.runner.Description description)
+      {
+          ArrayList<String> commands = CiscoWebDriverExecutor.getExecutedCommands();
+          for (int i=0; i<commands.size(); i++)
+          {
+              ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+          }
+
+          CiscoWebDriverExecutor.clearExecutedList();
+      }
   };
   
   public WebDriver getWrappedDriver() {
