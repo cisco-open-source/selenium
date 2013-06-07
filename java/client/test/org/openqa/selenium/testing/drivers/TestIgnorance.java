@@ -53,7 +53,7 @@ public class TestIgnorance {
 
   private Set<Browser> alwaysNativeEvents = ImmutableSet.of(chrome, ie, opera);
   private Set<Browser> neverNativeEvents = ImmutableSet.of(
-      htmlunit, htmlunit_js, ipad, iphone, android);
+      htmlunit, htmlunit_js, ipad, iphone, android, phantomjs);
   private IgnoreComparator ignoreComparator = new IgnoreComparator();
   private Set<String> methods = Sets.newHashSet();
   private Set<String> only = Sets.newHashSet();
@@ -150,9 +150,6 @@ public class TestIgnorance {
   }
 
   private void addIgnoresForBrowser(Browser browser, IgnoreComparator comparator) {
-    if (Boolean.getBoolean("selenium.browser.selenium")) {
-      comparator.addDriver(SELENESE);
-    }
     if (Boolean.getBoolean("selenium.browser.remote") || SauceDriver.shouldUseSauce()) {
       comparator.addDriver(REMOTE);
     }

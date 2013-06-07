@@ -72,6 +72,7 @@ class SendKeysCommandHandler : public IECommandHandler {
         return;
       }
       HWND window_handle = browser_wrapper->GetWindowHandle();
+      HWND top_level_window_handle = browser_wrapper->GetTopLevelWindowHandle();
 
       ElementHandle element_wrapper;
       status_code = this->GetElement(executor, element_id, &element_wrapper);
@@ -91,17 +92,25 @@ class SendKeysCommandHandler : public IECommandHandler {
           return;
         }
 
-        CComQIPtr<IHTMLElement> element(element_wrapper->element());
+        CComPtr<IHTMLElement> element(element_wrapper->element());
 
         LocationInfo location = {};
-        element_wrapper->GetLocationOnceScrolledIntoView(executor.input_manager()->scroll_behavior(), &location);
+        std::vector<LocationInfo> frame_locations;
+        element_wrapper->GetLocationOnceScrolledIntoView(executor.input_manager()->scroll_behavior(),
+                                                         &location,
+                                                         &frame_locations);
 
-        CComQIPtr<IHTMLInputFileElement> file(element);
-        CComQIPtr<IHTMLInputElement> input(element);
+        CComPtr<IHTMLInputFileElement> file;
+        element->QueryInterface<IHTMLInputFileElement>(&file);
+        CComPtr<IHTMLInputElement> input;
+        element->QueryInterface<IHTMLInputElement>(&input);
         CComBSTR element_type;
         if (input) {
           input->get_type(&element_type);
-          element_type.ToLower();
+          HRESULT hr = element_type.ToLower();
+          if (FAILED(hr)) {
+            LOGHR(WARN, hr) << "Failed converting type attribute of <input> element to lowercase using ToLower() method of BSTR";
+          }
         }
         bool is_file_element = (file != NULL) ||
                                (input != NULL && element_type == L"file");
@@ -109,12 +118,11 @@ class SendKeysCommandHandler : public IECommandHandler {
           std::wstring keys = L"";
           for (unsigned int i = 0; i < key_array.size(); ++i ) {
             std::string key(key_array[i].asString());
-            keys.append(CA2W(key.c_str(), CP_UTF8));
+            keys.append(StringUtilities::ToWString(key));
           }
 
           DWORD ie_process_id;
           ::GetWindowThreadProcessId(window_handle, &ie_process_id);
-          HWND top_level_window_handle = browser_wrapper->GetTopLevelWindowHandle();
 
           FileNameData key_data;
           key_data.main = top_level_window_handle;
@@ -133,20 +141,23 @@ class SendKeysCommandHandler : public IECommandHandler {
           element->click();
           // We're now blocked until the dialog closes.
           ::CloseHandle(thread_handle);
+          response->SetSuccessResponse(Json::Value::null);
           return;
         }
 
-        this->VerifyPageHasFocus(browser_wrapper->GetTopLevelWindowHandle(), browser_wrapper->window_handle());
-        this->WaitUntilElementFocused(element);
-        std::string null_character = CW2A(L"\uE000", CP_UTF8);
+        if (!this->VerifyPageHasFocus(top_level_window_handle, window_handle)) {
+          LOG(WARN) << "HTML rendering pane does not have the focus. Keystrokes may go to an unexpected UI element.";
+        }
+        if (!this->WaitUntilElementFocused(element)) {
+          LOG(WARN) << "Specified element is not the active element. Keystrokes may go to an unexpected DOM element.";
+        }
         Json::Value value = this->RecreateJsonParameterObject(command_parameters);
-        value["value"].append(null_character);
         value["action"] = "keys";
+        value["releaseModifiers"] = true;
         Json::UInt index = 0;
         Json::Value actions(Json::arrayValue);
         actions[index] = value;
         status_code = executor.input_manager()->PerformInputSequence(browser_wrapper, actions);
-        //status_code = executor.input_manager()->SendKeystrokes(browser_wrapper, key_array, true);
         response->SetSuccessResponse(Json::Value::null);
         return;
       } else {
@@ -258,14 +269,15 @@ class SendKeysCommandHandler : public IECommandHandler {
     return false;
   }
 
-  void VerifyPageHasFocus(HWND top_level_window_handle, HWND browser_pane_window_handle) {
+  bool VerifyPageHasFocus(HWND top_level_window_handle, HWND browser_pane_window_handle) {
     DWORD proc;
-    DWORD thread_id = ::GetWindowThreadProcessId(top_level_window_handle, &proc);
+    DWORD thread_id = ::GetWindowThreadProcessId(browser_pane_window_handle, &proc);
     GUITHREADINFO info;
     info.cbSize = sizeof(GUITHREADINFO);
     ::GetGUIThreadInfo(thread_id, &info);
 
     if (info.hwndFocus != browser_pane_window_handle) {
+      LOG(INFO) << "Focus is on a UI element other than the HTML viewer pane.";
       // The focus is on a UI element other than the HTML viewer pane (like
       // the address bar, for instance). This has implications for certain
       // keystrokes, like backspace. We need to set the focus to the HTML
@@ -273,12 +285,20 @@ class SendKeysCommandHandler : public IECommandHandler {
       // N.B. The SetFocus() API should *NOT* cause the IE browser window to
       // magically appear in the foreground. If that is not true, we will need
       // to find some other solution.
-      LOG(DEBUG) << "Focus is on a UI element other than the HTML viewer pane.";
+      // Send an explicit WM_KILLFOCUS message to free up SetFocus() to place the
+      // focus on the correct window. While SetFocus() is supposed to already do
+      // this, it seems to not work entirely correctly.
+      ::SendMessage(info.hwndFocus, WM_KILLFOCUS, NULL, NULL);
       DWORD current_thread_id = ::GetCurrentThreadId();
       ::AttachThreadInput(current_thread_id, thread_id, TRUE);
-      ::SetFocus(browser_pane_window_handle);
+      HWND previous_focus = ::SetFocus(browser_pane_window_handle);
+      if (previous_focus == NULL) {
+        LOGERR(WARN) << "SetFocus API call failed";
+      }
       ::AttachThreadInput(current_thread_id, thread_id, FALSE);
+      ::GetGUIThreadInfo(thread_id, &info);
     }
+    return info.hwndFocus == browser_pane_window_handle;
   }
 
   bool WaitUntilElementFocused(IHTMLElement *element) {
@@ -286,7 +306,8 @@ class SendKeysCommandHandler : public IECommandHandler {
     bool has_focus = false;
     CComPtr<IDispatch> dispatch;
     element->get_document(&dispatch);
-    CComQIPtr<IHTMLDocument2> document(dispatch);
+    CComPtr<IHTMLDocument2> document;
+    dispatch->QueryInterface<IHTMLDocument2>(&document);
 
     // If the element we want is already the focused element, we're done.
     CComPtr<IHTMLElement> active_element;
@@ -296,15 +317,18 @@ class SendKeysCommandHandler : public IECommandHandler {
       }
     }
 
-    CComQIPtr<IHTMLElement2> element2(element);
+    CComPtr<IHTMLElement2> element2;
+    element->QueryInterface<IHTMLElement2>(&element2);
     element2->focus();
 
-    clock_t max_wait = clock() + 1000;
+    // Hard-coded 1 second timeout here. Possible TODO is make this adjustable.
+    clock_t max_wait = clock() + CLOCKS_PER_SEC;
     for (int i = clock(); i < max_wait; i = clock()) {
       wait(1);
       CComPtr<IHTMLElement> active_wait_element;
       if (document->get_activeElement(&active_wait_element) == S_OK) {
-        CComQIPtr<IHTMLElement2> active_wait_element2(active_wait_element);
+        CComPtr<IHTMLElement2> active_wait_element2;
+        active_wait_element->QueryInterface<IHTMLElement2>(&active_wait_element2);
         if (element2.IsEqualObject(active_wait_element2)) {
           this->SetInsertionPoint(element);
           has_focus = true;
@@ -313,21 +337,19 @@ class SendKeysCommandHandler : public IECommandHandler {
       }
     }
 
-    if (!has_focus) {
-      LOG(WARN) << "We don't have focus on element.";
-    }
-
     return has_focus;
   }
 
   bool SetInsertionPoint(IHTMLElement* element) {
     CComPtr<IHTMLTxtRange> range;
-    CComQIPtr<IHTMLInputTextElement> input_element(element);
-    if (input_element) {
+    CComPtr<IHTMLInputTextElement> input_element;
+    HRESULT hr = element->QueryInterface<IHTMLInputTextElement>(&input_element);
+    if (SUCCEEDED(hr) && input_element) {
       input_element->createTextRange(&range);
     } else {
-      CComQIPtr<IHTMLTextAreaElement> text_area_element(element);
-      if (text_area_element) {
+      CComPtr<IHTMLTextAreaElement> text_area_element;
+      hr = element->QueryInterface<IHTMLTextAreaElement>(&text_area_element);
+      if (SUCCEEDED(hr) && text_area_element) {
         text_area_element->createTextRange(&range);
       }
     }

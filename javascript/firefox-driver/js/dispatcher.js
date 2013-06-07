@@ -174,8 +174,6 @@ Dispatcher.prototype.init_ = function() {
       on(Request.Method.GET, Dispatcher.executeAs('getCurrentUrl')).
       on(Request.Method.POST, Dispatcher.executeAs('get'));
 
-  this.bind_('/session/:sessionId/alert').
-    on(Request.Method.GET, Dispatcher.executeAs('getAlert'));
   this.bind_('/session/:sessionId/accept_alert').
     on(Request.Method.POST, Dispatcher.executeAs('acceptAlert'));
   this.bind_('/session/:sessionId/dismiss_alert').
@@ -183,9 +181,6 @@ Dispatcher.prototype.init_ = function() {
   this.bind_('/session/:sessionId/alert_text').
     on(Request.Method.GET, Dispatcher.executeAs('getAlertText')).
     on(Request.Method.POST, Dispatcher.executeAs('setAlertValue'));
-
-  this.bind_('/session/:sessionId/alert_text').
-    on(Request.Method.GET, Dispatcher.executeAs('getAlertText'));
 
   this.bind_('/session/:sessionId/forward').
       on(Request.Method.POST, Dispatcher.executeAs('goForward'));
@@ -412,26 +407,23 @@ Resource = function(path) {
 
   /**
    * The request pattern that this resource is located at.
-   * @type {!string}
+   * @private {!string}
    * @const
-   * @private
    */
   this.path_ = path;
 
   /**
    * The individual path segments for this resource.
-   * @type {Array.<string>}
+   * @private {Array.<string>}
    * @const
-   * @private
    */
   this.pathSegments_ = path.split('/');
 
   /**
    * A map of handler functions, by HTTP method, that can service requests to
    * this resource.
-   * @type {!Object}
+   * @private {!Object}
    * @const
-   * @private
    */
   this.handlers_ = {};
 
@@ -445,8 +437,7 @@ Resource = function(path) {
 
 /**
  * The number of path segments for this resource that are variables.
- * @type {number}
- * @private
+ * @private {number}
  */
 Resource.prototype.numVariablePathSegments_ = 0;
 

@@ -17,6 +17,7 @@ limitations under the License.
 
 package org.openqa.selenium.safari;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.copy;
 import static com.google.common.io.Files.write;
@@ -27,28 +28,35 @@ import org.openqa.selenium.io.TemporaryFilesystem;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
+import com.google.common.io.InputSupplier;
+import com.google.common.io.Resources;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Manages the installation of the SafariDriver browser extension. The extension
- * may currently be installed from the following sources:
- * <ul>
+ * Manages the installation of the SafariDriver browser extension. This class
+ * will backup and uninstall all extensions before installing the SafariDriver
+ * browser extension. The SafariDriver may currently installed from one of two
+ * locations:
+ * <ol>
+ *   <li>A pre-built extension included with this jar.</li>
  *   <li>A pre-packaged Safari .safariextz file specified through the
- *       {@link #EXTENSION_LOCATION_PROPERTY} system property.
- *       <em>Using this option will uninstall all other extensions.</em></li>
- * </ul>
+ *       {@link #EXTENSION_LOCATION_PROPERTY} system property.</li>
+ * </ol>
+ * To use a pre-installed version of the SafariDriver, set the
+ * {@link #NO_INSTALL_EXTENSION_PROPERTY} to {@code true}.
  */
 class SafariDriverExtension {
-
-  // TODO: Add the ability to install the extension packaged with this JAR.
-  // This will require us to distribute a prebuilt extension. See
-  // http://code.google.com/p/selenium/issues/detail?id=4107
 
   private static final Logger logger = Logger.getLogger(SafariDriverExtension.class.getName());
 
@@ -57,6 +65,16 @@ class SafariDriverExtension {
    * SafariDriver extension to install.
    */
   public static final String EXTENSION_LOCATION_PROPERTY = "webdriver.safari.driver";
+
+  /**
+   * System property that disables installing a prebuilt SafariDriver extension on
+   * start up.
+   */
+  public static final String NO_INSTALL_EXTENSION_PROPERTY = "webdriver.safari.noinstall";
+
+  private static final String EXTENSION_RESOURCE_PATH = String.format(
+      "/%s/SafariDriver.safariextz",
+      SafariDriverExtension.class.getPackage().getName().replace('.', '/'));
 
   private static final String EXTENSION_PLIST_LINES = Joiner.on("\n").join(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
@@ -95,13 +113,28 @@ class SafariDriverExtension {
 
   private final Runtime runtime;
   private final Backup backup;
+  private final Optional<File> customDataDir;
+  private final boolean installExtension;
 
   private UninstallThread uninstallThread;
   private File installedExtension;
 
-  SafariDriverExtension() {
-    runtime = Runtime.getRuntime();
-    backup = new Backup();
+  /**
+   * Installs the driver extension using a non-standard data directory for
+   * the system's Safari installation.
+   *
+   * @param customDataDir Path to the data directory for the Safari
+   *     instance to use.
+   * @param installExtension Whether to install the embedded SafariDriver extension. If
+   *     {@code false}, the extension must be pre-installed with Safari for the driver to
+   *     function properly. This value will be forced to {@code false} if the
+   *     {@link #NO_INSTALL_EXTENSION_PROPERTY} system property has been set.
+   */
+  SafariDriverExtension(Optional<File> customDataDir, boolean installExtension) {
+    this.runtime = Runtime.getRuntime();
+    this.backup = new Backup();
+    this.customDataDir = customDataDir;
+    this.installExtension = !Boolean.getBoolean(NO_INSTALL_EXTENSION_PROPERTY) && installExtension;
   }
 
   /**
@@ -120,14 +153,16 @@ class SafariDriverExtension {
   }
 
   /**
+   * @param customDataDir Location of the data directory for a custom Safari
+   *     installation. If omitted, t
    * @return The directory that the SafariDriver extension should be installed
    *     to for the current platform.
    * @throws IllegalStateException If the extension cannot be installed on the
    *     current platform.
    * @throws IOException If an I/O error occurs.
    */
-  private static File getInstallDirectory() throws IOException {
-    File dataDir = getSafariDataDirectory();
+  private static File getInstallDirectory(Optional<File> customDataDir) throws IOException {
+    File dataDir = customDataDir.or(getSafariDataDirectory());
     checkState(dataDir.isDirectory(),
         "The expected Safari data directory does not exist: %s",
         dataDir.getAbsolutePath());
@@ -153,9 +188,36 @@ class SafariDriverExtension {
       return;  // Already installed.
     }
 
+    if (!installExtension) {
+      logger.info("Use of prebuilt extension requested; skipping installation");
+      return;  // Use a pre-installed extension.
+    }
+
+    InputSupplier<? extends InputStream> extensionSrc =
+        getExtensionFromSystemProperties().or(getExtensionResource());
+
+    File installDirectory = getInstallDirectory(customDataDir);
+    installedExtension = new File(installDirectory, "WebDriver.safariextz");
+    if (installedExtension.exists()) {
+      backup.backup(installedExtension);
+    }
+    copy(extensionSrc, installedExtension);
+
+    File extensionPlist = new File(installDirectory, "Extensions.plist");
+    if (extensionPlist.exists()) {
+      backup.backup(extensionPlist);
+    }
+    write(EXTENSION_PLIST_LINES, extensionPlist, Charsets.UTF_8);
+
+    uninstallThread = new UninstallThread();
+    runtime.addShutdownHook(uninstallThread);
+  }
+
+  private static Optional<InputSupplier<? extends InputStream>> getExtensionFromSystemProperties()
+      throws FileNotFoundException {
     String extensionPath = System.getProperty(EXTENSION_LOCATION_PROPERTY);
     if (Strings.isNullOrEmpty(extensionPath)) {
-      return;  // No extension specified; nothing to do.
+      return Optional.absent();
     }
 
     File extensionSrc = new File(extensionPath);
@@ -166,23 +228,16 @@ class SafariDriverExtension {
         "The SafariDriver extension specified through the %s system property is not readable: %s",
         EXTENSION_LOCATION_PROPERTY, extensionPath);
 
-    logger.info(String.format("Installing %s defined extension: %s",
-        EXTENSION_LOCATION_PROPERTY, extensionSrc.getAbsolutePath()));
+    logger.info("Using extension " + extensionSrc.getAbsolutePath());
 
-    installedExtension= new File(getInstallDirectory(), "WebDriver.safariextz");
-    if (installedExtension.exists()) {
-      backup.backup(installedExtension);
-    }
-    copy(extensionSrc, installedExtension);
+    InputSupplier<? extends InputStream> supplier = Files.newInputStreamSupplier(extensionSrc);
+    return Optional.<InputSupplier<? extends InputStream>>of(supplier);
+  }
 
-    File extensionPlist = new File(getInstallDirectory(), "Extensions.plist");
-    if (extensionPlist.exists()) {
-      backup.backup(extensionPlist);
-    }
-    write(EXTENSION_PLIST_LINES, extensionPlist, Charsets.UTF_8);
-
-    uninstallThread = new UninstallThread();
-    runtime.addShutdownHook(uninstallThread);
+  private static InputSupplier<? extends InputStream> getExtensionResource() {
+    URL url = SafariDriverExtension.class.getResource(EXTENSION_RESOURCE_PATH);
+    checkNotNull(url, "Unable to locate extension resource, %s", EXTENSION_RESOURCE_PATH);
+    return Resources.newInputStreamSupplier(url);
   }
 
   /**
@@ -204,12 +259,12 @@ class SafariDriverExtension {
       backup.restoreAll();
     }
   }
-  
+
   private static class Backup {
 
     private final TemporaryFilesystem filesystem = TemporaryFilesystem.getDefaultTmpFS();
     private final Map<File, File> backups = Maps.newHashMap();
-    
+
     private File backupDir;
 
     File backup(File file) throws IOException {
@@ -230,7 +285,7 @@ class SafariDriverExtension {
       }
     }
   }
-  
+
   private class UninstallThread extends Thread {
     @Override
     public void run() {

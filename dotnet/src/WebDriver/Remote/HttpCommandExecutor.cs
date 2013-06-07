@@ -106,26 +106,54 @@ namespace OpenQA.Selenium.Remote
                 string payload = commandToExecute.ParametersAsJsonString;
                 byte[] data = Encoding.UTF8.GetBytes(payload);
                 request.ContentType = ContentTypeHeader;
-                System.IO.Stream requestStream = request.GetRequestStream();
+                Stream requestStream = request.GetRequestStream();
                 requestStream.Write(data, 0, data.Length);
                 requestStream.Close();
             }
 
-            return CreateResponse(request);
+            return this.CreateResponse(request);
         }
 
-        private static Response CreateResponse(WebRequest request)
+        private static string GetTextOfWebResponse(HttpWebResponse webResponse)
+        {
+            // StreamReader.Close also closes the underlying stream.
+            Stream responseStream = webResponse.GetResponseStream();
+            StreamReader responseStreamReader = new StreamReader(responseStream, Encoding.UTF8);
+            string responseString = responseStreamReader.ReadToEnd();
+            responseStreamReader.Close();
+
+            // The response string from the Java remote server has trailing null
+            // characters. This is due to the fix for issue 288.
+            if (responseString.IndexOf('\0') >= 0)
+            {
+                responseString = responseString.Substring(0, responseString.IndexOf('\0'));
+            }
+
+            return responseString;
+        }
+
+        private Response CreateResponse(WebRequest request)
         {
             Response commandResponse = new Response();
 
             HttpWebResponse webResponse = null;
             try
             {
-                webResponse = (HttpWebResponse)request.GetResponse();
+                webResponse = request.GetResponse() as HttpWebResponse;
             }
             catch (WebException ex)
             {
-                webResponse = (HttpWebResponse)ex.Response;
+                webResponse = ex.Response as HttpWebResponse;
+                if (ex.Status == WebExceptionStatus.Timeout)
+                {
+                    string timeoutMessage = "The HTTP request to the remote WebDriver server for URL {0} timed out after {1} seconds.";
+                    throw new WebDriverException(string.Format(CultureInfo.InvariantCulture, timeoutMessage, request.RequestUri.AbsoluteUri, this.serverResponseTimeout.TotalSeconds), ex);
+                }
+                else if (ex.Response == null)
+                {
+                    string nullResponseMessage = "A exception with a null response was thrown sending an HTTP request to the remote WebDriver server for URL {0}. The status of the exception was {1}, and the message was: {2}";
+                    throw new WebDriverException(string.Format(CultureInfo.InvariantCulture, nullResponseMessage, request.RequestUri.AbsoluteUri, ex.Status, ex.Message), ex);
+                }
             }
 
             if (webResponse == null)
@@ -188,23 +216,5 @@ namespace OpenQA.Selenium.Remote
         }
 
         #endregion
-
-        private static string GetTextOfWebResponse(HttpWebResponse webResponse)
-        {
-            // StreamReader.Close also closes the underlying stream.
-            Stream responseStream = webResponse.GetResponseStream();
-            StreamReader responseStreamReader = new StreamReader(responseStream, Encoding.UTF8);
-            string responseString = responseStreamReader.ReadToEnd();
-            responseStreamReader.Close();
-
-            // The response string from the Java remote server has trailing null
-            // characters. This is due to the fix for issue 288.
-            if (responseString.IndexOf('\0') >= 0)
-            {
-                responseString = responseString.Substring(0, responseString.IndexOf('\0'));
-            }
-
-            return responseString;
-        }
     }
 }

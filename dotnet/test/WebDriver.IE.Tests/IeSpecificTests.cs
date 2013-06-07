@@ -10,19 +10,30 @@ namespace OpenQA.Selenium.IE
     public class IeSpecificTests : DriverTestFixture
     {
         [Test]
+        public void InputOnChangeAlert()
+        {
+            driver.Url = alertsPage;
+            driver.FindElement(By.Id("input")).Clear();
+            IAlert alert = WaitFor<IAlert>(() => { return driver.SwitchTo().Alert(); });
+            alert.Accept();
+        }
+
+        [Test]
         public void ScrollingFrameTest()
         {
             try
             {
                 driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("frameScrollPage.html");
-                driver.SwitchTo().Frame("scrolling_frame");
+
+                WaitFor(FrameToExistAndBeSwitchedTo("scrolling_frame"));
                 IWebElement element = driver.FindElement(By.Name("scroll_checkbox"));
                 element.Click();
                 Assert.IsTrue(element.Selected);
 
                 driver.SwitchTo().DefaultContent();
-                driver.SwitchTo().Frame("scrolling_child_frame");
-                driver.SwitchTo().Frame("scrolling_frame");
+
+                WaitFor(FrameToExistAndBeSwitchedTo("scrolling_child_frame"));
+                WaitFor(FrameToExistAndBeSwitchedTo("scrolling_frame"));
                 element = driver.FindElement(By.Name("scroll_checkbox"));
                 element.Click();
                 Assert.IsTrue(element.Selected);
@@ -134,6 +145,8 @@ namespace OpenQA.Selenium.IE
             driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("scroll.html");
             driver.FindElement(By.Id("line8")).Click();
             Assert.AreEqual("line8", driver.FindElement(By.Id("clicked")).Text);
+            driver.FindElement(By.Id("line1")).Click();
+            Assert.AreEqual("line1", driver.FindElement(By.Id("clicked")).Text);
         }
 
         [Test]
@@ -159,6 +172,23 @@ namespace OpenQA.Selenium.IE
         private long GetScrollTop()
         {
             return (long)((IJavaScriptExecutor)driver).ExecuteScript("return document.body.scrollTop;");
+        }
+
+        private Func<bool> FrameToExistAndBeSwitchedTo(string frameName)
+        {
+            return () =>
+            {
+                try
+                {
+                    driver.SwitchTo().Frame(frameName);
+                }
+                catch (NoSuchFrameException)
+                {
+                    return false;
+                }
+
+                return true;
+            };
         }
     }
 }

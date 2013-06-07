@@ -23,7 +23,7 @@ import com.google.common.collect.Multimap;
 
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.ErrorCodes;
-import org.openqa.selenium.remote.HttpCommandExecutor;
+import org.openqa.selenium.remote.HttpSessionId;
 import org.openqa.selenium.remote.JsonToBeanConverter;
 import org.openqa.selenium.remote.PropertyMunger;
 import org.openqa.selenium.remote.SessionId;
@@ -37,8 +37,8 @@ import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
 import org.openqa.selenium.remote.server.handler.DeleteSession;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
-import org.openqa.selenium.server.log.LoggingManager;
-import org.openqa.selenium.server.log.PerSessionLogHandler;
+import org.openqa.selenium.remote.server.log.LoggingManager;
+import org.openqa.selenium.remote.server.log.PerSessionLogHandler;
 
 import java.io.BufferedReader;
 import java.lang.reflect.Constructor;
@@ -179,7 +179,7 @@ public class ResultConfig {
 
   public void handle(String pathInfo, final HttpRequest request,
       final HttpResponse response) throws Exception {
-    String sessionId = HttpCommandExecutor.getSessionId(request.getUri());
+    String sessionId = HttpSessionId.getSessionId(request.getUri());
     
     SessionId sessId = sessionId != null ? new SessionId(sessionId) : null;
 
@@ -197,10 +197,18 @@ public class ResultConfig {
     throwUpIfSessionTerminated(sessId);
 
     try {
-      log.info(String.format("Executing: %s at URL: %s)", handler.toString(), pathInfo));
+      if ("/status".equals(pathInfo)) {
+        log.fine(String.format("Executing: %s at URL: %s)", handler.toString(), pathInfo));
+      } else {
+        log.info(String.format("Executing: %s at URL: %s)", handler.toString(), pathInfo));
+      }
       result = handler.handle();
       addHandlerAttributesToRequest(request, handler);
-      log.info("Done: " + pathInfo);
+      if ("/status".equals(pathInfo)) {
+        log.fine("Done: " + pathInfo);
+      } else {
+        log.info("Done: " + pathInfo);
+      }
     } catch (UnreachableBrowserException e){
       throwUpIfSessionTerminated(sessId);
       replyError(request, response, e);

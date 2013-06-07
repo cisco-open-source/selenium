@@ -28,11 +28,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
+import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.TestUtilities.isOldIe;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
@@ -110,7 +109,7 @@ public class ElementFindingTest extends JUnit4TestBase {
   }
 
   @Test
-  public void testShouldfindAnElementBasedOnId() {
+  public void testShouldFindAnElementBasedOnId() {
     driver.get(pages.formPage);
 
     WebElement element = driver.findElement(By.id("checky"));
@@ -119,7 +118,7 @@ public class ElementFindingTest extends JUnit4TestBase {
   }
 
   @Test
-  public void testShouldNotBeAbleTofindElementsBasedOnIdIfTheElementIsNotThere() {
+  public void testShouldNotBeAbleToFindElementsBasedOnIdIfTheElementIsNotThere() {
     driver.get(pages.formPage);
 
     try {
@@ -148,7 +147,6 @@ public class ElementFindingTest extends JUnit4TestBase {
     assertThat(rows.size(), equalTo(0));
   }
 
-  @Ignore(value = SELENESE, reason = "Value returned as 'off'")
   @Test
   public void testShouldFindElementsByName() {
     driver.get(pages.formPage);
@@ -433,7 +431,6 @@ public class ElementFindingTest extends JUnit4TestBase {
     assertEquals("Changed", driver.getTitle());
   }
 
-  @Ignore({SELENESE})
   @Test
   public void testShouldNotBeAbleToFindAnElementOnABlankPage() {
     driver.get("about:blank");
@@ -515,7 +512,6 @@ public class ElementFindingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(CHROME)
   @Test
   public void testShouldBeAbleToFindAnElementByCompoundCssSelector() {
     driver.get(pages.xhtmlTestPage);
@@ -524,7 +520,6 @@ public class ElementFindingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(CHROME)
   @Test
   public void testShouldBeAbleToFindElementsByCompoundCssSelector() {
     driver.get(pages.xhtmlTestPage);
@@ -551,8 +546,32 @@ public class ElementFindingTest extends JUnit4TestBase {
     assertEquals("child", child.getAttribute("id"));
   }
 
-  // TODO(danielwh): Add extensive CSS selector tests
-  @Ignore(value = {ANDROID, OPERA, SELENESE, OPERA_MOBILE}, reason = "Just not working")
+  @JavascriptEnabled
+  @Test
+  @Ignore(value = {IE}, reason = "IE supports only short version option[selected]")
+  public void testShouldBeAbleToFindAnElementByBooleanAttributeUsingCssSelector() {
+    driver.get(appServer.whereIs("locators_tests/boolean_attribute_selected.html"));
+    WebElement element = driver.findElement(By.cssSelector("option[selected='selected']"));
+    assertEquals("two", element.getAttribute("value"));
+  }
+
+  @JavascriptEnabled
+  @Test
+  public void testShouldBeAbleToFindAnElementByBooleanAttributeUsingShortCssSelector() {
+    driver.get(appServer.whereIs("locators_tests/boolean_attribute_selected.html"));
+    WebElement element = driver.findElement(By.cssSelector("option[selected]"));
+    assertEquals("two", element.getAttribute("value"));
+  }
+
+  @JavascriptEnabled
+  @Test
+  public void testShouldBeAbleToFindAnElementByBooleanAttributeUsingShortCssSelectorOnHtml4Page() {
+    driver.get(appServer.whereIs("locators_tests/boolean_attribute_selected_html4.html"));
+    WebElement element = driver.findElement(By.cssSelector("option[selected]"));
+    assertEquals("two", element.getAttribute("value"));
+  }
+
+  @Ignore(value = {ANDROID, OPERA, OPERA_MOBILE}, reason = "Just not working")
   @Test
   public void testAnElementFoundInADifferentFrameIsStale() {
     driver.get(pages.missedJsReferencePage);
@@ -568,7 +587,7 @@ public class ElementFindingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, OPERA, SELENESE, OPERA_MOBILE})
+  @Ignore({ANDROID, IPHONE, OPERA, OPERA_MOBILE})
   @Test
   public void testAnElementFoundInADifferentFrameViaJsCanBeUsed() {
     driver.get(pages.missedJsReferencePage);
@@ -594,7 +613,7 @@ public class ElementFindingTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore({CHROME, OPERA})
+  @Ignore({OPERA})
   public void findsByLinkTextOnXhtmlPage() {
     if (isOldIe(driver)) {
       // Old IE doesn't render XHTML pages, don't try loading XHTML pages in it

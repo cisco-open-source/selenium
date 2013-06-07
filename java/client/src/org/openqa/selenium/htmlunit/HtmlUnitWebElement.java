@@ -40,16 +40,14 @@ import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.internal.WrapsDriver;
 import org.openqa.selenium.internal.WrapsElement;
 
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.SgmlPage;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
-import com.gargoylesoftware.htmlunit.html.HtmlHtml;
 import com.gargoylesoftware.htmlunit.html.HtmlImageInput;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
@@ -146,12 +144,15 @@ public class HtmlUnitWebElement implements WrapsDriver,
       // element not visible either
     }
 
-    //Removed the code of handling HTMLoption deselect and select as it is handled 
-    //in the latest revision 6562 of htmlunit
-   
+    if (element instanceof HtmlButton) {
+      String type = element.getAttribute("type");
+      if (type == DomElement.ATTRIBUTE_NOT_DEFINED || type == DomElement.ATTRIBUTE_VALUE_EMPTY) {
+        element.setAttribute("type", "submit");
+      }
+    }
+
     HtmlUnitMouse mouse = (HtmlUnitMouse) parent.getMouse();
     mouse.click(getCoordinates());
-    
 
     if (element instanceof HtmlLabel) {
       HtmlElement referencedElement = ((HtmlLabel)element).getReferencedElement();
@@ -171,7 +172,11 @@ public class HtmlUnitWebElement implements WrapsDriver,
         element.click();
         return;
       } else if (element instanceof HtmlInput) {
-        submitForm(element.getEnclosingForm());
+        HtmlForm form = element.getEnclosingForm();
+        if (form == null) {
+          throw new NoSuchElementException("Unable to find the containing form");
+        }
+        submitForm(form);
         return;
       }
 
@@ -264,6 +269,8 @@ public class HtmlUnitWebElement implements WrapsDriver,
         throw new InvalidElementStateException("You may only interact with enabled elements");
       }
       htmlTextArea.setText("");
+    } else if (element.getAttribute("contenteditable") != HtmlElement.ATTRIBUTE_NOT_DEFINED) {
+      element.setTextContent("");
     }
   }
 
@@ -829,26 +836,7 @@ public class HtmlUnitWebElement implements WrapsDriver,
   }
 
   protected void assertElementNotStale() {
-    SgmlPage elementPage = element.getPage();
-    Page currentPage = parent.lastPage();
-
-    if (!currentPage.equals(elementPage)) {
-      throw new StaleElementReferenceException(
-          "Element appears to be stale. Did you navigate away from the page that contained it? "
-              + " And is the current window focussed the same as the one holding this element?");
-    }
-
-    // We need to walk the DOM to determine if the element is actually attached
-    DomNode parentElement = element;
-    while (parentElement != null && !(parentElement instanceof HtmlHtml)) {
-      parentElement = parentElement.getParentNode();
-    }
-
-    if (parentElement == null) {
-      throw new StaleElementReferenceException(
-          "The element seems to be disconnected from the DOM. "
-              + " This means that a user cannot interact with it.");
-    }
+    parent.assertElementNotStale(element);
   }
 
   public String getCssValue(String propertyName) {
@@ -925,22 +913,18 @@ public class HtmlUnitWebElement implements WrapsDriver,
     return parent;
   }
 
-  public Point getLocationOnScreenOnceScrolledIntoView() {
-    return getLocation();
-  }
-
   public Coordinates getCoordinates() {
     return new Coordinates() {
 
-      public Point getLocationOnScreen() {
+      public Point onScreen() {
         throw new UnsupportedOperationException("Not displayed, no screen location.");
       }
 
-      public Point getLocationInViewPort() {
+      public Point inViewPort() {
         return getLocation();
       }
 
-      public Point getLocationInDOM() {
+      public Point onPage() {
         return getLocation();
       }
 

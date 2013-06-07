@@ -31,15 +31,13 @@ webdriver.Command = function(name) {
 
   /**
    * The name of this command.
-   * @type {!webdriver.CommandName}
-   * @private
+   * @private {!webdriver.CommandName}
    */
   this.name_ = name;
 
   /**
    * The parameters to this command.
-   * @type {!Object.<*>}
-   * @private
+   * @private {!Object.<*>}
    */
   this.parameters_ = {};
 };
@@ -164,6 +162,7 @@ webdriver.CommandName = {
   SCREENSHOT: 'screenshot',
   IMPLICITLY_WAIT: 'implicitlyWait',
   SET_SCRIPT_TIMEOUT: 'setScriptTimeout',
+  SET_TIMEOUT: 'setTimeout',
 
   ACCEPT_ALERT: 'acceptAlert',
   DISMISS_ALERT: 'dismissAlert',
@@ -215,7 +214,9 @@ webdriver.CommandName = {
   TOUCH_LONG_PRESS: 'touchLongPress',
   TOUCH_FLICK: 'touchFlick',
 
-  GET_LOGS: 'getLogs'
+  GET_AVAILABLE_LOG_TYPES: 'getAvailableLogTypes',
+  GET_LOG: 'getLog',
+  GET_SESSION_LOGS: 'getSessionLogs'
 };
 
 

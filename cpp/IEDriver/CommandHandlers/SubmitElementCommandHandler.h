@@ -1,4 +1,4 @@
-// Copyright 2011 Software Freedom Conservancy
+// Copyright 2013 Software Freedom Conservancy
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -53,9 +53,14 @@ class SubmitElementCommandHandler : public IECommandHandler {
       ElementHandle element_wrapper;
       status_code = this->GetElement(executor, element_id, &element_wrapper);
       if (status_code == WD_SUCCESS) {
+        if (!this->FindParentForm(element_wrapper)) {
+          response->SetErrorResponse(ENOSUCHELEMENT, "Requested element is not within a form, and thus cannot be submitted");
+          return;
+        }
         // Use native events if we can. If not, use the automation atom.
         bool handled_with_native_events = false;
-        CComQIPtr<IHTMLInputElement> input(element_wrapper->element());
+        CComPtr<IHTMLInputElement> input;
+        element_wrapper->element()->QueryInterface<IHTMLInputElement>(&input);
         if (input) {
           CComBSTR type_name;
           input->get_type(&type_name);
@@ -64,25 +69,31 @@ class SubmitElementCommandHandler : public IECommandHandler {
 
           if (_wcsicmp(L"submit", type.c_str()) == 0 ||
               _wcsicmp(L"image", type.c_str()) == 0) {
-            element_wrapper->Click(executor.input_manager()->scroll_behavior());
+            Json::Value move_action;
+            move_action["action"] = "moveto";
+            move_action["element"] = element_wrapper->element_id();
+
+            Json::Value click_action;
+            click_action["action"] = "click";
+            click_action["button"] = 0;
+            
+            Json::UInt index = 0;
+            Json::Value actions(Json::arrayValue);
+            actions[index] = move_action;
+            ++index;
+            actions[index] = click_action;
+            
+            IECommandExecutor& mutable_executor = const_cast<IECommandExecutor&>(executor);
+            status_code = mutable_executor.input_manager()->PerformInputSequence(browser_wrapper, actions);
             handled_with_native_events = true;
           }
         }
 
         if (!handled_with_native_events) {
           std::string submit_error = "";
-          if (executor.allow_asynchronous_javascript()) {
-            status_code = element_wrapper->ExecuteAsyncAtom(
-                SUBMIT_EVENT_NAME,
-                &SubmitElementCommandHandler::SubmitFormThreadProc,
-                &submit_error);
-          } else {
-            CComPtr<IHTMLDocument2> doc;
-            browser_wrapper->GetDocument(&doc);
-            CComVariant element_variant(element_wrapper->element());
-            status_code = ExecuteSubmitAtom(doc, element_variant);
-          }
-
+          status_code = this->ExecuteAtom(browser_wrapper,
+                                          element_wrapper,
+                                          &submit_error);
           if (status_code != WD_SUCCESS) {
             response->SetErrorResponse(status_code,
                                         "Error submitting when not using native events. " + submit_error);
@@ -100,24 +111,28 @@ class SubmitElementCommandHandler : public IECommandHandler {
   }
 
  private:
-  void SubmitElementCommandHandler::FindParentForm(IHTMLElement *element,
-                                                   IHTMLFormElement **form_element) {
-    CComQIPtr<IHTMLElement> current(element);
-
+  bool SubmitElementCommandHandler::FindParentForm(ElementHandle element_wrapper) {
+    CComPtr<IHTMLElement> current(element_wrapper->element());
     while (current) {
-      CComQIPtr<IHTMLFormElement> form(current);
-      if (form) {
-        *form_element = form.Detach();
-        return;
+      CComPtr<IHTMLFormElement> form;
+      HRESULT hr = current->QueryInterface<IHTMLFormElement>(&form);
+      if (SUCCEEDED(hr) && form) {
+        return true;
       }
 
       CComPtr<IHTMLElement> temp;
-      current->get_parentElement(&temp);
+      hr = current->get_parentElement(&temp);
+      if (FAILED(hr)) {
+        return false;
+      }
       current = temp;
     }
+    return false;
   }
 
-  static int ExecuteSubmitAtom(IHTMLDocument2* doc, VARIANT element_variant) {
+  int ExecuteAtom(BrowserHandle browser_wrapper,
+                  ElementHandle element_wrapper,
+                  std::string* error_msg) {
     // The atom is just the definition of an anonymous
     // function: "function() {...}"; Wrap it in another function so we can
     // invoke it with our arguments without polluting the current namespace.
@@ -125,72 +140,16 @@ class SubmitElementCommandHandler : public IECommandHandler {
     script_source += atoms::asString(atoms::SUBMIT);
     script_source += L")})();";
 
-    Script script_wrapper(doc, script_source, 1);
-    script_wrapper.AddArgument(element_variant);
-    int status_code = script_wrapper.Execute();
-
-    // Require a short sleep here to let the browser update the DOM.
-    ::Sleep(100);
-    return status_code;
-  }
-
-  static unsigned int WINAPI SubmitFormThreadProc(LPVOID param) {
-    BOOL bRet; 
-    MSG msg;
-    LOG(DEBUG) << "Initializing message pump on new thread";
-    ::PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
-
-    LOG(DEBUG) << "Initializing COM on new thread";
-    HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-
-    LOG(DEBUG) << "Unmarshaling document from stream";
     CComPtr<IHTMLDocument2> doc;
-    LPSTREAM message_payload = reinterpret_cast<LPSTREAM>(param);
-    hr = ::CoGetInterfaceAndReleaseStream(message_payload,
-                                          IID_IHTMLDocument2,
-                                          reinterpret_cast<void**>(&doc));
-
-    LOG(DEBUG) << "Signaling parent thread that the worker thread is ready for messages";
-    HANDLE event_handle = ::OpenEvent(EVENT_MODIFY_STATE, FALSE, SUBMIT_EVENT_NAME);
-    if (event_handle != NULL) {
-      ::SetEvent(event_handle);
-      ::CloseHandle(event_handle);
+    browser_wrapper->GetDocument(&doc);
+    Script script_wrapper(doc, script_source, 1);
+    script_wrapper.AddArgument(element_wrapper);
+    int status_code = script_wrapper.ExecuteAsync(ASYNC_SCRIPT_EXECUTION_TIMEOUT_IN_MILLISECONDS);
+    if (status_code != WD_SUCCESS) {
+      std::wstring error = script_wrapper.result().bstrVal;
+      *error_msg = StringUtilities::ToString(error);
     }
-
-    while ((bRet = ::GetMessage(&msg, NULL, 0, 0)) != 0) {
-      if (msg.message == WD_EXECUTE_ASYNC_SCRIPT) {
-        LOG(DEBUG) << "Received execution message. Unmarshaling element from stream.";
-        int status_code = WD_SUCCESS;
-        CComPtr<IDispatch> dispatch;
-        LPSTREAM message_payload = reinterpret_cast<LPSTREAM>(param);
-        hr = ::CoGetInterfaceAndReleaseStream(message_payload, IID_IDispatch, reinterpret_cast<void**>(&dispatch));
-        LOG(DEBUG) << "Element unmarshaled from stream, executing JavaScript on worker thread";
-        if (SUCCEEDED(hr) && dispatch != NULL) {
-          CComVariant element(dispatch);
-          status_code = ExecuteSubmitAtom(doc, element);
-
-          // The atom is just the definition of an anonymous
-          // function: "function() {...}"; Wrap it in another function so we can
-          // invoke it with our arguments without polluting the current namespace.
-          //std::wstring script_source = L"(function() { return (";
-          //script_source += atoms::asString(atoms::SUBMIT);
-          //script_source += L")})();";
-
-          //Script script_wrapper(doc, script_source, 1);
-          //script_wrapper.AddArgument(element);
-          //status_code = script_wrapper.Execute();
-
-          //// Require a short sleep here to let the browser update the DOM.
-          //::Sleep(100);
-        } else {
-          status_code = EUNEXPECTEDJSERROR;
-        }
-        ::CoUninitialize();
-        return status_code;
-      }
-    }
-
-    return 0;
+    return status_code;
   }
 };
 

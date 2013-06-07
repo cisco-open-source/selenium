@@ -108,8 +108,8 @@ namespace OpenQA.Selenium
             {
                 int index = text.IndexOf(eventName);
 
-                Assert.IsTrue(index != -1, eventName + " did not fire at all");
-                Assert.IsTrue(index > lastIndex, eventName + " did not fire in the correct order");
+                Assert.IsTrue(index != -1, eventName + " did not fire at all. Text is " + text);
+                Assert.IsTrue(index > lastIndex, eventName + " did not fire in the correct order. Text is " + text);
                 lastIndex = index;
             }
         }
@@ -214,7 +214,7 @@ namespace OpenQA.Selenium
             driver.FindElement(By.Id("labelForCheckbox")).Click();
 
             IWebElement result = driver.FindElement(By.Id("result"));
-            Assert.IsTrue(WaitFor(() => { return result.Text.Contains("labelclick chboxclick"); }));
+            Assert.IsTrue(WaitFor(() => { return result.Text.Contains("labelclick chboxclick"); }), "Did not find text: " + result.Text);
         }
 
 
@@ -331,6 +331,7 @@ namespace OpenQA.Selenium
         [Category("Javascript")]
         [IgnoreBrowser(Browser.IPhone, "Does not yet support file uploads")]
         [IgnoreBrowser(Browser.Android, "Does not yet support file uploads")]
+        [IgnoreBrowser(Browser.Safari, "Does not yet support file uploads")]
         public void UploadingFileShouldFireOnChangeEvent()
         {
             driver.Url = formsPage;

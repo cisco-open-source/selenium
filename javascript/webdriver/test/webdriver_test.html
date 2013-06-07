@@ -30,17 +30,22 @@ limitations under the License.
     goog.require('webdriver.CommandName');
     goog.require('webdriver.WebDriver');
     goog.require('webdriver.Session');
+    goog.require('webdriver.logging');
     goog.require('webdriver.promise');
-    goog.require('webdriver.promise.Application');
+    goog.require('webdriver.promise.ControlFlow');
     goog.require('webdriver.promise.Deferred');
     goog.require('webdriver.promise.Promise');
-    goog.require('webdriver.test.AppTester');
     goog.require('webdriver.test.testutil');
+    goog.require('webdriver.testing.promise.FlowTester');
   </script>
 </head>
 <body>
   <script>
   var SESSION_ID = 'test_session_id';
+
+  var STUB_DRIVER = {
+    controlFlow: goog.nullFunction
+  };
 
   // Alias some long names that interfere with test readability.
   var CName = webdriver.CommandName,
@@ -58,20 +63,20 @@ limitations under the License.
 
   var clock;
   var driver;
+  var flowTester;
   var mockControl;
-  var appTester;
   var verifyAll;
 
   function setUp() {
     clock = webdriver.test.testutil.createMockClock();
-    appTester = new webdriver.test.AppTester(clock);
+    flowTester = new webdriver.testing.promise.FlowTester(clock, goog.global);
     mockControl = new goog.testing.MockControl();
     verifyAll = callbackHelper(goog.bind(mockControl.$verifyAll, mockControl));
   }
 
 
   function tearDown() {
-    appTester.$tearDown();
+    flowTester.dispose();
     verifyAll.assertCalled('Never verified mocks');
     clock.uninstall();
     mockControl.$tearDown();
@@ -113,10 +118,12 @@ limitations under the License.
     var helper = new TestHelper();
 
     helper.execute = function() {
-      appTester.$runApplication(null, function(e) {
-        verifyAll();
-        (opt_errback || goog.nullFunction)(e);
-      });
+      flowTester.run();
+      flowTester.verifyFailure();
+      verifyAll();
+      if (opt_errback) {
+        opt_errback(flowTester.getFailure());
+      }
     };
 
     return helper;
@@ -127,10 +134,12 @@ limitations under the License.
     var helper = new TestHelper();
 
     helper.execute = function() {
-      appTester.$runApplication(function() {
-        verifyAll();
-        (opt_callback || goog.nullFunction)();
-      });
+      flowTester.run();
+      flowTester.verifySuccess();
+      verifyAll();
+      if (opt_callback) {
+        opt_callback();
+      }
     };
 
     return helper;
@@ -218,7 +227,7 @@ limitations under the License.
 
 
   /**
-   * @param {!(webdriver.Session|webdriver.promise.Promise)} opt_session The
+   * @param {!(webdriver.Session|webdriver.promise.Promise)=} opt_session The
    *     session to use.
    * @return {!webdriver.WebDriver} A new driver instance.
    */
@@ -364,7 +373,7 @@ limitations under the License.
     var expected = {};
     expected[webdriver.WebElement.ELEMENT_KEY] = 'fefifofum';
 
-    var element = new webdriver.WebElement({}, 'fefifofum');
+    var element = new webdriver.WebElement(STUB_DRIVER, 'fefifofum');
     var callback;
     webdriver.WebDriver.toWireValue_(element).
         then(callback = callbackHelper(function(actual) {
@@ -398,7 +407,7 @@ limitations under the License.
     var elementJson = {};
     elementJson[webdriver.WebElement.ELEMENT_KEY] = 'fefifofum';
 
-    var element = new webdriver.WebElement({}, 'fefifofum');
+    var element = new webdriver.WebElement(STUB_DRIVER, 'fefifofum');
     var callback;
     webdriver.WebDriver.toWireValue_([element]).
         then(callback = callbackHelper(function(actual) {
@@ -416,7 +425,7 @@ limitations under the License.
     elementJson[webdriver.WebElement.ELEMENT_KEY] = 'fefifofum';
     var expected = ['abc', 123, true, elementJson, [123, {'foo': 'bar'}]];
 
-    var element = new webdriver.WebElement({}, 'fefifofum');
+    var element = new webdriver.WebElement(STUB_DRIVER, 'fefifofum');
     var input = ['abc', 123, true, element, [123, {'foo': 'bar'}]];
     var callback;
     webdriver.WebDriver.toWireValue_(input).
@@ -437,7 +446,7 @@ limitations under the License.
       'sessionId': 'foo'
     };
 
-    var element = new webdriver.WebElement({}, 'fefifofum');
+    var element = new webdriver.WebElement(STUB_DRIVER, 'fefifofum');
     var parameters = {
       'script': 'return 1',
       'args':['abc', 123, true, element, [123, {'foo': 'bar'}]],
@@ -467,13 +476,11 @@ limitations under the License.
 
 
   function testFromWireValue_webElements() {
-    var driver = {};
-
     var json = {};
     json[webdriver.WebElement.ELEMENT_KEY] = 'foo';
 
-    var element = webdriver.WebDriver.fromWireValue_(driver, json);
-    assertEquals(driver, element.getDriver());
+    var element = webdriver.WebDriver.fromWireValue_(STUB_DRIVER, json);
+    assertEquals(STUB_DRIVER, element.getDriver());
 
     var callback;
     webdriver.promise.when(element.id_, callback = callbackHelper(function(id) {
@@ -910,10 +917,10 @@ limitations under the License.
           assertEquals(3, value);
         });
 
-    appTester.$turnEventLoop();
+    flowTester.turnEventLoop();
     add.assertNotCalled();
 
-    promisedArg.resolve(2);
+    promisedArg.fulfill(2);
     add.assertCalled();
     testHelper.execute();
   }
@@ -1037,15 +1044,15 @@ limitations under the License.
     driver.call(stepOne);
     driver.call(stepTwo);
 
-    appTester.$turnEventLoop();
+    flowTester.turnEventLoop();
     stepOne.assertCalled();
     stepTwo.assertNotCalled();
 
-    appTester.$turnEventLoop();
+    flowTester.turnEventLoop();
     stepOne.assertCalled();
     stepTwo.assertNotCalled();
 
-    d.resolve();
+    d.fulfill();
     testHelper.execute();
     stepTwo.assertCalled();
   }
@@ -1182,7 +1189,7 @@ limitations under the License.
     var id = new webdriver.promise.Deferred();
 
     var callback, idCallback;
-    var element = new webdriver.WebElement({}, id.promise);
+    var element = new webdriver.WebElement(STUB_DRIVER, id.promise);
 
     webdriver.promise.when(element,
         callback = callbackHelper(function(resolvedElement) {
@@ -1199,7 +1206,7 @@ limitations under the License.
     callback.assertNotCalled();
     idCallback.assertNotCalled();
 
-    id.resolve(resolvedId);
+    id.fulfill(resolvedId);
 
     callback.assertCalled();
     idCallback.assertCalled();
@@ -1216,14 +1223,14 @@ limitations under the License.
 
   function testWebElement_resolvesWhenIdResolvesToAnotherElement() {
     runWebElementResolutionTest(
-        new webdriver.WebElement({}, {'ELEMENT': 'foo'}));
+        new webdriver.WebElement(STUB_DRIVER, {'ELEMENT': 'foo'}));
   }
 
-  function testWebElement_elementResolvesBeforeCallbacksOnWireValueTrigger() {
+  function testWebElement_resolvesWhenIdResolvesToElementJsonObjectResolvesBeforeCallbacksOnWireValueTrigger() {
     var id = new webdriver.promise.Deferred();
 
     var callback, idCallback;
-    var element = new webdriver.WebElement({}, id.promise);
+    var element = new webdriver.WebElement(STUB_DRIVER, id.promise);
     var messages = [];
 
     webdriver.promise.when(element, function() {
@@ -1235,7 +1242,7 @@ limitations under the License.
     });
 
     assertArrayEquals([], messages);
-    id.resolve('foo');
+    id.fulfill('foo');
     assertArrayEquals([
       'element resolved',
       'wire value resolved'
@@ -1247,18 +1254,16 @@ limitations under the License.
     var id = new webdriver.promise.Deferred();
 
     var callback, errback;
-    var element = new webdriver.WebElement({}, id.promise);
+    var element = new webdriver.WebElement(STUB_DRIVER, id.promise);
 
     webdriver.promise.when(element,
         callback = callbackHelper(),
-        errback = callbackHelper(function(err) {
-          assertEquals('foo', err);
-        }));
+        errback = callbackHelper(assertIsStubError));
 
     callback.assertNotCalled();
     errback.assertNotCalled();
 
-    id.reject('foo');
+    id.reject(STUB_ERROR);
 
     callback.assertNotCalled();
     errback.assertCalled();
@@ -1859,7 +1864,7 @@ limitations under the License.
   }
 
   function testElementEquality_isReflexive() {
-    var a = new webdriver.WebElement({}, 'foo');
+    var a = new webdriver.WebElement(STUB_DRIVER, 'foo');
     var callback;
     webdriver.WebElement.equals(a, a).then(
         callback = callbackHelper(assertTrue));
@@ -1868,9 +1873,9 @@ limitations under the License.
   }
 
   function testElementEquals_doesNotSendRpcIfElementsHaveSameId() {
-    var a = new webdriver.WebElement({}, 'foo'),
-        b = new webdriver.WebElement({}, 'foo'),
-        c = new webdriver.WebElement({}, 'foo'),
+    var a = new webdriver.WebElement(STUB_DRIVER, 'foo'),
+        b = new webdriver.WebElement(STUB_DRIVER, 'foo'),
+        c = new webdriver.WebElement(STUB_DRIVER, 'foo'),
         callback;
 
     webdriver.WebElement.equals(a, b).then(
@@ -1996,7 +2001,7 @@ limitations under the License.
   function testAlertHandleResolvesWhenPromisedTextResolves() {
     var text = new webdriver.promise.Deferred();
 
-    var alert = new webdriver.Alert({}, text);
+    var alert = new webdriver.Alert(STUB_DRIVER, text);
     assertTrue(alert.isPending());
 
     var callback, textCallback;
@@ -2014,11 +2019,74 @@ limitations under the License.
     callback.assertNotCalled();
     textCallback.assertNotCalled();
 
-    text.resolve('foo');
+    text.fulfill('foo');
 
     callback.assertCalled();
     textCallback.assertCalled();
     verifyAll();  // Make tearDown happy.
+  }
+
+
+  function testWebElementsBelongToSameFlowAsParentDriver() {
+    var testHelper = TestHelper.expectingSuccess().replayAll();
+
+    var driver = testHelper.createDriver();
+    webdriver.promise.createFlow(function() {
+      new webdriver.WebElement(driver, 'foo').then(function() {
+        assertEquals(
+            'WebElement should belong to the same flow as its parent driver',
+            driver.controlFlow(), webdriver.promise.controlFlow());
+      });
+    });
+
+    testHelper.execute();
+  }
+
+
+  function testAlertsBelongToSameFlowAsParentDriver() {
+    var testHelper = TestHelper.expectingSuccess().replayAll();
+
+    var driver = testHelper.createDriver();
+    webdriver.promise.createFlow(function() {
+      new webdriver.Alert(driver, 'foo').then(function() {
+        assertEquals(
+            'Alert should belong to the same flow as its parent driver',
+            driver.controlFlow(), webdriver.promise.controlFlow());
+      });
+    });
+
+    testHelper.execute();
+  }
+
+  function testFetchingLogs() {
+    var testHelper = TestHelper.
+        expectingSuccess().
+        expect(CName.GET_LOG, {'type': 'browser'}).
+        andReturnSuccess([
+          new webdriver.logging.Entry(
+              webdriver.logging.Level.INFO, 'hello', 1234),
+          {'level': 'DEBUG', 'message': 'abc123', 'timestamp': 5678}
+        ]).
+        replayAll();
+
+    var pair = callbackPair(function(entries) {
+      assertEquals(2, entries.length);
+
+      assertTrue(entries[0] instanceof webdriver.logging.Entry);
+      assertEquals(webdriver.logging.Level.INFO.value, entries[0].level.value);
+      assertEquals('hello', entries[0].message);
+      assertEquals(1234, entries[0].timestamp);
+
+      assertTrue(entries[1] instanceof webdriver.logging.Entry);
+      assertEquals(webdriver.logging.Level.DEBUG.value, entries[1].level.value);
+      assertEquals('abc123', entries[1].message);
+      assertEquals(5678, entries[1].timestamp);
+    });
+
+    var driver = testHelper.createDriver();
+    driver.manage().logs().get('browser').then(pair.callback, pair.errback);
+    testHelper.execute();
+    pair.assertCallback();
   }
   </script>
 </body>

@@ -43,9 +43,8 @@ safaridriver.message.ORIGIN = 'webdriver';
 
 
 /**
- * @type {!goog.debug.Logger}
+ * @private {!goog.debug.Logger}
  * @const
- * @private
  */
 safaridriver.message.LOG_ = goog.debug.Logger.getLogger(
     'safaridriver.message');
@@ -61,8 +60,7 @@ safaridriver.message.FORCE_SYNCHRONOUS_PROXY_SEND = false;
 /**
  * A map of message type to the factory function that can reconstruct a
  * {@link safaridriver.message.Message} from a JSON record.
- * @type {!Object.<function(!Object.<*>): !safaridriver.message.Message>}
- * @private
+ * @private {!Object.<function(!Object.<*>): !safaridriver.message.Message>}
  */
 safaridriver.message.factoryRegistry_ = {};
 
@@ -140,8 +138,7 @@ safaridriver.message.Message = function(type) {
 
   /**
    * The JSON data associated with this message.
-   * @type {!Object.<*>}
-   * @private
+   * @private {!Object.<*>}
    */
   this.data_ = {};
 
@@ -280,17 +277,6 @@ safaridriver.message.Message.prototype.send = function(target) {
 
 
 /**
- * Attribute on the documentElement containing the response to a synchronous
- * message sent to a window object.
- * @type {string}
- * @const
- * @private
- */
-safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_ =
-    'safaridriver.message.syncResponse';
-
-
-/**
  * The custom event type for {@link MessageEvent}s sent synchronously over the
  * DOM. This is used to avoid firing standard "message" events as much as
  * possible since the page under test will receive those events as well.
@@ -304,14 +290,15 @@ safaridriver.message.Message.SYNCHRONOUS_DOM_MESSAGE_EVENT_TYPE =
 
 
 /**
- * @param {string} response The response value.
+ * Custom event type for {@link MessageEvent}s sent synchronoulsy over the DOM
+ * to pass the response to a
+ * {@link safaridriver.message.Message.SYNCHRONOUS_DOM_MESSAGE_EVENT_TYPE}
+ * event.
+ * @type {string}
+ * @const
  */
-safaridriver.message.Message.setSynchronousMessageResponse = function(
-    response) {
-  safaridriver.dom.call(document.documentElement, 'setAttribute',
-      safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_,
-      response);
-};
+safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_EVENT_TYPE =
+    'safaridriver.message.response';
 
 
 /**
@@ -328,21 +315,23 @@ safaridriver.message.Message.prototype.sendSync = function(target) {
         'Synchronous messages may only be sent to a window when that ' +
             'window is the same as the current context');
 
-    var messageEvent = /** @type {!Event} */ (safaridriver.dom.call(
-        document, 'createEvent', 'MessageEvent'));
-    messageEvent.initMessageEvent(
-        safaridriver.message.Message.SYNCHRONOUS_DOM_MESSAGE_EVENT_TYPE,
-        false, false, this.data_,
-        // origin is a non-standard property on location.
-        window.location['origin'], '0', window, null);
-    safaridriver.dom.call(
-        /** @type {!Window} */ (target), 'dispatchEvent', messageEvent);
+    var response;
+    var onResponse = function(e) {
+      response = e.data;
+    };
 
-    var response = safaridriver.dom.call(document.documentElement,
-        'getAttribute',
-        safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_);
-    safaridriver.dom.call(document.documentElement, 'removeAttribute',
-        safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_ATTRIBUTE_);
+    safaridriver.dom.call(window, 'addEventListener',
+        safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_EVENT_TYPE,
+        onResponse, false);
+
+    safaridriver.message.Message.sendMessageEvent_(
+        safaridriver.message.Message.SYNCHRONOUS_DOM_MESSAGE_EVENT_TYPE,
+        this.data_);
+
+    safaridriver.dom.call(window, 'removeEventListener',
+        safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_EVENT_TYPE,
+        onResponse, false);
+
     return response;
   } else {
     // Create a beforeload event, which is required by the canLoad function.
@@ -355,6 +344,33 @@ safaridriver.message.Message.prototype.sendSync = function(target) {
 };
 
 
+/**
+ * Post a response to a synchronous message sent over the DOM.
+ * @param {*} data The response data to send.
+ */
+safaridriver.message.Message.sendSyncResponse = function(data) {
+  safaridriver.message.Message.sendMessageEvent_(
+      safaridriver.message.Message.SYNCHRONOUS_MESSAGE_RESPONSE_EVENT_TYPE,
+      data);
+};
+
+
+/**
+ * Creates and dispatches a fake {@link MessageEvent} to the target window.
+ * @param {string} type The custom message type.
+ * @param {*} data The data to send.
+ * @private
+ */
+safaridriver.message.Message.sendMessageEvent_ = function(type, data) {
+  var messageEvent = /** @type {!Event} */ (safaridriver.dom.call(
+      document, 'createEvent', 'MessageEvent'));
+  messageEvent.initMessageEvent(type, false, false, data,
+      // origin is a non-standard property on location.
+      window.location['origin'], '0', window, null);
+  safaridriver.dom.call(window, 'dispatchEvent', messageEvent);
+};
+
+
 /** @return {!Object.<*>} The JSON representation of this message. */
 safaridriver.message.Message.prototype.toJSON = function() {
   return this.data_;
@@ -363,5 +379,5 @@ safaridriver.message.Message.prototype.toJSON = function() {
 
 /** @override */
 safaridriver.message.Message.prototype.toString = function() {
-  return bot.json.stringify(this);
+  return bot.json.stringify(this.toJSON());
 };

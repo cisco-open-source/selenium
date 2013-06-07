@@ -26,7 +26,6 @@ import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
@@ -34,11 +33,10 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 @RunWith(SeleniumTestRunner.class)
-@Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, REMOTE, SAFARI, SELENESE},
+@Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, REMOTE, SAFARI},
     reason = "Not tested")
 public class SessionHandlingTest {
 
@@ -73,19 +71,18 @@ public class SessionHandlingTest {
   }
 
   @Test(expected = SessionNotFoundException.class)
-  @Ignore(value = {OPERA, HTMLUNIT}, reason =
-        "Opera: throws Opera-specific exception, HtmlUnit: NPE")
+  @Ignore(value = {OPERA}, reason = "Opera: throws Opera-specific exception")
   public void callingAnyOperationAfterQuitShouldThrowAnException() {
     WebDriver driver = new WebDriverBuilder().get();
     driver.quit();
     driver.getCurrentUrl();
   }
 
-   // QtWebkit: throws generic WebDriverException,
+  // QtWebkit: throws generic WebDriverException,
   @Test(expected = SessionNotFoundException.class)
-  @Ignore(value = {FIREFOX, CHROME, OPERA, HTMLUNIT, PHANTOMJS, QTWEBKIT}, reason =
+  @Ignore(value = {FIREFOX, CHROME, OPERA, PHANTOMJS, QTWEBKIT}, reason =
       "Chrome: throws generic WebDriverException,"
-      + "Firefox, HtmlUnit: can perform an operation after closing the last window,"
+      + "Firefox: can perform an operation after closing the last window,"
       + "Opera: throws Opera-specific exception,"
       + "PhantomJS: throws NoSuchWindowException")
   public void callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException() {

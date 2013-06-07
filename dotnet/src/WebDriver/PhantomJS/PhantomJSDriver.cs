@@ -19,10 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using OpenQA.Selenium.Internal;
 using OpenQA.Selenium.Remote;
 
 namespace OpenQA.Selenium.PhantomJS
@@ -85,6 +82,15 @@ namespace OpenQA.Selenium.PhantomJS
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PhantomJSDriver"/> class using the specified driver service.
+        /// </summary>
+        /// <param name="service">The <see cref="PhantomJSDriverService"/> used to initialize the driver.</param>
+        public PhantomJSDriver(PhantomJSDriverService service)
+            : this(service, new PhantomJSOptions())
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PhantomJSDriver"/> class using the specified path
         /// to the directory containing PhantomJS.exe.
         /// </summary>
@@ -137,6 +143,22 @@ namespace OpenQA.Selenium.PhantomJS
         public PhantomJSDriver(PhantomJSDriverService service, PhantomJSOptions options, TimeSpan commandTimeout)
             : base(new DriverServiceCommandExecutor(service, commandTimeout, false), options.ToCapabilities())
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IFileDetector"/> responsible for detecting 
+        /// sequences of keystrokes representing file paths and names. 
+        /// </summary>
+        /// <remarks>The PhantomJS driver does not allow a file detector to be set,
+        /// as PhantomJS only allows uploads from the local computer environment.
+        /// Attempting to set this property has no effect, but does not throw an
+        /// exception. If you are attempting to run the PhantomJS driver remotely,
+        /// use <see cref="RemoteWebDriver"/> in conjunction with a standalone
+        /// WebDriver server.</remarks>
+        public override IFileDetector FileDetector
+        {
+            get { return base.FileDetector; }
+            set { }
         }
 
         #region ITakesScreenshot Members

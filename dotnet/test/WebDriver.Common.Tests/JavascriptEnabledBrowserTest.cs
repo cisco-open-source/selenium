@@ -19,9 +19,6 @@ namespace OpenQA.Selenium
             Assert.AreEqual("Testing Javascript", driver.Title);
             driver.FindElement(By.LinkText("Change the page title!")).Click();
             Assert.AreEqual("Changed", driver.Title);
-
-            String titleViaXPath = driver.FindElement(By.XPath("/html/head/title")).Text;
-            Assert.AreEqual("Changed", titleViaXPath);
         }
 
         [Test]
@@ -166,6 +163,7 @@ namespace OpenQA.Selenium
         [Test]
         [Category("Javascript")]
         [IgnoreBrowser(Browser.Firefox, "Window demands focus to work.")]
+        [IgnoreBrowser(Browser.Safari, "Window demands focus to work.")]
         public void ChangeEventIsFiredAppropriatelyWhenFocusIsLost()
         {
             driver.Url = javascriptPage;
@@ -236,6 +234,9 @@ namespace OpenQA.Selenium
         [Test]
         [Category("Javascript")]
         [NeedsFreshDriver(AfterTest = true)]
+        [IgnoreBrowser(Browser.Safari, "Safari: issue 3693")]
+        [IgnoreBrowser(Browser.Opera)]
+        [IgnoreBrowser(Browser.IPhone)]
         public void ShouldBeAbleToClickALinkThatClosesAWindow()
         {
             driver.Url = javascriptPage;

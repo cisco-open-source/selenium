@@ -277,6 +277,11 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     execute(DriverCommand.GET, ImmutableMap.of("url", url));
   }
 
+  public RemoteStatus getRemoteStatus() {
+    Response response = execute(DriverCommand.STATUS);
+    return new RemoteStatus((Map<String, Object>) response.getValue());
+  }
+
   public String getTitle() {
     Response response = execute(DriverCommand.GET_TITLE);
     Object value = response.getValue();
@@ -302,7 +307,13 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
 
     Response response = execute(DriverCommand.FIND_ELEMENT,
         ImmutableMap.of("using", by, "value", using));
-    WebElement element = (WebElement) response.getValue();
+    Object value = response.getValue();
+    WebElement element;
+    try {
+      element = (WebElement) value;
+    } catch (ClassCastException ex) {
+      throw new WebDriverException("Returned value cannot be converted to WebElement: " + value, ex);
+    }
     setFoundBy(this, element, by, using);
     return element;
   }
@@ -321,7 +332,13 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
 
     Response response = execute(DriverCommand.FIND_ELEMENTS,
         ImmutableMap.of("using", by, "value", using));
-    List<WebElement> allElements = (List<WebElement>) response.getValue();
+    Object value = response.getValue();
+    List<WebElement> allElements;
+    try {
+      allElements = (List<WebElement>) value;
+    } catch (ClassCastException ex) {
+      throw new WebDriverException("Returned value cannot be converted to List<WebElement>: " + value, ex);
+    }
     for (WebElement element : allElements) {
       setFoundBy(this, element, by, using);
     }
@@ -414,9 +431,14 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
   @SuppressWarnings({"unchecked"})
   public Set<String> getWindowHandles() {
     Response response = execute(DriverCommand.GET_WINDOW_HANDLES);
-    List<String> returnedValues = (List<String>) response.getValue();
-
-    return new LinkedHashSet<String>(returnedValues);
+    Object value = response.getValue();
+    try {
+      List<String> returnedValues = (List<String>) value;
+      return new LinkedHashSet<String>(returnedValues);
+    } catch (ClassCastException ex) {
+      throw new WebDriverException(
+          "Returned value cannot be converted to List<String>: " + value, ex);
+    }
   }
 
   public String getWindowHandle() {
@@ -499,10 +521,9 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
 
     long start = System.currentTimeMillis();
     String currentName = Thread.currentThread().getName();
-    Thread.currentThread().setName("Forwarding " + driverCommand + " on session " + sessionId +
-                                   " to remote");
+    Thread.currentThread().setName(
+        String.format("Forwarding %s on session %s to remote", driverCommand, sessionId));
     try {
-
       log(sessionId, command.getName(), command, When.BEFORE);
       response = executor.execute(command);
       log(sessionId, command.getName(), command, When.AFTER);
@@ -825,16 +846,14 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     }
 
     public Alert alert() {
-      Response response = execute(DriverCommand.GET_ALERT_TEXT);
-      return new RemoteAlert((String) response.getValue());
+      execute(DriverCommand.GET_ALERT_TEXT);
+      return new RemoteAlert();
     }
   }
 
   private class RemoteAlert implements Alert {
-    private final String text;
 
-    public RemoteAlert(String text) {
-      this.text = text;
+    public RemoteAlert() {
     }
 
     public void dismiss() {
@@ -846,7 +865,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     }
 
     public String getText() {
-      return text;
+      return (String) execute(DriverCommand.GET_ALERT_TEXT).getValue();
     }
 
     public void sendKeys(String keysToSend) {

@@ -35,6 +35,7 @@
 
 #define WAIT_TIME_IN_MILLISECONDS 200
 #define FIND_ELEMENT_WAIT_TIME_IN_MILLISECONDS 250
+#define ASYNC_SCRIPT_EXECUTION_TIMEOUT_IN_MILLISECONDS 2000
 #define IGNORE_UNEXPECTED_ALERTS "ignore"
 #define ACCEPT_UNEXPECTED_ALERTS "accept"
 #define DISMISS_UNEXPECTED_ALERTS "dismiss"
@@ -44,6 +45,15 @@
 using namespace std;
 
 namespace webdriver {
+
+// Structure to be used for comunication between threads
+struct IECommandExecutorThreadContext
+{
+  HWND hwnd;
+  int port;
+  bool force_createprocess_api;
+  std::string ie_switches;
+};
 
 // We use a CWindowImpl (creating a hidden window) here because we
 // want to synchronize access to the command handler. For that we
@@ -69,6 +79,7 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
     MESSAGE_HANDLER(WD_NEW_HTML_DIALOG, OnNewHtmlDialog)
     MESSAGE_HANDLER(WD_GET_QUIT_STATUS, OnGetQuitStatus)
     MESSAGE_HANDLER(WD_REFRESH_MANAGED_ELEMENTS, OnRefreshManagedElements)
+    MESSAGE_HANDLER(WD_HANDLE_UNEXPECTED_ALERTS, OnHandleUnexpectedAlerts)
   END_MSG_MAP()
 
   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -86,6 +97,7 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   LRESULT OnNewHtmlDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
   LRESULT OnGetQuitStatus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
   LRESULT OnRefreshManagedElements(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+  LRESULT OnHandleUnexpectedAlerts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
   std::string session_id(void) const { return this->session_id_; }
 
@@ -128,8 +140,6 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   int speed(void) const { return this->speed_; }
   void set_speed(const int speed) { this->speed_ = speed; }
 
-  bool allow_asynchronous_javascript(void) const { return this->allow_asynchronous_javascript_;}
-
   int implicit_wait_timeout(void) const { 
     return this->implicit_wait_timeout_; 
   }
@@ -145,6 +155,11 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   int page_load_timeout(void) const { return this->page_load_timeout_;  }
   void set_page_load_timeout(const int timeout) {
     this->page_load_timeout_ = timeout;
+  }
+
+  int browser_attach_timeout(void) const { return this->browser_attach_timeout_; }
+  void set_browser_attach_timeout(const int timeout) {
+    this->browser_attach_timeout_ = timeout;
   }
 
   bool is_valid(void) const { return this->is_valid_; }
@@ -219,6 +234,11 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   void PopulateCommandHandlers(void);
   void PopulateElementFinderMethods(void);
 
+  bool IsAlertActive(BrowserHandle browser, HWND* alert_handle);
+  std::string HandleUnexpectedAlert(BrowserHandle browser,
+                                    HWND alert_handle,
+                                    bool force_use_dismiss);
+
   BrowserMap managed_browsers_;
   ElementRepository managed_elements_;
   ElementFindMethodMap element_find_methods_;
@@ -236,12 +256,15 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
 
   std::string session_id_;
   int port_;
+  bool force_createprocess_api_;
+  std::string launch_api_;
+  std::string ie_switches_;
+  int browser_attach_timeout_;
   bool ignore_protected_mode_settings_;
   bool enable_native_events_;
   bool enable_persistent_hover_;
   bool enable_element_cache_cleanup_;
   bool ignore_zoom_setting_;
-  bool allow_asynchronous_javascript_;
   std::string initial_browser_url_;
   std::string unexpected_alert_behavior_;
 

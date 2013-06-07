@@ -21,9 +21,15 @@ import re
 import shutil
 import tempfile
 import zipfile
-from cStringIO import StringIO
+
+try:
+    from cStringIO import StringIO as BytesIO
+    bytes = str
+    str = unicode
+except ImportError:
+    from io import BytesIO
+
 from xml.dom import minidom
-from distutils import dir_util
 from selenium.webdriver.common.proxy import ProxyType
 from selenium.common.exceptions import WebDriverException
 
@@ -124,9 +130,9 @@ class FirefoxProfile(object):
             clean_value = 'true'
         elif value is False:
             clean_value = 'false'
-        elif isinstance(value, str):
-            clean_value = '"%s"' % value
-        elif isinstance(value, unicode):
+        elif isinstance(value, bytes):
+            clean_value = '"%s"' % value.decode('utf-8')
+        elif isinstance(value, str): # unicode
             clean_value = '"%s"' % value
         else:
             clean_value = str(int(value))
@@ -161,6 +167,12 @@ class FirefoxProfile(object):
         Sets the port that WebDriver will be running on
         """
         if not isinstance(port, int):
+            raise WebDriverException("Port needs to be an integer")
+        try:
+            port = int(port)
+            if port < 1 or port > 65535:
+                raise WebDriverException("Port number must be in the range 1..65535")
+        except (ValueError, TypeError) as e:
             raise WebDriverException("Port needs to be an integer")
         self._port = port
         self.set_preference("webdriver_firefox_port", self._port)
@@ -203,7 +215,7 @@ class FirefoxProfile(object):
         A zipped, base64 encoded string of profile directory
         for use with remote WebDriver JSON wire protocol
         """
-        fp = StringIO()
+        fp = BytesIO()
         zipped = zipfile.ZipFile(fp, 'w', zipfile.ZIP_DEFLATED)
         path_root = len(self.path) + 1 # account for trailing slash
         for base, dirs, files in os.walk(self.path):
@@ -316,20 +328,20 @@ class FirefoxProfile(object):
                 os.makedirs(extensions_path)
             shutil.copy(xpifile, addon_path + '.xpi')
         else:
-            dir_util.copy_tree(addon, addon_path, preserve_symlinks=1)
+            shutil.copytree(addon, addon_path, symlinks=True)
 
         # remove the temporary directory, if any
         if tmpdir:
-            dir_util.remove_tree(tmpdir)
+            shutil.rmtree(tmpdir)
 
     def _addon_details(self, addon_path):
         """
             returns a dictionary of details about the addon
             - addon_path : path to the addon directory
             Returns:
-            {'id': u'rainbow@colors.org', # id of the addon
-            'version': u'1.4', # version of the addon
-            'name': u'Rainbow', # name of the addon
+            {'id': 'rainbow@colors.org', # id of the addon
+            'version': '1.4', # version of the addon
+            'name': 'Rainbow', # name of the addon
             'unpack': False } # whether to unpack the addon
         """
 

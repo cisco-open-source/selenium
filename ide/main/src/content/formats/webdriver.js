@@ -544,6 +544,7 @@ SeleniumWebDriverAdaptor.prototype._elementLocator = function(sel1Locator) {
     return locator;
   }
   if (locator.type == 'link') {
+    locator.string = locator.string.replace(/^exact:/, '');
     return locator;
   }
   if (locator.type == 'name') {
@@ -670,9 +671,17 @@ SeleniumWebDriverAdaptor.prototype.getAlert = function() {
   return driver.getAlert();
 };
 
+SeleniumWebDriverAdaptor.prototype.isAlertPresent = function() {
+  return WDAPI.Utils.isAlertPresent();
+};
+
 SeleniumWebDriverAdaptor.prototype.getConfirmation = function() {
   var driver = new WDAPI.Driver();
   return driver.getAlert();
+};
+
+SeleniumWebDriverAdaptor.prototype.isConfirmationPresent = function() {
+  return WDAPI.Utils.isAlertPresent();
 };
 
 SeleniumWebDriverAdaptor.prototype.chooseOkOnNextConfirmation = function() {

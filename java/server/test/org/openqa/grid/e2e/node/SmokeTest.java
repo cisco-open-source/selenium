@@ -27,10 +27,10 @@ import org.openqa.grid.web.Hub;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 import com.thoughtworks.selenium.Selenium;
@@ -38,13 +38,13 @@ import com.thoughtworks.selenium.Selenium;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-@Test(groups = {"slow", "firefox"})
+//@Test(groups = {"slow", "firefox"})
 public class SmokeTest {
 
-  private Hub hub;
+  private static Hub hub;
 
-  @BeforeClass(alwaysRun = false)
-  public void prepare() throws Exception {
+  @BeforeClass
+  public static void prepare() throws Exception {
 
     hub = GridTestHelper.getHub();
 
@@ -73,7 +73,7 @@ public class SmokeTest {
       DesiredCapabilities ff = DesiredCapabilities.firefox();
       driver = new RemoteWebDriver(new URL(hub.getUrl() + "/wd/hub"), ff);
       driver.get(hub.getUrl() + "/grid/console");
-      Assert.assertEquals(driver.getTitle(), "Grid overview");
+      Assert.assertEquals(driver.getTitle(), "Grid Console");
     } finally {
       if (driver != null) {
         driver.quit();
@@ -91,7 +91,7 @@ public class SmokeTest {
       selenium.start();
       Assert.assertEquals(hub.getRegistry().getActiveSessions().size(), 1);
       selenium.open(hub.getUrl() + "/grid/console");
-      Assert.assertTrue(selenium.getTitle().contains("Grid overview"));
+      Assert.assertEquals(selenium.getTitle(), "Grid Console");
       
     } finally {
       if (selenium != null) {
@@ -100,8 +100,8 @@ public class SmokeTest {
     }
   }
 
-  @AfterClass(alwaysRun = false)
-  public void stop() throws Exception {
+  @AfterClass
+  public static void stop() throws Exception {
     hub.stop();
   }
 }

@@ -42,15 +42,13 @@ goog.require('goog.userAgent.product');
 bot.Device = function(opt_modifiersState) {
   /**
    * Element being interacted with.
-   * @type {!Element}
-   * @private
+   * @private {!Element}
    */
   this.element_ = bot.getDocument().documentElement;
 
   /**
    * If the element is an option, this is its parent select element.
-   * @type {Element}
-   * @private
+   * @private {Element}
    */
   this.select_ = null;
 
@@ -482,8 +480,7 @@ bot.Device.prototype.focusOnElement = function() {
  * Whether links must be manually followed when clicking (because firing click
  * events doesn't follow them).
  *
- * @type {boolean}
- * @private
+ * @private {boolean}
  * @const
  */
 bot.Device.ALWAYS_FOLLOWS_LINKS_ON_CLICK_ =
@@ -655,7 +652,7 @@ bot.Device.isForm_ = function(node) {
 bot.Device.prototype.submitForm = function(form) {
   if (!bot.Device.isForm_(form)) {
     throw new bot.Error(bot.ErrorCode.INVALID_ELEMENT_STATE,
-                        'Element was not in a form, so could not submit.');
+                        'Element is not a form, so could not submit.');
   }
   if (bot.events.fire(form, bot.events.EventType.SUBMIT)) {
     // When a form has an element with an id or name exactly equal to "submit"
@@ -671,7 +668,7 @@ bot.Device.prototype.submitForm = function(form) {
     if (!bot.dom.isElement(form.submit)) {
       form.submit();
     } else if (!goog.userAgent.IE || bot.userAgent.isEngineVersion(8)) {
-      (/** @type {Function} */ form.constructor.prototype.submit).call(form);
+      /** @type {!Object} */ (form.constructor.prototype).submit.call(form);
     } else {
       var idMasks = bot.locators.findElements({'id': 'submit'}, form);
       var nameMasks = bot.locators.findElements({'name': 'submit'}, form);
@@ -696,8 +693,7 @@ bot.Device.prototype.submitForm = function(form) {
 
 /**
  * Regular expression for splitting up a URL into components.
- * @type {!RegExp}
- * @private
+ * @private {!RegExp}
  * @const
  */
 bot.Device.URL_REGEXP_ = new RegExp(
@@ -761,8 +757,7 @@ bot.Device.resolveUrl_ = function(base, rel) {
 bot.Device.ModifiersState = function() {
   /**
    * State of the modifier keys.
-   * @type {number}
-   * @private
+   * @private {number}
    */
   this.pressedModifiers_ = 0;
 };

@@ -17,6 +17,8 @@ limitations under the License.
 
 package org.openqa.selenium;
 
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,16 +32,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.windowHandleCountToBe;
-import static org.openqa.selenium.testing.Ignore.Driver.ALL;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 public class ClickTest extends JUnit4TestBase {
 
@@ -60,7 +54,7 @@ public class ClickTest extends JUnit4TestBase {
     waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
   }
 
-  @Ignore(value = {CHROME, OPERA, SELENESE},
+  @Ignore(value = {CHROME, OPERA},
           reason = "Not tested on these browsers.")
   @Test
   public void testCanClickOnALinkThatOverflowsAndFollowIt() {
@@ -96,7 +90,7 @@ public class ClickTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {SELENESE, OPERA, ANDROID, OPERA_MOBILE},
+  @Ignore(value = {OPERA, ANDROID, OPERA_MOBILE},
           reason = "Opera: Incorrect runtime retrieved; " +
                    "Android: fails when running with other tests.")
   @Test
@@ -110,14 +104,14 @@ public class ClickTest extends JUnit4TestBase {
     driver.switchTo().defaultContent().switchTo().frame("target");
 
     assertTrue("Target did not reload",
-               driver.getPageSource().contains("Hello WebDriver"));
+            driver.getPageSource().contains("Hello WebDriver"));
   }
 
   @JavascriptEnabled
-  @Ignore(value = {SELENESE, OPERA, ANDROID, OPERA_MOBILE}, reason =
+  @Ignore(value = {OPERA, ANDROID, OPERA_MOBILE}, reason =
       "Opera: Incorrect runtime retrieved, Android: fails when running with other tests.")
   @Test
-  public void testJsLoactedElementsCanUpdateFramesIfFoundSomehowElse() {
+  public void testJsLocatedElementsCanUpdateFramesIfFoundSomehowElse() {
     driver.switchTo().frame("source");
 
     // Prime the cache of elements
@@ -147,7 +141,7 @@ public class ClickTest extends JUnit4TestBase {
     assertEquals("click", log);
   }
 
-  @Ignore(value = {ANDROID, IPHONE, SAFARI, SELENESE, OPERA_MOBILE}, reason = "Not tested")
+  @Ignore(value = {ANDROID, IPHONE, SAFARI, OPERA_MOBILE}, reason = "Not tested")
   @Test
   public void testShouldClickOnFirstBoundingClientRectWithNonZeroSize() {
     driver.findElement(By.id("twoClientRects")).click();
@@ -155,7 +149,7 @@ public class ClickTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, OPERA, SELENESE}, reason = "Not implemented")
+  @Ignore(value = {ANDROID, CHROME, OPERA}, reason = "Not implemented")
   @Test
   public void testShouldSetRelatedTargetForMouseOver() {
     driver.get(pages.javascriptPage);
@@ -176,20 +170,27 @@ public class ClickTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @NoDriverAfterTest
-  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, SELENESE, OPERA_MOBILE},
+  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, OPERA_MOBILE},
           reason = "Doesn't support multiple windows; Safari: issue 3693")
   @Test
   public void testShouldOnlyFollowHrefOnce() {
     driver.get(pages.clicksPage);
-    int windowHandlesBefore = driver.getWindowHandles().size();
+    String current = driver.getWindowHandle();
+    Set<String> currentWindowHandles = driver.getWindowHandles();
 
-    driver.findElement(By.id("new-window")).click();
-    waitFor(windowHandleCountToBe(driver, windowHandlesBefore + 1));
+    try {
+      driver.findElement(By.id("new-window")).click();
+      String newWindowHandle = waitFor(newWindowIsOpened(driver, currentWindowHandles));
+      driver.switchTo().window(newWindowHandle);
+      driver.close();
+    } finally {
+      driver.switchTo().window(current);
+    }
   }
 
   @Ignore
   public void testShouldSetRelatedTargetForMouseOut() {
-    fail("Must. Write. Meamingful. Test (but we don't fire mouse outs synthetically");
+    fail("Must. Write. Meaningful. Test (but we don't fire mouse outs synthetically");
   }
 
   @Test
@@ -199,8 +200,8 @@ public class ClickTest extends JUnit4TestBase {
     driver.findElement(By.id("label-for-checkbox-with-label")).click();
 
     assertTrue(
-        "Should be selected",
-        driver.findElement(By.id("checkbox-with-label")).isSelected());
+            "Should be selected",
+            driver.findElement(By.id("checkbox-with-label")).isSelected());
   }
 
   @Test
@@ -258,4 +259,64 @@ public class ClickTest extends JUnit4TestBase {
     driver.findElement(By.tagName("a")).click();
     waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
   }
+
+  @Test
+  @Ignore(value = {CHROME, IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, QTWEBKIT}, reason
+      = "Chrome: element is not clickable, Opera, IE: failed, others: not tested")
+  public void testCanClickAnImageMapArea() {
+    driver.get(appServer.whereIs("click_tests/google_map.html"));
+    driver.findElement(By.id("rectG")).click();
+    waitFor(WaitingConditions.pageTitleToBe(driver, "Target Page 1"));
+
+    driver.get(appServer.whereIs("click_tests/google_map.html"));
+    driver.findElement(By.id("circleO")).click();
+    waitFor(WaitingConditions.pageTitleToBe(driver, "Target Page 2"));
+
+    driver.get(appServer.whereIs("click_tests/google_map.html"));
+    driver.findElement(By.id("polyLE")).click();
+    waitFor(WaitingConditions.pageTitleToBe(driver, "Target Page 3"));
+  }
+
+  @Test
+  @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, IPHONE}, reason
+      = "Not tested against these browsers")
+  public void testShouldBeAbleToClickOnAnElementGreaterThanTwoViewports() {
+    String url = appServer.whereIs("click_too_big.html");
+    driver.get(url);
+
+    WebElement element = driver.findElement(By.id("click"));
+
+    element.click();
+
+    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+  }
+
+  @Test
+  @Ignore(value = {CHROME, FIREFOX, HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, IPHONE}, reason
+      = "Chrome, Firefox: failed, others: not tested")
+  public void testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports() {
+    String url = appServer.whereIs("click_too_big_in_frame.html");
+    driver.get(url);
+
+    WebElement frame = driver.findElement(By.id("iframe1"));
+    driver.switchTo().frame(frame);
+
+    WebElement element = driver.findElement(By.id("click"));
+    element.click();
+
+    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+  }
+
+  @Test
+  @Ignore(value = {OPERA, OPERA_MOBILE}, reason = "Opera: failed")
+  public void testShouldBeAbleToClickOnRTLLanguageLink() {
+    String url = appServer.whereIs("click_rtl.html");
+    driver.get(url);
+
+    WebElement element = driver.findElement(By.id("ar_link"));
+    element.click();
+
+    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+  }
+
 }

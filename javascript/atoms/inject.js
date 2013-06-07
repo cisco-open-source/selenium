@@ -310,7 +310,7 @@ bot.inject.executeAsyncScript = function(fn, args, timeout, onDone,
 
   fn = bot.inject.recompileFunction_(fn, win);
 
-  args = /** @type {Array.<*>} */bot.inject.unwrapValue_(args, win.document);
+  args = /** @type {Array.<*>} */ (bot.inject.unwrapValue_(args, win.document));
   args.push(goog.partial(sendResponse, bot.ErrorCode.SUCCESS));
 
   if (win.addEventListener) {
@@ -384,9 +384,8 @@ bot.inject.wrapError = function(err) {
  * when it is injected into the page. Since compiling each browser atom results
  * in a different symbol table, we must use this known key to access the cache.
  * This ensures the same object is used between injections of different atoms.
- * @type {string}
  * @const
- * @private
+ * @private {string}
  */
 bot.inject.cache.CACHE_KEY_ = '$wdc_';
 

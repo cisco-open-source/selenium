@@ -1,5 +1,5 @@
 rubygem(
-  version = "2.28.0.dev",
+  version = "2.33.0.dev",
   name = "selenium-webdriver",
   dir = "build/rb",
   deps = [
@@ -36,7 +36,7 @@ rubygem(
   files = [
     "lib/**/*",
     "CHANGES",
-    "README",
+    "README.md",
     "COPYING"
   ]
 )
@@ -46,7 +46,7 @@ rubydocs(
     "rb/lib/**/*.rb",
     "CHANGES"
   ],
-  readme = "rb/README",
+  readme = "rb/README.md",
   output_dir = "docs/api/rb"
 )
 
@@ -59,7 +59,7 @@ ruby_library(name = "common",
     "lib/selenium/rake/server_task.rb",
     "lib/selenium-webdriver.rb",
     "CHANGES",
-    "README"
+    "README.md"
   ],
   resources = [
     { "../COPYING" : "rb/COPYING" }
@@ -216,7 +216,8 @@ ruby_test(name = "phantomjs",
   ],
   include = ["rb/spec/integration", "build/rb/lib"],
   deps = [
-    ":remote"
+    ":remote",
+    ":phantomjs"
   ]
 )
 ruby_library(name = "remote",
@@ -249,6 +250,10 @@ ruby_library(name = "safari",
   deps = [
     ":common",
     ":remote",
+  ],
+  resources = [
+    { "//javascript/safari-driver/prebuilt:SafariDriver": "rb/lib/selenium/webdriver/safari/resources/SafariDriver.safariextz"},
+    { "//javascript/safari-driver:client": "rb/lib/selenium/webdriver/safari/resources/client.js"}
   ]
 )
 
@@ -283,14 +288,16 @@ ruby_test(name = "unit",
   ],
   include = ["rb/spec/unit", "build/rb/lib"],
   deps = [
+    ":android",
     ":chrome",
     ":common",
     ":firefox",
     ":ie",
     ":iphone",
-    ":android",
+    ":opera",
     ":remote",
-    ":support"
+    ":phantomjs",
+    ":support",
   ]
 )
 

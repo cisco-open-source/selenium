@@ -18,7 +18,6 @@ limitations under the License.
 package org.openqa.selenium.server.browserlaunchers;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import com.google.common.io.Resources;
 
 import org.openqa.selenium.Platform;
@@ -130,8 +129,8 @@ public class ResourceExtractor {
     try {
       ByteStreams.copy(in, out);
     } finally {
-      Closeables.close(out, true);
-      Closeables.close(in, true);
+      out.close();
+      in.close();
     }
   }
 }

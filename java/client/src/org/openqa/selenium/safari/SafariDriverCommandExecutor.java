@@ -17,6 +17,7 @@ limitations under the License.
 
 package org.openqa.selenium.safari;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.openqa.selenium.WebDriverException;
@@ -30,6 +31,7 @@ import org.openqa.selenium.remote.CommandExecutor;
 import org.openqa.selenium.remote.DriverCommand;
 import org.openqa.selenium.remote.ErrorCodes;
 import org.openqa.selenium.remote.Response;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
@@ -59,9 +61,10 @@ class SafariDriverCommandExecutor implements CommandExecutor {
    *     or 0 if the server should select a free port.
    * @param cleanSession Whether all system data should be cleared before
    *     starting a new session.
+   * @param extension The extension to use.
    */
-  public SafariDriverCommandExecutor(int port, boolean cleanSession) {
-    extension = new SafariDriverExtension();
+  SafariDriverCommandExecutor(int port, boolean cleanSession, SafariDriverExtension extension) {
+    this.extension = checkNotNull(extension, "null extension");
     server = new SafariDriverServer(port);
     browserLocator = new SafariLocator();
     sessionData = SessionData.forCurrentPlatform();
@@ -74,7 +77,7 @@ class SafariDriverCommandExecutor implements CommandExecutor {
    *
    * @throws IOException If an error occurs while launching Safari.
    */
-  public void start() throws IOException {
+  void start() throws IOException {
     if (commandLine != null) {
       return;
     }
@@ -101,9 +104,13 @@ class SafariDriverCommandExecutor implements CommandExecutor {
     stopwatch.start();
     try {
       connection = server.getConnection(45, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
+      // Do nothing.
+    }
+
+    if (connection == null) {
       stop();
-      throw new WebDriverException(String.format(
+      throw new UnreachableBrowserException(String.format(
           "Failed to connect to SafariDriver after %d ms",
           stopwatch.elapsed(TimeUnit.MILLISECONDS)));
     }
@@ -126,7 +133,7 @@ class SafariDriverCommandExecutor implements CommandExecutor {
    * Shuts down this executor, killing Safari and the SafariDriverServer along
    * with it.
    */
-  public void stop() {
+  void stop() {
     if (commandLine != null) {
       commandLine.destroy();
       commandLine = null;
@@ -141,6 +148,7 @@ class SafariDriverCommandExecutor implements CommandExecutor {
     }
   }
 
+  @Override
   public Response execute(Command command) {
     if (!server.isRunning() && DriverCommand.QUIT.equals(command.getName())) {
       Response itsOkToQuitMultipleTimes = new Response();

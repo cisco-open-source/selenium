@@ -27,7 +27,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot {
     public QtWebKitDriver(Capabilities capabilities) {
-        super(org.openqa.selenium.qtwebkit.QtWebKitDriverExecutor.getCommandExecutor(), capabilities);
+        super(QtWebKitDriverService.getCommandExecutor(), capabilities);
     }
 
 

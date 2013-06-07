@@ -22,7 +22,6 @@ goog.provide('safaridriver.inject.Encoder');
 
 goog.require('bot.Error');
 goog.require('bot.ErrorCode');
-goog.require('bot.dom');
 goog.require('bot.inject');
 goog.require('bot.response');
 goog.require('goog.array');
@@ -37,16 +36,12 @@ goog.require('webdriver.promise');
 
 
 /**
- * @param {!safaridriver.message.MessageTarget} messageTarget The message
- *     target to use.
+ * @param {!webdriver.EventEmitter} messageTarget The message target to use.
  * @constructor
  */
 safaridriver.inject.Encoder = function(messageTarget) {
 
-  /**
-   * @type {!Object.<!webdriver.promise.Deferred>}
-   * @private
-   */
+  /** @private {!Object.<!webdriver.promise.Deferred>} */
   this.pendingResponses_ = {};
 
   messageTarget.on(safaridriver.message.Response.TYPE,
@@ -62,12 +57,18 @@ safaridriver.inject.Encoder = function(messageTarget) {
  * <p>Note, this constant is very intentionally initialized to a value other
  * than the standard JSON wire protocol key for WebElements.
  *
- * @type {string}
+ * @private {string}
  * @const
- * @private
  */
 safaridriver.inject.Encoder.ENCODED_ELEMENT_KEY_ =
     'ENCODED_' + bot.inject.ELEMENT_KEY;
+
+
+/**
+ * @private {string}
+ * @const
+ */
+safaridriver.inject.Encoder.ENCODING_ATTRIBUTE_NAME_ = 'safaridriver-encoding';
 
 
 /**
@@ -78,8 +79,7 @@ safaridriver.inject.Encoder.ENCODED_ELEMENT_KEY_ =
  */
 safaridriver.inject.Encoder.getElementCssSelector_ = function(element) {
   var path = '';
-  for (var current = element; current;
-       current = bot.dom.getParentElement(current)) {
+  for (var current = element; current; current = current.parentElement) {
     var index = 1;
     for (var sibling = current.previousSibling; sibling;
          sibling = sibling.previousSibling) {
@@ -87,7 +87,7 @@ safaridriver.inject.Encoder.getElementCssSelector_ = function(element) {
         index++;
       }
     }
-    var tmp = current.tagName.toLowerCase();
+    var tmp = current.tagName.toLowerCase().replace(/:/g, '\\:');
     if (index > 1) {
       tmp += ':nth-child(' + index + ')';
     }
@@ -97,6 +97,22 @@ safaridriver.inject.Encoder.getElementCssSelector_ = function(element) {
       path = tmp + ' > ' + path;
     }
   }
+
+  // In Safari 5.1.7, canonical CSS selectors will often fail to resolve,
+  // especially when the element is a descendant of a form. Try to work around
+  // this by setting a random attribute we can query. We don't use this
+  // attribute all the time because we want to avoid modifying the DOM whenever
+  // possible.
+  if (element.ownerDocument.querySelector(path) !== element ||
+      path.indexOf('form') != -1) {
+    var str = goog.string.getRandomString();
+    element.setAttribute(
+        safaridriver.inject.Encoder.ENCODING_ATTRIBUTE_NAME_, str)
+    path = element.tagName.toLowerCase() +
+        '[' + safaridriver.inject.Encoder.ENCODING_ATTRIBUTE_NAME_ +
+        '="' + str + '"]';
+  }
+
   return path;
 };
 
@@ -189,7 +205,7 @@ safaridriver.inject.Encoder.prototype.encodeElement_ = function(element) {
  * @throws {Error} If the value is an invalid type, or an array or object with
  *     cyclical references.
  */
-safaridriver.inject.Encoder.prototype.decode = function(value) {
+safaridriver.inject.Encoder.decode = function(value) {
   var type = goog.typeOf(value);
   switch (type) {
     case 'boolean':
@@ -203,7 +219,7 @@ safaridriver.inject.Encoder.prototype.decode = function(value) {
 
     case 'array':
       return goog.array.map(/** @type {!Array} */ (value),
-          this.decode, this);
+          safaridriver.inject.Encoder.decode);
 
     case 'object':
       var obj = /** @type {!Object} */ (value);
@@ -216,9 +232,11 @@ safaridriver.inject.Encoder.prototype.decode = function(value) {
           throw new bot.Error(bot.ErrorCode.STALE_ELEMENT_REFERENCE,
               'Unable to locate encoded element: ' + css);
         }
+        element.removeAttribute(
+            safaridriver.inject.Encoder.ENCODING_ATTRIBUTE_NAME_);
         return element;
       }
-      return goog.object.map(obj, this.decode, this);
+      return goog.object.map(obj, safaridriver.inject.Encoder.decode);
 
     case 'function':
     default:
@@ -246,8 +264,8 @@ safaridriver.inject.Encoder.prototype.onResponse_ = function(message) {
   var response = message.getResponse();
   try {
     bot.response.checkResponse(response);
-    var value = this.decode(response['value']);
-    promise.resolve(value);
+    var value = safaridriver.inject.Encoder.decode(response['value']);
+    promise.fulfill(value);
   } catch (ex) {
     promise.reject(ex);
   }

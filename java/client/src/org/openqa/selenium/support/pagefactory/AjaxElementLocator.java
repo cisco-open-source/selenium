@@ -17,13 +17,16 @@ limitations under the License.
 package org.openqa.selenium.support.pagefactory;
 
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Clock;
 import org.openqa.selenium.support.ui.SlowLoadableComponent;
 import org.openqa.selenium.support.ui.SystemClock;
 
+import com.google.common.collect.Lists;
+
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * An element locator that will wait for the specified number of seconds for an element to appear,
@@ -41,16 +44,16 @@ public class AjaxElementLocator extends DefaultElementLocator {
   /**
    * Main constructor.
    * 
-   * @param driver The WebDriver to use when locating elements
+   * @param searchContext The context to use when finding the element
    * @param field The field representing this element
    * @param timeOutInSeconds How long to wait for the element to appear. Measured in seconds.
    */
-  public AjaxElementLocator(WebDriver driver, Field field, int timeOutInSeconds) {
-    this(new SystemClock(), driver, field, timeOutInSeconds);
+  public AjaxElementLocator(SearchContext searchContext, Field field, int timeOutInSeconds) {
+    this(new SystemClock(), searchContext, field, timeOutInSeconds);
   }
 
-  public AjaxElementLocator(Clock clock, WebDriver driver, Field field, int timeOutInSeconds) {
-    super(driver, field);
+  public AjaxElementLocator(Clock clock, SearchContext searchContext, Field field, int timeOutInSeconds) {
+    super(searchContext, field);
     this.timeOutInSeconds = timeOutInSeconds;
     this.clock = clock;
   }
@@ -73,6 +76,21 @@ public class AjaxElementLocator extends DefaultElementLocator {
   }
 
   /**
+   * {@inheritDoc}
+   * 
+   * Will poll the interface on a regular basis until at least one element is present.
+   */
+  @Override
+  public List<WebElement> findElements() {
+    SlowLoadingElementList list = new SlowLoadingElementList(clock, timeOutInSeconds);
+    try {
+      return list.get().getElements();
+    } catch (NoSuchElementError e) {
+      return Lists.newArrayList();
+    }
+  }
+
+  /**
    * By default, we sleep for 250ms between polls. You may override this method in order to change
    * how it sleeps.
    * 
@@ -84,7 +102,7 @@ public class AjaxElementLocator extends DefaultElementLocator {
 
   /**
    * By default, elements are considered "found" if they are in the DOM. Override this method in
-   * order to change whether or not you consider the elemet loaded. For example, perhaps you need
+   * order to change whether or not you consider the element loaded. For example, perhaps you need
    * the element to be displayed:
    * 
    * <pre class="code>
@@ -139,9 +157,56 @@ public class AjaxElementLocator extends DefaultElementLocator {
     }
   }
 
+  private class SlowLoadingElementList extends SlowLoadableComponent<SlowLoadingElementList> {
+    private NoSuchElementException lastException;
+    private List<WebElement> elements;
+
+    public SlowLoadingElementList(Clock clock, int timeOutInSeconds) {
+      super(clock, timeOutInSeconds);
+    }
+
+    @Override
+    protected void load() {
+      // Does nothing
+    }
+
+    @Override
+    protected long sleepFor() {
+      return AjaxElementLocator.this.sleepFor();
+    }
+
+    @Override
+    protected void isLoaded() throws Error {
+      try {
+        elements = AjaxElementLocator.super.findElements();
+        if (elements.size() == 0) {
+          throw new NoSuchElementException("Unable to locate the element");
+        }
+        for (WebElement element : elements) {
+          if (!isElementUsable(element)) {
+            throw new NoSuchElementException("Element is not usable");
+          }
+        }
+      } catch (NoSuchElementException e) {
+        lastException = e;
+        // Should use JUnit's AssertionError, but it may not be present
+        throw new NoSuchElementError("Unable to locate the element", e);
+      }
+    }
+
+    public NoSuchElementException getLastException() {
+      return lastException;
+    }
+
+    public List<WebElement> getElements() {
+      return elements;
+    }
+  }
+
   private static class NoSuchElementError extends Error {
     private NoSuchElementError(String message, Throwable throwable) {
       super(message, throwable);
     }
   }
+
 }

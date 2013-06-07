@@ -38,11 +38,9 @@ class Script {
   ~Script(void);
 
   std::wstring source_code() const { return this->source_code_; }
-  unsigned long argument_count() const { return this->argument_count_; }
-  SAFEARRAY* arguments() { return this->argument_array_; }
   VARIANT result() { return this->result_; }
   void set_result(VARIANT value) {
-    HRESULT hr = ::VariantCopy(&this->result_, &value);
+    this->result_.Copy(&value);
   }
 
   void AddArgument(const std::string& argument);
@@ -67,6 +65,7 @@ class Script {
   bool ResultIsIDispatch(void);
 
   int Execute(void);
+  int ExecuteAsync(int timeout_in_milliseconds);
   int ConvertResultToJsonValue(const IECommandExecutor& executor,
                                Json::Value* value);
   bool ConvertResultToString(std::string* value);
@@ -90,8 +89,9 @@ class Script {
   unsigned long argument_count_;
   std::wstring source_code_;
   long current_arg_index_;
-  SAFEARRAY* argument_array_;
-  VARIANT result_;
+  
+  vector<CComVariant> argument_array_;
+  CComVariant result_;
 };
 
 } // namespace webdriver

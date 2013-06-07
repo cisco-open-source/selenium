@@ -6,7 +6,7 @@
 <title>
   Class: Selenium::WebDriver::IE::Server
   
-    &mdash; Documentation by YARD 0.8.1
+    &mdash; Documentation by YARD 0.8.5.2
   
 </title>
 
@@ -440,7 +440,7 @@
   <span class='ivar'>@log_file</span>    <span class='op'>=</span> <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='symbol'>:log_file</span><span class='rparen'>)</span>
 
   <span class='kw'>unless</span> <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>invalid option</span><span class='embexpr_beg'>#{</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>s</span><span class='tstring_end'>'</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>!=</span> <span class='int'>1</span><span class='rbrace'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>invalid option</span><span class='embexpr_beg'>#{</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>s</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>!=</span> <span class='int'>1</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
 <span class='kw'>end</span></pre>
@@ -456,7 +456,6 @@
     
       
       <span id="log_file=-instance_method"></span>
-      <span id="log_file-instance_method"></span>
       <div class="method_details first">
   <h3 class="signature first" id="log_file-instance_method">
   
@@ -502,7 +501,6 @@
     
       
       <span id="log_level=-instance_method"></span>
-      <span id="log_level-instance_method"></span>
       <div class="method_details ">
   <h3 class="signature " id="log_level-instance_method">
   
@@ -595,7 +593,7 @@
       <pre class="code"><span class="info file"># File 'rb/lib/selenium/webdriver/ie/server.rb', line 8</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_get'>get</span>
-  <span class='id identifier rubyid_binary'>binary</span> <span class='op'>=</span> <span class='const'>Platform</span><span class='period'>.</span><span class='id identifier rubyid_find_binary'>find_binary</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IEDriverServer</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_binary'>binary</span> <span class='op'>=</span> <span class='const'>IE</span><span class='period'>.</span><span class='id identifier rubyid_driver_path'>driver_path</span> <span class='op'>||</span> <span class='const'>Platform</span><span class='period'>.</span><span class='id identifier rubyid_find_binary'>find_binary</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IEDriverServer</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_binary'>binary</span>
     <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_binary'>binary</span><span class='rparen'>)</span>
   <span class='kw'>else</span>
@@ -772,7 +770,7 @@
   <span class='ivar'>@process</span><span class='period'>.</span><span class='id identifier rubyid_start'>start</span>
 
   <span class='kw'>unless</span> <span class='const'>SocketPoller</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>Platform</span><span class='period'>.</span><span class='id identifier rubyid_localhost'>localhost</span><span class='comma'>,</span> <span class='ivar'>@port</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_connected?'>connected?</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='op'>::</span><span class='const'>WebDriverError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>unable to connect to IE server within </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rbrace'>}</span><span class='tstring_content'> seconds</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='op'>::</span><span class='const'>WebDriverError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>unable to connect to IE server within </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_timeout'>timeout</span><span class='embexpr_end'>}</span><span class='tstring_content'> seconds</span><span class='tstring_end'>&quot;</span></span>
   <span class='kw'>end</span>
 
   <span class='const'>Platform</span><span class='period'>.</span><span class='id identifier rubyid_exit_hook'>exit_hook</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_stop'>stop</span> <span class='rbrace'>}</span>
@@ -867,7 +865,7 @@
       <pre class="code"><span class="info file"># File 'rb/lib/selenium/webdriver/ie/server.rb', line 64</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_uri'>uri</span>
-  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://</span><span class='embexpr_beg'>#{</span><span class='const'>Platform</span><span class='period'>.</span><span class='id identifier rubyid_localhost'>localhost</span><span class='rbrace'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_port'>port</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://</span><span class='embexpr_beg'>#{</span><span class='const'>Platform</span><span class='period'>.</span><span class='id identifier rubyid_localhost'>localhost</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_port'>port</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -879,9 +877,9 @@
 </div>
 
     <div id="footer">
-  Generated on Thu Jul 19 12:32:25 2012 by
+  Generated on Tue Apr  9 23:39:05 2013 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.1 (ruby-1.9.3).
+  0.8.5.2 (ruby-2.0.0).
 </div>
 
   </body>

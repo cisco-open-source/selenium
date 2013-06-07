@@ -38,8 +38,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static com.google.common.io.Closeables.closeQuietly;
-
 public class ServerHttpChannel implements Runnable {
   private final static Logger log = Logger.getLogger(ServerHttpChannel.class.getName());
   
@@ -177,14 +175,18 @@ public class ServerHttpChannel implements Runnable {
       out.write(toSend);
       out.flush();
     } finally {
-      closeQuietly(out);
+      out.close();
     }
   }
 
   public String read() throws IOException {
     InputStream input = connection.getInputStream();
-    byte[] bytes = ByteStreams.toByteArray(input);
-    closeQuietly(input);
+    byte[] bytes = null;
+    try {
+      bytes = ByteStreams.toByteArray(input);
+    } finally {
+      input.close();
+    }
     connection.disconnect();
     connection = null;
     return new String(bytes, Charsets.UTF_8);

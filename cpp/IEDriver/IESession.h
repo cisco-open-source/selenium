@@ -18,10 +18,20 @@
 
 #define MUTEX_NAME L"WD_INITIALIZATION_MUTEX"
 #define MUTEX_WAIT_TIMEOUT 30000
+#define THREAD_WAIT_TIMEOUT 30000
+#define EXECUTOR_EXIT_WAIT_TIMEOUT 5000
+#define EXECUTOR_EXIT_WAIT_INTERVAL 100
 
 using namespace std;
 
 namespace webdriver {
+
+// Structure to be used for storing session initialization parameters
+struct SessionParameters {
+  int port;
+  bool force_createprocess_api;
+  std::string ie_switches;
+};
 
 class IESession : public Session {
 public:
@@ -34,6 +44,7 @@ public:
                       std::string* serialized_response);
 
 private:
+  bool WaitForCommandExecutorExit(int timeout_in_milliseconds);
   HWND executor_window_handle_;
 };
 

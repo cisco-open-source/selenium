@@ -37,15 +37,20 @@ safaridriver.extension.TabManager = function() {
    * every tab: "[object SafariBrowserTab]". We cannot use a
    * {@link goog.structs.Map} either, because the keys it generates are
    * equally generic.
-   * @type {!Array.<!safaridriver.extension.Tab>}
-   * @private
+   * @private {!Array.<!safaridriver.extension.Tab>}
    */
   this.tabs_ = [];
 
   /**
+   * Browser tabs that should be treated as "internal" to the SafariDriver and
+   * hidden from WebDriver clients.
+   * @private {!Array.<!SafariBrowserTab>}
+   */
+  this.ignoredTabs_ = [];
+
+  /**
    * The logger for this class.
-   * @type {!goog.debug.Logger}
-   * @private
+   * @private {!goog.debug.Logger}
    */
   this.log_ = goog.debug.Logger.getLogger('safaridriver.extension.TabManager');
 
@@ -60,8 +65,7 @@ safaridriver.extension.TabManager = function() {
 
 /**
  * The tab that all commands should be routed to.
- * @type {safaridriver.extension.Tab}
- * @private
+ * @private {safaridriver.extension.Tab}
  */
 safaridriver.extension.TabManager.prototype.commandTab_ = null;
 
@@ -93,8 +97,25 @@ safaridriver.extension.TabManager.prototype.init_ = function() {
   }, this);
 
   if (commandTab) {
-    this.setCommandTab(commandTab);
+    this.setCommandTab(
+      /** @type {!safaridriver.extension.Tab} */ (commandTab));
   }
+};
+
+
+/**
+ * Marks a tab as "internal" and ignores it for all WebDriver clients.
+ * @param {!SafariBrowserTab} tab The tab to ignore.
+ */
+safaridriver.extension.TabManager.prototype.ignoreTab = function(tab) {
+  this.ignoredTabs_.push(tab);
+
+  if (this.commandTab_ && this.commandTab_.getBrowserTab() === tab) {
+    this.log_.info('Resetting command tab');
+    this.commandTab_ = null;
+  }
+
+  this.delete_(tab);
 };
 
 
@@ -127,7 +148,8 @@ safaridriver.extension.TabManager.prototype.setCommandTab = function(tab) {
  * @private
  */
 safaridriver.extension.TabManager.prototype.onOpen_ = function(e) {
-  if (e.target instanceof SafariBrowserWindow) {
+  if (e.target instanceof SafariBrowserWindow ||
+      goog.array.contains(this.ignoredTabs_, e.target)) {
     // Every window has at least one tab, so as far as we are concerned,
     // SafariBrowserTabs are windows.
     this.log_.info('Ignoring open window event');
@@ -150,6 +172,11 @@ safaridriver.extension.TabManager.prototype.onClose_ = function(e) {
     return;
   }
 
+  var browserTab = /** @type {!SafariBrowserTab} */ (e.target);
+  if (goog.array.remove(this.ignoredTabs_, browserTab)) {
+    return;
+  }
+
   if (this.commandTab_ && this.commandTab_.getBrowserTab() === e.target) {
     this.log_.info(
         'The command tab has been closed: ' + this.commandTab_.getId());
@@ -157,7 +184,7 @@ safaridriver.extension.TabManager.prototype.onClose_ = function(e) {
   }
 
   this.log_.info('Tab closed');
-  this.delete_(/** @type {!SafariBrowserTab} */ (e.target));
+  this.delete_(browserTab);
 };
 
 

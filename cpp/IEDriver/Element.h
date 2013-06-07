@@ -1,4 +1,4 @@
-// Copyright 2011 Software Freedom Conservancy
+// Copyright 2013 Software Freedom Conservancy
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,6 +14,8 @@
 #ifndef WEBDRIVER_IE_ELEMENT_H_
 #define WEBDRIVER_IE_ELEMENT_H_
 
+#include <ctime>
+#include <memory>
 #include <string>
 #include <vector>
 #include "json.h"
@@ -39,29 +41,32 @@ class Element {
   Json::Value ConvertToJson(void);
   std::string GetTagName(void);
   int GetLocationOnceScrolledIntoView(const ELEMENT_SCROLL_BEHAVIOR scroll,
-                                      LocationInfo* location);
+                                      LocationInfo* location,
+                                      std::vector<LocationInfo>* frame_locations);
+  int GetClickLocation(const ELEMENT_SCROLL_BEHAVIOR scroll_behavior,
+                       LocationInfo* element_location,
+                       LocationInfo* click_location);
   int GetAttributeValue(const std::string& attribute_name,
                         std::string* attribute_value,
                         bool* value_is_null);
 
-  bool HasOnlySingleTextNodeChild(void);
-  bool GetTextBoundaries(LocationInfo* text_info);
-
   int IsDisplayed(bool* result);
   bool IsEnabled(void);
   bool IsSelected(void);
+  bool IsInteractable(void);
+  bool IsEditable(void);
   bool IsAttachedToDom(void);
-  int Click(const ELEMENT_SCROLL_BEHAVIOR scroll_behavior);
-  int ExecuteAsyncAtom(const std::wstring& sync_event_name,
-                       ASYNCEXECPROC execute_proc,
-                       std::string* error_msg);
 
   std::string element_id(void) const { return this->element_id_; }
   IHTMLElement* element(void) { return this->element_; }
 
+  clock_t last_click_time(void) const { return this->last_click_time_; }
+  void set_last_click_time(clock_t click_time) { this->last_click_time_ = click_time; }
+
  private:
   int GetLocation(LocationInfo* location, std::vector<LocationInfo>* frame_locations);
-  LocationInfo GetClickPoint(const LocationInfo location);
+  LocationInfo CalculateClickPoint(const LocationInfo location, const bool document_contains_frames);
+  bool GetClickableViewPortLocation(const bool document_contains_frames, LocationInfo* location);
   bool IsLocationInViewPort(const LocationInfo location, const bool document_contains_frames);
   bool IsLocationVisibleInFrames(const LocationInfo location, const std::vector<LocationInfo> frame_locations);
   bool IsHiddenByOverflow();
@@ -70,11 +75,15 @@ class Element {
   int GetDocumentFromWindow(IHTMLWindow2* parent_window,
                             IHTMLDocument2** parent_doc);
   bool IsInline(void);
-  static bool Element::RectHasNonZeroDimensions(const CComPtr<IHTMLRect> rect);
+  static bool Element::RectHasNonZeroDimensions(IHTMLRect* rect);
+
+  bool HasOnlySingleTextNodeChild(void);
+  bool Element::GetTextBoundaries(LocationInfo* text_info);
 
   std::string element_id_;
   CComPtr<IHTMLElement> element_;
   HWND containing_window_handle_;
+  clock_t last_click_time_;
 };
 
 typedef std::tr1::shared_ptr<Element> ElementHandle;

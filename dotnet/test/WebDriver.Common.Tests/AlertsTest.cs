@@ -4,6 +4,7 @@ using System.Text;
 using NUnit.Framework;
 using OpenQA.Selenium.Environment;
 using System.Collections.ObjectModel;
+using OpenQA.Selenium.IE;
 
 namespace OpenQA.Selenium
 {
@@ -232,7 +233,6 @@ namespace OpenQA.Selenium
         [IgnoreBrowser(Browser.Android)]
         [IgnoreBrowser(Browser.HtmlUnit)]
         [IgnoreBrowser(Browser.IPhone)]
-        [IgnoreBrowser(Browser.IE, "Issue number 4594")]
         [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
         [IgnoreBrowser(Browser.Remote)]
         [IgnoreBrowser(Browser.Safari)]
@@ -312,30 +312,6 @@ namespace OpenQA.Selenium
         }
 
         [Test]
-        [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
-        [IgnoreBrowser(Browser.Safari)]
-        public void ShouldThrowAnExceptionIfAnAlertHasNotBeenDealtWithAndDismissTheAlert()
-        {
-            driver.Url = alertsPage;
-
-            driver.FindElement(By.Id("alert")).Click();
-
-            IAlert alert = WaitFor<IAlert>(AlertToBePresent);
-            try
-            {
-                string title = driver.Title;
-                Assert.Fail("Expected exception");
-            }
-            catch (UnhandledAlertException)
-            {
-                // this is an expected exception
-            }
-
-            // but the next call should be good.
-            Assert.AreEqual("Testing Alerts", driver.Title);
-        }
-
-        [Test]
         [Category("JavaScript")]
         [IgnoreBrowser(Browser.Android)]
         [IgnoreBrowser(Browser.HtmlUnit)]
@@ -350,6 +326,44 @@ namespace OpenQA.Selenium
             driver.Url = alertsPage;
 
             AlertToBePresent();
+        }
+
+        [Test]
+        [Category("JavaScript")]
+        [IgnoreBrowser(Browser.Android)]
+        [IgnoreBrowser(Browser.HtmlUnit)]
+        [IgnoreBrowser(Browser.Chrome, "Issue 2764")]
+        [IgnoreBrowser(Browser.IPhone)]
+        [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
+        [IgnoreBrowser(Browser.Remote)]
+        [IgnoreBrowser(Browser.Safari)]
+        public void SwitchingToMissingAlertInAClosedWindowThrows()
+        {
+            string mainWindow = driver.CurrentWindowHandle;
+            try
+            {
+                driver.FindElement(By.Id("open-new-window")).Click();
+                WaitFor(WindowHandleCountToBe(2));
+                WaitFor(WindowWithName("newwindow"));
+                driver.Close();
+                WaitFor(WindowHandleCountToBe(1));
+
+                try
+                {
+                    AlertToBePresent().Accept();
+                    Assert.Fail("Expected exception");
+                }
+                catch (NoSuchWindowException)
+                {
+                    // Expected
+                }
+
+            }
+            finally
+            {
+                driver.SwitchTo().Window(mainWindow);
+                WaitFor(ElementTextToEqual(driver.FindElement(By.Id("open-new-window")), "open new window"));
+            }
         }
 
         [Test]
@@ -479,6 +493,7 @@ namespace OpenQA.Selenium
 
                 try
                 {
+                    IWebElement el = driver.FindElement(By.Id("open-page-with-onunload-alert"));
                     WaitFor<IAlert>(AlertToBePresent, TimeSpan.FromSeconds(5));
                     Assert.Fail("Expected exception");
                 }
@@ -508,7 +523,8 @@ namespace OpenQA.Selenium
         {
             driver.Url = alertsPage;
 
-            driver.FindElement(By.Id("open-page-with-onunload-alert")).Click();
+            IWebElement element = WaitFor<IWebElement>(ElementToBePresent(By.Id("open-page-with-onunload-alert")));
+            element.Click();
             driver.Navigate().Back();
 
             IAlert alert = WaitFor<IAlert>(AlertToBePresent);
@@ -516,7 +532,8 @@ namespace OpenQA.Selenium
             alert.Accept();
 
             Assert.AreEqual("onunload", value);
-            WaitFor(ElementTextToEqual(driver.FindElement(By.Id("open-page-with-onunload-alert")), "open new page"));
+            element = WaitFor<IWebElement>(ElementToBePresent(By.Id("open-page-with-onunload-alert")));
+            WaitFor(ElementTextToEqual(element, "open new page"));
         }
 
         [Test]
@@ -560,7 +577,7 @@ namespace OpenQA.Selenium
         [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
         [IgnoreBrowser(Browser.Opera)]
         [IgnoreBrowser(Browser.Safari)]
-        public void IncludesAlertInUnhandledAlertException()
+        public void IncludesAlertTextInUnhandledAlertException()
         {
             driver.Url = alertsPage;
 
@@ -573,9 +590,7 @@ namespace OpenQA.Selenium
             }
             catch (UnhandledAlertException e)
             {
-                IAlert alert = e.Alert;
-                Assert.NotNull(alert);
-                Assert.AreEqual("cheese", alert.Text);
+                Assert.AreEqual("cheese", e.AlertText);
             }
         }
 
@@ -592,29 +607,88 @@ namespace OpenQA.Selenium
             EnvironmentManager.Instance.CloseCurrentDriver();
         }
 
+        //------------------------------------------------------------------
+        // Tests below here are not included in the Java test suite
+        //------------------------------------------------------------------
         [Test]
         [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
         [IgnoreBrowser(Browser.Safari)]
         public void ShouldHandleOnBeforeUnloadAlert()
         {
-            driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("onBeforeUnload.html");
+            driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("pageWithOnBeforeUnloadMessage.html");
             IWebElement element = driver.FindElement(By.Id("navigate"));
             element.Click();
             IAlert alert = WaitFor<IAlert>(AlertToBePresent);
             alert.Dismiss();
-            Assert.IsTrue(driver.Url.Contains("onBeforeUnload.html"));
+            Assert.IsTrue(driver.Url.Contains("pageWithOnBeforeUnloadMessage.html"));
 
             // Can't move forward or even quit the driver
             // until the alert is accepted.
             element.Click();
+            alert = WaitFor<IAlert>(AlertToBePresent);
             alert.Accept();
             WaitFor(() => { return driver.Url.Contains(alertsPage); });
             Assert.IsTrue(driver.Url.Contains(alertsPage));
         }
 
+        [Test]
+        [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
+        [IgnoreBrowser(Browser.Safari)]
+        [NeedsFreshDriver(AfterTest = true)]
+        public void ShouldHandleOnBeforeUnloadAlertAtClose()
+        {
+            driver.Url = EnvironmentManager.Instance.UrlBuilder.WhereIs("pageWithOnBeforeUnloadMessage.html");
+            IWebElement element = driver.FindElement(By.Id("navigate"));
+            element.Click();
+            IAlert alert = WaitFor<IAlert>(AlertToBePresent);
+            driver.Quit();
+            driver = null;
+        }
+
+        [Test]
+        [IgnoreBrowser(Browser.PhantomJS, "Alert commands not yet implemented in GhostDriver")]
+        [IgnoreBrowser(Browser.Safari)]
+        public void ShouldThrowAnExceptionIfAnAlertHasNotBeenDealtWithAndDismissTheAlert()
+        {
+            driver.Url = alertsPage;
+
+            driver.FindElement(By.Id("alert")).Click();
+
+            IAlert alert = WaitFor<IAlert>(AlertToBePresent);
+            try
+            {
+                string title = driver.Title;
+                Assert.Fail("Expected exception");
+            }
+            catch (UnhandledAlertException)
+            {
+                // this is an expected exception
+            }
+
+            // but the next call should be good.
+            Assert.AreEqual("Testing Alerts", driver.Title);
+        }
+
         private IAlert AlertToBePresent()
         {
             return driver.SwitchTo().Alert();
+        }
+
+        private Func<IWebElement> ElementToBePresent(By locator)
+        {
+            return () =>
+                {
+                    IWebElement foundElement = null;
+                    try
+                    {
+                        foundElement = driver.FindElement(By.Id("open-page-with-onunload-alert"));
+                    }
+                    catch (NoSuchElementException)
+                    {
+                    }
+
+                    return foundElement;
+                };
         }
 
         private Func<bool> ElementTextToEqual(IWebElement element, string text)

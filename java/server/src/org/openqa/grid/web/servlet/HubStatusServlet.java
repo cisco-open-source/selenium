@@ -74,7 +74,7 @@ public class HubStatusServlet extends RegistryBasedServlet {
 
   protected void process(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    response.setContentType("text/html");
+    response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
     response.setStatus(200);
     JSONObject res;
@@ -102,7 +102,7 @@ public class HubStatusServlet extends RegistryBasedServlet {
         }
         rd.close();
         String json = s.toString();
-        if (json != null && !"".equals(json)) {
+        if (!"".equals(json)) {
           requestJSON = new JSONObject(json);
         }
 

@@ -136,7 +136,7 @@ module Selenium
             caps = new
             caps.browser_name          = data.delete("browserName")
             caps.version               = data.delete("version")
-            caps.platform              = data.delete("platform").downcase.to_sym
+            caps.platform              = data.delete("platform").downcase.to_sym if data.has_key?('platform')
             caps.javascript_enabled    = data.delete("javascriptEnabled")
             caps.css_selectors_enabled = data.delete("cssSelectorsEnabled")
             caps.takes_screenshot      = data.delete("takesScreenshot")
@@ -219,8 +219,8 @@ module Selenium
               hash['firefox_profile'] = value.as_json['zip'] if value
             when :proxy
               hash['proxy'] = value.as_json if value
-            when String
-              hash[key] = value
+            when String, :firefox_binary
+              hash[key.to_s] = value
             when Symbol
               hash[camel_case(key.to_s)] = value
             else

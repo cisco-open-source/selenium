@@ -62,6 +62,35 @@ class JavascriptMappings
     fun.add_mapping("js_binary", Javascript::AddDependencies.new)
     fun.add_mapping("js_binary", Javascript::Compile.new)
 
+    #
+    # Arguments:
+    #   name: A unique name for this module.
+    #   deps: A list of dependent js_module or js_library targets.
+    fun.add_mapping("js_module", Javascript::CheckPreconditions.new)
+    fun.add_mapping("js_module", Javascript::CheckModuleDeps.new)
+
+    # Runs the Closure compiler over a set of JavaScript files, producing a
+    # set of interconnected module files.
+    #
+    # Arguments:
+    #   name: The base name of the binary. This will be used as a common prefix
+    #       for the generated modules.
+    #   modules: A list of dependent js_module targets.
+    #   defines: A list of symbols to define with the compiler. Each symbol
+    #       should be of the form "$key=$value" and is equivalent to including
+    #       the flag "--define=$key=$value".
+    #   externs: A list of files to include as externs.
+    #   flags: A list of flags to pass to the Closure compiler.
+    #   no_format: If specified, the output will not be pretty printed (the
+    #       value of this argument is irrelevant). If not specified, the
+    #       binary will be compiled using the flag "--formatting=PRETTY_PRINT".
+    #
+    # Outputs:
+    #   A compiled file for each js_module dependency. Each output file will
+    #   be named $name_$module.js, where $name is the |name| of this target,
+    #   and $module is the |name| of the dependent js_module.
+    fun.add_mapping("js_module_binary", Javascript::CompileModules.new)
+
     # Runs the Closure compiler over a set of JavaScript files to produce a
     # single script which can be easily injected into any page.
     #
@@ -167,7 +196,7 @@ end
 module Javascript
   # CrazyFunJava.ant.taskdef :name      => "jscomp",
   #                          :classname => "com.google.javascript.jscomp.ant.CompileTask",
-  #                          :classpath => "third_party/closure/bin/compiler-20120917.jar"
+  #                          :classpath => "third_party/closure/bin/compiler-20130227.jar"
 
   class BaseJs < Tasks
     attr_reader :calcdeps
@@ -178,7 +207,7 @@ module Javascript
         py = "python"
       end
       @calcdeps = "#{py} third_party/closure/bin/calcdeps.py " +
-                  "-c third_party/closure/bin/compiler-20120917.jar "
+                  "-c third_party/closure/bin/compiler-20130227.jar "
     end
 
     def js_name(dir, name)
@@ -471,9 +500,178 @@ module Javascript
 
         CrazyFunJava.ant.java :classname => "com.google.javascript.jscomp.CommandLineRunner", :failonerror => true do
           classpath do
-            pathelement :path =>  "third_party/closure/bin/compiler-20120917.jar"
+            pathelement :path =>  "third_party/closure/bin/compiler-20130227.jar"
           end
           arg :line => cmd
+        end
+      end
+    end
+  end
+
+  class JsModule < BaseJs
+    # Hash of module task name to module info hash:
+    #   :name - module name
+    #   :srcs - list of raw srcs in the module
+    #   :deps - list of transitive dependencies
+    #   :module_deps - list of dependent modules
+    @@MODULE_INFO = {}
+  end
+
+  class CheckModuleDeps < JsModule
+    def handle(fun, dir, args)
+      module_name = task_name(dir, args[:name])
+      task module_name do
+        raise StandardError, ":name must be set" if args[:name].nil?
+        raise StandardError, ":srcs must be set" if args[:srcs].nil?
+
+        puts "Checking dependencies for: #{module_name}"
+
+        task = Rake::Task[module_name]
+        deps = build_deps(task, task, []).uniq.collect{|dep| File.expand_path(dep)}
+
+        srcs = args[:srcs].collect{|src| Dir[File.join(dir, src)]}
+        srcs = srcs.flatten.collect{|src| File.expand_path(src)}
+
+        module_deps = args[:module_deps] || []
+        module_deps = module_deps.collect{|mod| task_name(dir, mod)}
+
+        @@MODULE_INFO[module_name] = {
+            :name => module_name.to_s.sub(/.*(:|\/)/, ""),
+            :srcs => srcs,
+            :deps => calc_deps(srcs, deps),
+            :module_deps => module_deps
+        }
+
+        # If we get here without errors, all module dependencies are present.
+      end
+
+      task = Rake::Task[module_name]
+      add_dependencies(task, dir, args[:deps])
+      add_dependencies(task, dir, args[:module_deps])
+      add_dependencies(task, dir, args[:srcs])
+    end
+  end
+
+  class CompileModules < JsModule
+    def check_preconditions(args)
+      raise StandardError, ":name must be set" if args[:name].nil?
+      raise StandardError, ":modules must be set" if args[:modules].nil?
+    end
+
+    def declare_task(dir, args)
+      task_name = task_name(dir, args[:name])
+      folder = "build/#{dir}/#{args[:name]}"
+
+      desc "Compile and optimize modules in #{folder}"
+      task task_name
+
+      task = Rake::Task[task_name]
+      task.out = folder
+      add_dependencies(task, dir, args[:modules])
+    end
+
+    def resolve_module_deps(name, result_list, seen_list)
+      if !@@MODULE_INFO[name]
+        raise StandardError, "Unable to find js_module #{name}"
+      end
+
+      dep = @@MODULE_INFO[name]
+      if seen_list.index(dep) == nil
+        seen_list.push(dep)
+        dep[:module_deps].each do |sub_dep|
+          resolve_module_deps(sub_dep, result_list, seen_list)
+        end
+        result_list.push(dep)
+      end
+    end
+
+    def collect_module_info(dir, modules)
+      modules.collect! do |mod|
+        name = task_name(dir, mod)
+        if name.index(/.*:\w+$/).nil?
+          name = "#{name}:#{name.sub(/.*\//, "")}"
+        end
+
+        info = @@MODULE_INFO[name]
+        raise StandardError, "Unable to find js_module #{name}" if info.nil?
+        info
+      end
+
+      #modules.sort! do |x, y|
+      #  x[:deps].count <=> y[:deps].count
+      #end
+      #
+      result_list = []
+      seen_list = []
+      modules.each do |info|
+        seen_list.push(info)
+        info[:module_deps].each do |dep|
+          resolve_module_deps(dep, result_list, seen_list)
+        end
+        result_list.push(info)
+      end
+      result_list.uniq!
+      raise StandardError, "Unable to identify root module" unless
+          result_list[0][:module_deps].empty?
+      result_list
+    end
+
+    def handle(fun, dir, args)
+      check_preconditions(args)
+      declare_task(dir, args)
+
+      task_name = task_name(dir, args[:name])
+      task task_name do
+        folder = "build/#{dir}/#{args[:name]}"
+
+        puts "Preparing: #{task_name} as #{folder}"
+
+        module_info = collect_module_info(dir, args[:modules])
+        srcs = (args[:srcs] || []).collect do |src|
+          File.expand_path(File.join(dir, src))
+        end
+        deps = []
+        module_info.each do |info|
+          srcs.concat(info[:srcs])
+          deps.concat(info[:deps])
+        end
+        srcs.uniq!
+        deps.uniq!
+
+        js_files = calc_deps(srcs, deps)
+
+        flags = args[:flags] || []
+        flags.push("--module_output_path_prefix='#{folder}/#{args[:name]}_'")
+
+        num_files = 0
+        module_info.each do |info|
+          indices = info[:srcs].collect do |src|
+            js_files.index(src)
+          end
+          module_file_count = (indices.max + 1) - num_files
+          module_deps = info[:module_deps].collect do |dep|
+            @@MODULE_INFO[dep][:name]
+          end
+          module_deps = module_deps.empty? ? "" : ":#{module_deps.join(",")}"
+          flags.push("--module=#{info[:name]}:#{module_file_count}#{module_deps}")
+          num_files += module_file_count
+        end
+
+        js_files.each do |file|
+          flags.push("--js=\"#{file}\"")
+        end
+
+        (args[:externs] || []).each do |file|
+          flags.push("--externs=\"#{File.expand_path(File.join(dir, file))}\"")
+        end
+
+        mkdir_p Platform.path_for folder
+
+        CrazyFunJava.ant.java :classname => "com.google.javascript.jscomp.CommandLineRunner", :failonerror => true do
+          classpath do
+            pathelement :path =>  "third_party/closure/bin/compiler-20130227.jar"
+          end
+          arg :line => flags.join(" ")
         end
       end
     end
@@ -531,7 +729,13 @@ module Javascript
         puts "Compiling #{name} as #{output}"
 
         js_files = build_deps(output, Rake::Task[output], []).uniq
-        all_deps = calc_deps(exports, js_files)
+
+        # Always load closure's deps.js first to "forward declare" all of the
+        # Closure types. This prevents type errors when a symbol is referenced
+        # in a file's type annotation, but not actually needed in the compiled
+        # output.
+        all_deps = [File.expand_path('third_party/closure/goog/deps.js')]
+        all_deps += calc_deps(exports, js_files)
 
         # Wrap the output in two functions. The outer function ensures the
         # compiled fragment never pollutes the global scope by using its
@@ -549,14 +753,38 @@ module Javascript
 
         cmd = "" <<
             "--create_name_map_files=true " <<
-            "--third_party=true " <<
+            "--third_party=false " <<
             "--js_output_file=#{output} " <<
             "--output_wrapper='#{wrapper}' " <<
             "--compilation_level=#{compilation_level(minify)} " <<
             "--define=goog.NATIVE_ARRAY_PROTOTYPES=false " <<
             "--define=bot.json.NATIVE_JSON=false " <<
-            "--jscomp_off=unknownDefines " <<
             "#{defines} " <<
+            "--jscomp_off=unknownDefines " <<
+            "--jscomp_off=deprecated " <<
+            "--jscomp_error=accessControls " <<
+            "--jscomp_error=ambiguousFunctionDecl " <<
+            "--jscomp_error=checkDebuggerStatement " <<
+            "--jscomp_error=checkRegExp " <<
+            "--jscomp_error=checkTypes " <<
+            "--jscomp_error=checkVars " <<
+            "--jscomp_error=const " <<
+            "--jscomp_error=constantProperty " <<
+            "--jscomp_error=duplicate " <<
+            "--jscomp_error=duplicateMessage " <<
+            "--jscomp_error=externsValidation " <<
+            "--jscomp_error=fileoverviewTags " <<
+            "--jscomp_error=globalThis " <<
+            "--jscomp_error=internetExplorerChecks " <<
+            "--jscomp_error=invalidCasts " <<
+            "--jscomp_error=missingProperties " <<
+            "--jscomp_error=nonStandardJsDocs " <<
+            "--jscomp_error=strictModuleDepCheck " <<
+            "--jscomp_error=typeInvalidation " <<
+            "--jscomp_error=undefinedNames " <<
+            "--jscomp_error=undefinedVars " <<
+            "--jscomp_error=uselessCode " <<
+            "--jscomp_error=visibility " <<
             "--js='" <<
             all_deps.join("' --js='") << "'"
 
@@ -564,7 +792,7 @@ module Javascript
 
         CrazyFunJava.ant.java :classname => "com.google.javascript.jscomp.CommandLineRunner", :fork => false, :failonerror => true do
           classpath do
-            pathelement :path =>  "third_party/closure/bin/compiler-20120917.jar"
+            pathelement :path =>  "third_party/closure/bin/compiler-20130227.jar"
           end
           arg :line => cmd
         end
@@ -591,7 +819,7 @@ module Javascript
     MAX_LINE_LENGTH_CPP = 78
     MAX_LINE_LENGTH_JAVA = 100
     MAX_STR_LENGTH_CPP = MAX_LINE_LENGTH_CPP - "    L\"\"\n".length
-    MAX_STR_LENGTH_JAVA = MAX_LINE_LENGTH_JAVA - "     \"\"+\n".length
+    MAX_STR_LENGTH_JAVA = MAX_LINE_LENGTH_JAVA - "       .append\(\"\"\)\n".length
     COPYRIGHT =
           "/*\n" +
           " * Copyright 2011-2012 WebDriver committers\n" +
@@ -660,7 +888,7 @@ module Javascript
         # Don't need the 'L' on each line for UTF8.
         line_format = utf8 ? "    \"%s\"" : "    L\"%s\""
       elsif language == :java
-        line_format = "    \"%s\""
+        line_format = "      .append\(\"%s\"\)"
       end
 
       to_file << "\n"
@@ -668,7 +896,7 @@ module Javascript
       if language == :cpp
         to_file << "const #{atom_type}* const #{atom_name}[] = {\n"
       elsif language == :java
-        to_file << "  #{atom_name}(\n"
+        to_file << "  #{atom_name}(new StringBuilder()\n"
       end
 
       # Make the header file play nicely in a terminal: limit lines to 80
@@ -683,7 +911,6 @@ module Javascript
 
         if (language == :java)
           to_file << line_format % line
-          to_file << " +"
           to_file << "\n"
         elsif (language == :cpp)
           to_file << line_format % line
@@ -694,7 +921,7 @@ module Javascript
       to_file << line_format % contents if contents.length > 0
 
       if language == :java
-        to_file << "\n  ),\n"
+        to_file << "\n    .toString()),\n"
       elsif language == :cpp
         to_file << ",\n    NULL\n};\n"
       end
@@ -787,7 +1014,7 @@ module Javascript
         implementation = $1.capitalize
         output_dir = File.dirname(output)
         mkdir_p output_dir unless File.exists?(output_dir)
-        class_name = implementation + "Atom"
+        class_name = implementation + "Atoms"
         output = output_dir + "/" + class_name + ".java"
 
         puts "Preparing #{task_name} as #{output}"
@@ -1002,12 +1229,10 @@ module Javascript
         task task_name do
           puts "Preparing: #{task_name} as #{folder_name}"
 
-          srcs = args[:srcs].collect {|src| Dir[File.join(dir, src)]}
-          srcs = srcs.flatten.collect {|src| File.expand_path(src)}
+          srcdir = File.join(dir, args[:srcdir])
 
           deps = build_deps(folder_name, Rake::Task[task_name], []).uniq
           deps = deps.flatten.collect {|dep| File.expand_path(dep)}
-          deps = deps.reject {|dep| srcs.include? dep }
 
           roots = args[:content_roots].collect {|root| File.join(Dir.pwd, root)}
 
@@ -1025,7 +1250,7 @@ module Javascript
               " --lib=" << deps.join(" --lib=") <<
               " --lib=third_party/closure/goog" <<
               " --root=" << roots.join(" --root=") <<
-              " --src=" << srcs.join(" --src=") <<
+              " --src=" << srcdir <<
               resources.join("")
 
           sh cmd

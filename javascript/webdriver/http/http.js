@@ -66,8 +66,7 @@ webdriver.http.Executor = function(client) {
 
   /**
    * Client used to communicate with the server.
-   * @type {!webdriver.http.Client}
-   * @private
+   * @private {!webdriver.http.Client}
    */
   this.client_ = client;
 };
@@ -171,9 +170,8 @@ webdriver.http.Executor.parseHttpResponse_ = function(httpResponse) {
 
 /**
  * Maps command names to resource locator.
- * @type {!Object.<{method:string, path:string}>}
+ * @private {!Object.<{method:string, path:string}>}
  * @const
- * @private
  */
 webdriver.http.Executor.COMMAND_MAP_ = (function() {
   return new Builder().
@@ -265,6 +263,8 @@ webdriver.http.Executor.COMMAND_MAP_ = (function() {
           post('/session/:sessionId/execute_async')).
       put(webdriver.CommandName.SCREENSHOT,
           get('/session/:sessionId/screenshot')).
+      put(webdriver.CommandName.SET_TIMEOUT,
+          post('/session/:sessionId/timeouts')).
       put(webdriver.CommandName.SET_SCRIPT_TIMEOUT,
           post('/session/:sessionId/timeouts/async_script')).
       put(webdriver.CommandName.IMPLICITLY_WAIT,
@@ -287,6 +287,10 @@ webdriver.http.Executor.COMMAND_MAP_ = (function() {
           get('/session/:sessionId/alert_text')).
       put(webdriver.CommandName.SET_ALERT_TEXT,
           post('/session/:sessionId/alert_text')).
+      put(webdriver.CommandName.GET_LOG, post('/session/:sessionId/log')).
+      put(webdriver.CommandName.GET_AVAILABLE_LOG_TYPES,
+          get('/session/:sessionId/log/types')).
+      put(webdriver.CommandName.GET_SESSION_LOGS, post('/logs')).
       build();
 
   /** @constructor */

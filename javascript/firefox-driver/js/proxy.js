@@ -139,9 +139,8 @@ fxdriver.proxy.systemConfig_ = function(prefs, ignored) {
 
 
 /**
- * @type {!Object.<string, Object.<number,
+ * @private {!Object.<string, Object.<number,
  *   function(!nsIPrefBranch, !ProxyConfig)>>}
- * @private
  */
 fxdriver.proxy.TYPES_ = {
   'DIRECT': { value: 0, config: fxdriver.proxy.directConfig_ },
@@ -162,8 +161,8 @@ fxdriver.proxy.configure_ = function(proxy_config) {
   }
 
   if (goog.isString(proxy_config)) {
-    proxy_config = /**@type {fxdriver.proxy.ProxyConfig}*/ JSON.parse(
-        proxy_config);
+    proxy_config = /**@type {fxdriver.proxy.ProxyConfig}*/ (JSON.parse(
+        proxy_config));
   }
 
   var type = fxdriver.proxy.TYPES_[proxy_config['proxyType']];
@@ -173,8 +172,8 @@ fxdriver.proxy.configure_ = function(proxy_config) {
     return;
   }
 
-  var prefs = /** @type {!nsIPrefBranch} */ fxdriver.moz.getService(
-      '@mozilla.org/preferences-service;1', 'nsIPrefBranch');
+  var prefs = /** @type {!nsIPrefBranch} */ (fxdriver.moz.getService(
+      '@mozilla.org/preferences-service;1', 'nsIPrefBranch'));
 
   type.config(prefs, proxy_config);
 };

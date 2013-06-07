@@ -25,11 +25,13 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
+import static org.openqa.selenium.testing.TestUtilities.isOldChromedriver;
 
 import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.openqa.selenium.remote.CapabilityType.ENABLE_PROFILING_CAPABILITY;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
@@ -41,11 +43,10 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
+import static org.openqa.selenium.testing.TestUtilities.isOldChromedriver;
 
-//Not supported in chromedriver, so not supported in qtwebkit
-@Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, SELENESE, QTWEBKIT})
+@Ignore({ANDROID, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS})
 public class AvailableLogsTest extends JUnit4TestBase {
 
   private WebDriver localDriver;
@@ -59,7 +60,9 @@ public class AvailableLogsTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(QTWEBKIT)
   public void browserLogShouldBeEnabledByDefault() {
+    assumeFalse(isOldChromedriver(driver));
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
     assertTrue("Browser logs should be enabled by default",
                logTypes.contains(LogType.BROWSER));
@@ -68,6 +71,7 @@ public class AvailableLogsTest extends JUnit4TestBase {
   @NeedsFreshDriver
   @Test
   public void clientLogShouldBeEnabledByDefault() {
+    assumeFalse(isOldChromedriver(driver));
     // Do one action to have *something* in the client logs.
     driver.get(pages.formPage);
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
@@ -85,7 +89,9 @@ public class AvailableLogsTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore({CHROME})  // Remove when chromedriver2 has it
   public void driverLogShouldBeEnabledByDefault() {
+    assumeFalse(isOldChromedriver(driver));
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
     assertTrue("Remote driver logs should be enabled by default",
                logTypes.contains(LogType.DRIVER));
@@ -93,13 +99,16 @@ public class AvailableLogsTest extends JUnit4TestBase {
 
   @Test
   public void profilerLogShouldBeDisabledByDefault() {
+    assumeFalse(isOldChromedriver(driver));
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();
     assertFalse("Profiler logs should not be enabled by default",
                 logTypes.contains(LogType.PROFILER));
   }
 
   @Test
+  @Ignore(value = {SAFARI, QTWEBKIT}, reason = "Safari does not support profiler logs")
   public void shouldBeAbleToEnableProfilerLog() {
+    assumeFalse(isOldChromedriver(driver));
     DesiredCapabilities caps = new DesiredCapabilities();
     caps.setCapability(ENABLE_PROFILING_CAPABILITY, true);
     WebDriverBuilder builder = new WebDriverBuilder().setDesiredCapabilities(caps);

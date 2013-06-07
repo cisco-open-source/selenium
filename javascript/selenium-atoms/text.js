@@ -24,7 +24,6 @@ goog.provide('core.text');
 
 goog.require('bot.dom');
 goog.require('bot.userAgent');
-goog.require('core.locators');
 goog.require('core.patternMatcher');
 goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
@@ -130,7 +129,7 @@ core.text.normalizeSpaces_ = function(text) {
 
   // Replace &nbsp; with a space
   var nbspPattern = new RegExp(String.fromCharCode(160), 'g');
-  if (goog.userAgent.SAFARI) {
+  if (goog.userAgent.WEBKIT) {
     return core.text.replaceAll_(text, String.fromCharCode(160), ' ');
   } else {
     return text.replace(nbspPattern, ' ');
@@ -139,20 +138,18 @@ core.text.normalizeSpaces_ = function(text) {
 
 
 /**
- * Locate an element and return it's text content.
+ * Return an element's text content.
  *
- * @param {string|!Element} locator The element locator.
- * @return {string} The text content of the located element.
+ * @param {!Element} element The element whose text to retrieve.
+ * @return {string} The element's text content.
  */
-core.text.getText = function(locator) {
-  var element = core.locators.findElement(locator);
-
+core.text.getElementText = function(element) {
   var text = '';
   var isRecentFirefox =
       (goog.userAgent.GECKO && goog.userAgent.VERSION >= '1.8');
 
   if (isRecentFirefox ||
-      goog.userAgent.SAFARI || goog.userAgent.OPERA || goog.userAgent.IE) {
+      goog.userAgent.WEBKIT || goog.userAgent.OPERA || goog.userAgent.IE) {
     text = core.text.getTextContent_(element, false);
   } else {
     if (element.textContent) {
@@ -176,7 +173,7 @@ core.text.getText = function(locator) {
 core.text.getBodyText = function() {
   var doc = bot.getWindow().document;
   var body = doc.body;
-  return !!body ? core.text.getText(body) : '';
+  return !!body ? core.text.getElementText(body) : '';
 };
 
 
@@ -208,11 +205,10 @@ core.text.linkLocator = function(locator, opt_doc) {
 
   for (var i = 0; i < links.length; i++) {
     var element = links[i];
-    var text = core.text.getText(element);
+    var text = core.text.getElementText(element);
     if (core.patternMatcher.matches(locator, text)) {
       return element;
     }
   }
   return null;
 };
-core.locators.addStrategy('link', core.text.linkLocator);

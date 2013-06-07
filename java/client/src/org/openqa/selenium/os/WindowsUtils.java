@@ -75,7 +75,7 @@ public class WindowsUtils {
    * Kill processes by name
    */
   public static void killByName(String name) {
-    executeCommand("taskkill", "/f", "/im", name);
+    executeCommand("taskkill", "/f", "/t", "/im", name);
   }
 
   /**
@@ -109,10 +109,14 @@ public class WindowsUtils {
      * quote (\"?)
      */
     // TODO We should be careful, in case Windows has ~1-ified the executable name as well
-    pattern.append("\"?.*?\\\\");
-    pattern.append(executable.getName());
+    pattern.append("(\"?.*?\\\\)?");
+    String execName = executable.getName();
+    pattern.append(execName);
+    if (!execName.endsWith(".exe")) {
+      pattern.append("(\\.exe)?");
+    }
     pattern.append("\"?");
-    for (String arg : cmdarray) {
+    for (int i = 1; i < cmdarray.length; i++) {
       /*
        * There may be a space, but maybe not (\\s?), may be a quote or maybe not (\"?), but then
        * turn on block quotation (as if *everything* had a regex backslash in front of it) with \Q.
@@ -120,7 +124,7 @@ public class WindowsUtils {
        * quotation. Now ignore a final quote if any (\"?)
        */
       pattern.append("\\s?\"?\\Q");
-      pattern.append(arg);
+      pattern.append(cmdarray[i]);
       pattern.append("\\E\"?");
     }
     pattern.append("\\s*");
@@ -139,9 +143,15 @@ public class WindowsUtils {
         logMessage.append(": ");
         logMessage.append(commandLine);
         LOG.info(logMessage.toString());
-        killPID(processID);
-        LOG.info("Killed");
-        killedOne = true;
+        try {
+          killPID(processID);
+          LOG.info("Killed");
+          killedOne = true;
+        } catch (WindowsRegistryException e) {
+          // As we kill the process tree we might here try to
+          // kill a process that was already killed in a previous call.
+          // So ignore it.
+        }
       }
     }
     if (!killedOne) {
@@ -159,7 +169,7 @@ public class WindowsUtils {
    * Kills the specified process ID
    */
   private static void killPID(String processID) {
-    executeCommand("taskkill", "/f", "/pid", processID);
+    executeCommand("taskkill", "/f", "/t", "/pid", processID);
   }
 
   /**

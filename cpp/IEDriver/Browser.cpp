@@ -151,8 +151,24 @@ std::string Browser::GetTitle() {
     return "";
   }
 
-  std::string title_string = CW2A(title, CP_UTF8);
+  std::wstring converted_title = title;
+  std::string title_string = StringUtilities::ToString(converted_title);
   return title_string;
+}
+
+std::string Browser::GetBrowserUrl() {
+  LOG(TRACE) << "Entering Browser::GetBrowserUrl";
+
+  CComBSTR url;
+  HRESULT hr = this->browser_->get_LocationURL(&url);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Unable to get current URL, call to IWebBrowser2::get_LocationURL failed";
+    return "";
+  }
+
+  std::wstring converted_url = url;
+  std::string current_url = StringUtilities::ToString(converted_url);
+  return current_url;
 }
 
 HWND Browser::GetWindowHandle() {
@@ -186,7 +202,8 @@ std::string Browser::GetWindowName() {
     return "";
   }
 
-  CComQIPtr<IHTMLDocument2> doc(dispatch);
+  CComPtr<IHTMLDocument2> doc;
+  dispatch->QueryInterface<IHTMLDocument2>(&doc);
   if (!doc) {
     LOGHR(WARN, hr) << "Have document but cannot cast, IDispatch::QueryInterface call failed";
     return "";
@@ -203,7 +220,8 @@ std::string Browser::GetWindowName() {
   CComBSTR window_name;
   hr = window->get_name(&window_name);
   if (window_name) {
-    name = CW2A(window_name, CP_UTF8);
+    std::wstring converted_window_name = window_name;
+    name = StringUtilities::ToString(converted_window_name);
   } else {
     LOG(WARN) << "Unable to get window name, IHTMLWindow2::get_name failed or returned a NULL value";
   }
@@ -237,15 +255,15 @@ void Browser::SetHeight(long height) {
 
 void Browser::AttachEvents() {
   LOG(TRACE) << "Entering Browser::AttachEvents";
-  CComQIPtr<IDispatch> dispatch(this->browser_);
-  CComPtr<IUnknown> unknown(dispatch);
+  CComPtr<IUnknown> unknown;
+  this->browser_->QueryInterface<IUnknown>(&unknown);
   HRESULT hr = this->DispEventAdvise(unknown);
 }
 
 void Browser::DetachEvents() {
   LOG(TRACE) << "Entering Browser::DetachEvents";
-  CComQIPtr<IDispatch> dispatch(this->browser_);
-  CComPtr<IUnknown> unknown(dispatch);
+  CComPtr<IUnknown> unknown;
+  this->browser_->QueryInterface<IUnknown>(&unknown);
   HRESULT hr = this->DispEventUnadvise(unknown);
 }
 
@@ -263,7 +281,7 @@ void Browser::Close() {
 int Browser::NavigateToUrl(const std::string& url) {
   LOG(TRACE) << "Entring Browser::NavigateToUrl";
 
-  std::wstring wide_url = CA2W(url.c_str(), CP_UTF8);
+  std::wstring wide_url = StringUtilities::ToWString(url);
   CComVariant url_variant(wide_url.c_str());
   CComVariant dummy;
 
@@ -308,7 +326,9 @@ unsigned int WINAPI Browser::GoBackThreadProc(LPVOID param) {
   hr = ::CoGetInterfaceAndReleaseStream(message_payload,
                                         IID_IWebBrowser2,
                                         reinterpret_cast<void**>(&browser));
-  hr = browser->GoBack();
+  if (browser != NULL) {
+    hr = browser->GoBack();
+  }
   return 0;
 }
 
@@ -338,7 +358,9 @@ unsigned int WINAPI Browser::GoForwardThreadProc(LPVOID param) {
   hr = ::CoGetInterfaceAndReleaseStream(message_payload,
                                         IID_IWebBrowser2,
                                         reinterpret_cast<void**>(&browser));
-  hr = browser->GoForward();
+  if (browser != NULL) {
+    hr = browser->GoForward();
+  }
   return 0;
 }
 
@@ -402,9 +424,9 @@ bool Browser::Wait() {
 
   // Waiting for document property != null...
   is_navigating = this->is_navigation_started_;
-  CComQIPtr<IDispatch> document_dispatch;
+  CComPtr<IDispatch> document_dispatch;
   hr = this->browser_->get_Document(&document_dispatch);
-  if (is_navigating && FAILED(hr) && !document_dispatch) {
+  if (is_navigating || FAILED(hr) || !document_dispatch) {
     LOG(DEBUG) << "Get Document failed.";
     return false;
   }
@@ -466,7 +488,8 @@ bool Browser::IsDocumentNavigating(IHTMLDocument2* doc) {
         return true;
       }
 
-      CComQIPtr<IHTMLWindow2> window(result.pdispVal);
+      CComPtr<IHTMLWindow2> window;
+      result.pdispVal->QueryInterface<IHTMLWindow2>(&window);
       if (!window) {
         // Frame is not an HTML frame.
         continue;
@@ -507,15 +530,21 @@ bool Browser::GetDocumentFromWindow(IHTMLWindow2* window,
   if (hr == E_ACCESSDENIED) {
     // Cross-domain documents may throw Access Denied. If so,
     // get the document through the IWebBrowser2 interface.
+    CComPtr<IServiceProvider> service_provider;
+    hr = window->QueryInterface<IServiceProvider>(&service_provider);
+    if (FAILED(hr)) {
+      LOGHR(WARN, hr) << "Unable to get browser, call to IHTMLWindow2::QueryService failed for IServiceProvider";
+      return false;
+    }
+
     CComPtr<IWebBrowser2> window_browser;
-    CComQIPtr<IServiceProvider> service_provider(window);
     hr = service_provider->QueryService(IID_IWebBrowserApp, &window_browser);
     if (FAILED(hr)) {
       LOGHR(WARN, hr) << "Unable to get browser, call to IServiceProvider::QueryService failed for IID_IWebBrowserApp";
       return false;
     }
 
-    CComQIPtr<IDispatch> document_dispatch;
+    CComPtr<IDispatch> document_dispatch;
     hr = window_browser->get_Document(&document_dispatch);
     if (FAILED(hr) || hr == S_FALSE) {
       LOGHR(WARN, hr) << "Unable to get document, call to IWebBrowser2::get_Document failed";
@@ -540,7 +569,7 @@ HWND Browser::GetTabWindowHandle() {
   LOG(TRACE) << "Entering Browser::GetTabWindowHandle";
 
   HWND hwnd = NULL;
-  CComQIPtr<IServiceProvider> service_provider;
+  CComPtr<IServiceProvider> service_provider;
   HRESULT hr = this->browser_->QueryInterface(IID_IServiceProvider,
                                               reinterpret_cast<void**>(&service_provider));
   if (SUCCEEDED(hr)) {

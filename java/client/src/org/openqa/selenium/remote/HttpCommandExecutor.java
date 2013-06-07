@@ -28,7 +28,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -44,12 +43,11 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.openqa.selenium.UnsupportedCommandException;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.logging.NeedsLocalLogs;
 import org.openqa.selenium.logging.LocalLogs;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.NeedsLocalLogs;
 import org.openqa.selenium.logging.profiler.HttpProfilerLogEntry;
-import org.openqa.selenium.net.Urls;
 import org.openqa.selenium.remote.internal.HttpClientFactory;
 
 import java.io.IOException;
@@ -73,35 +71,17 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
   private final URL remoteServer;
   private final Map<String, CommandInfo> nameToUrl;
   private final HttpClient client;
+  private final ErrorCodes errorCodes = new ErrorCodes();
 
   private static HttpClientFactory httpClientFactory;
 
   private LocalLogs logs = LocalLogs.getNullLogger();
 
-  private enum HttpVerb {
-    GET() {
-      @Override
-      public HttpUriRequest createMethod(String url) {
-        return new HttpGet(url);
-      }
-    },
-    POST() {
-      @Override
-      public HttpUriRequest createMethod(String url) {
-        return new HttpPost(url);
-      }
-    },
-    DELETE() {
-      @Override
-      public HttpUriRequest createMethod(String url) {
-        return new HttpDelete(url);
-      }
-    };
-
-    public abstract HttpUriRequest createMethod(String url);
+  public HttpCommandExecutor(URL addressOfRemoteServer) {
+    this(ImmutableMap.<String, CommandInfo>of(), addressOfRemoteServer);
   }
 
-  public HttpCommandExecutor(URL addressOfRemoteServer) {
+  public HttpCommandExecutor(Map<String, CommandInfo> additionalCommands, URL addressOfRemoteServer) {
     try {
       remoteServer = addressOfRemoteServer == null ?
                      new URL(System.getProperty("webdriver.remote.server", "http://localhost:4444/wd/hub")) :
@@ -137,8 +117,12 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
     targetHost = new HttpHost(
         host, remoteServer.getPort(), remoteServer.getProtocol());
 
-    nameToUrl = ImmutableMap.<String, CommandInfo>builder()
-        .put(NEW_SESSION, post("/session"))
+    ImmutableMap.Builder<String, CommandInfo> builder = ImmutableMap.builder();
+    for (Map.Entry<String, CommandInfo> entry : additionalCommands.entrySet()) {
+      builder.put(entry.getKey(), entry.getValue());
+    }
+
+    builder.put(NEW_SESSION, post("/session"))
         .put(QUIT, delete("/session/:sessionId"))
         .put(GET_CURRENT_WINDOW_HANDLE, get("/session/:sessionId/window_handle"))
         .put(GET_WINDOW_HANDLES, get("/session/:sessionId/window_handles"))
@@ -261,9 +245,9 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         .put(GET_AVAILABLE_LOG_TYPES, get("/session/:sessionId/log/types"))
         .put(GET_SESSION_LOGS, post("/logs"))
 
-        .put(STATUS, get("/status"))
+        .put(STATUS, get("/status"));
 
-        .build();
+        nameToUrl = builder.build();
   }
 
   public void setLocalLogs(LocalLogs logs) {
@@ -285,8 +269,9 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
       if (QUIT.equals(command.getName())) {
         return new Response();
       }
-      if (! NEW_SESSION.equals(command.getName()))
-      throw new SessionNotFoundException("Session ID is null");
+      if (!NEW_SESSION.equals(command.getName())) {
+        throw new SessionNotFoundException("Session ID is null");
+      }
     }
 
     CommandInfo info = nameToUrl.get(command.getName());
@@ -475,7 +460,7 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
 
       HttpHost finalHost = (HttpHost) context.getAttribute(HTTP_TARGET_HOST);
       String uri = finalHost.toURI();
-      String sessionId = getSessionId(uri);
+      String sessionId = HttpSessionId.getSessionId(uri);
       if (sessionId != null) {
         response.setSessionId(sessionId);
       }
@@ -503,22 +488,9 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         response.setValue(((String) response.getValue()).replace("\r\n", "\n"));
       }
     }
+
+    response.setState(errorCodes.toState(response.getStatus()));
     return response;
-  }
-
-  public static String getSessionId(String uri) {
-    int sessionIndex = uri.indexOf("/session/");
-    if (sessionIndex != -1) {
-      sessionIndex += "/session/".length();
-      int nextSlash = uri.indexOf("/", sessionIndex);
-      if (nextSlash != -1) {
-        return uri.substring(sessionIndex, nextSlash);
-      } else {
-        return uri.substring(sessionIndex);
-      }
-
-    }
-    return null;
   }
 
   private static CommandInfo get(String url) {
@@ -533,54 +505,4 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
     return new CommandInfo(url, HttpVerb.DELETE);
   }
 
-  private static class CommandInfo {
-
-    private final String url;
-    private final HttpVerb verb;
-
-    private CommandInfo(String url, HttpVerb verb) {
-      this.url = url;
-      this.verb = verb;
-    }
-
-    public HttpUriRequest getMethod(URL base, Command command) {
-      StringBuilder urlBuilder = new StringBuilder();
-
-      urlBuilder.append(base.toExternalForm().replaceAll("/$", ""));
-      for (String part : url.split("/")) {
-        if (part.length() == 0) {
-          continue;
-        }
-
-        urlBuilder.append("/");
-        if (part.startsWith(":")) {
-          String value = get(part.substring(1), command);
-          if (value != null) {
-            urlBuilder.append(get(part.substring(1), command));
-          }
-        } else {
-          urlBuilder.append(part);
-        }
-      }
-
-      return verb.createMethod(urlBuilder.toString());
-    }
-
-    private String get(String propertyName, Command command) {
-      if ("sessionId".equals(propertyName)) {
-        SessionId id = command.getSessionId();
-        if (id == null) {
-          throw new WebDriverException("Session ID may not be null");
-        }
-        return id.toString();
-      }
-
-      // Attempt to extract the property name from the parameters
-      Object value = command.getParameters().get(propertyName);
-      if (value != null) {
-        return Urls.urlEncode(String.valueOf(value));
-      }
-      return null;
-    }
-  }
 }

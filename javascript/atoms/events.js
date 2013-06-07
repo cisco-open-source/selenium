@@ -54,8 +54,7 @@ bot.events.SUPPORTS_TOUCH_EVENTS = !(goog.userAgent.IE &&
  * Whether the browser supports a native touch api.
  *
  * @const
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
 bot.events.BROKEN_TOUCH_API_ = (function() {
   if (goog.userAgent.product.ANDROID) {
@@ -198,22 +197,13 @@ bot.events.MSPointerArgs;
  * @private
  */
 bot.events.EventFactory_ = function(type, bubbles, cancelable) {
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.type_ = type;
 
-  /**
-   * @type {boolean}
-   * @private
-   */
+  /** @private {boolean} */
   this.bubbles_ = bubbles;
 
-  /**
-   * @type {boolean}
-   * @private
-   */
+  /** @private {boolean} */
   this.cancelable_ = cancelable;
 };
 
@@ -301,13 +291,13 @@ bot.events.MouseEventFactory_.prototype.create = function(target, opt_args) {
 
     // Sets a property of the event object using Object.defineProperty.
     // Some readonly properties of the IE event object can only be set this way.
-    function setEventProperty(prop, value) {
+    var setEventProperty = function(prop, value) {
       Object.defineProperty(event, prop, {
         get: function() {
           return value;
         }
       });
-    }
+    };
 
     // IE has fromElement and toElement properties, no relatedTarget property.
     // IE does not allow fromElement and toElement to be set directly, but

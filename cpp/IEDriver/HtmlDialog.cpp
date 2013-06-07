@@ -26,14 +26,14 @@ HtmlDialog::~HtmlDialog(void) {
 }
 
 void HtmlDialog::AttachEvents() {
-  CComQIPtr<IDispatch> dispatch(this->window_);
-  CComPtr<IUnknown> unknown(dispatch);
+  CComPtr<IUnknown> unknown;
+  this->window_->QueryInterface<IUnknown>(&unknown);
   HRESULT hr = this->DispEventAdvise(unknown);
 }
 
 void HtmlDialog::DetachEvents() {
-  CComQIPtr<IDispatch> dispatch(this->window_);
-  CComPtr<IUnknown> unknown(dispatch);
+  CComPtr<IUnknown> unknown;
+  this->window_->QueryInterface<IUnknown>(&unknown);
   HRESULT hr = this->DispEventUnadvise(unknown);
 }
 
@@ -99,7 +99,7 @@ bool HtmlDialog::Wait() {
     if (child_dialog_handle != NULL) {
       // Check to see if the dialog opened is another HTML dialog. If so,
       // notify the IECommandExecutor that a new window exists.
-      vector<char> window_class_name(34);
+      std::vector<char> window_class_name(34);
       if (::GetClassNameA(child_dialog_handle, &window_class_name[0], 34)) {
         if (strcmp(HTML_DIALOG_WINDOW_CLASS, &window_class_name[0]) == 0) {
           HWND content_window_handle = this->FindContentWindowHandle(child_dialog_handle);
@@ -131,6 +131,10 @@ std::string HtmlDialog::GetWindowName() {
   return "";
 }
 
+std::string HtmlDialog::GetBrowserUrl() {
+  return "";
+}
+
 std::string HtmlDialog::GetTitle() {
   CComPtr<IHTMLDocument2> doc;
   this->GetDocument(&doc);
@@ -141,7 +145,8 @@ std::string HtmlDialog::GetTitle() {
     return "";
   }
 
-  std::string title_string = CW2A(title, CP_UTF8);
+  std::wstring converted_title = title;
+  std::string title_string = StringUtilities::ToString(converted_title);
   return title_string;
 }
 
@@ -153,7 +158,9 @@ HWND HtmlDialog::GetActiveDialogWindowHandle() {
   DialogWindowInfo info;
   info.hwndOwner = this->GetTopLevelWindowHandle();
   info.hwndDialog = NULL;
-  ::EnumWindows(&HtmlDialog::FindChildDialogWindow, reinterpret_cast<LPARAM>(&info));
+  if (info.hwndOwner != NULL) {
+    ::EnumWindows(&HtmlDialog::FindChildDialogWindow, reinterpret_cast<LPARAM>(&info));
+  }
   return info.hwndDialog;
 }
 
@@ -198,7 +205,7 @@ BOOL CALLBACK HtmlDialog::FindChildDialogWindow(HWND hwnd, LPARAM arg) {
   if (::GetWindow(hwnd, GW_OWNER) != window_info->hwndOwner) {
     return TRUE;
   }
-  vector<char> window_class_name(34);
+  std::vector<char> window_class_name(34);
   if (::GetClassNameA(hwnd, &window_class_name[0], 34) == 0) {
     // No match found. Skip
     return TRUE;
