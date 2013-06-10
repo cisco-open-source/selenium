@@ -349,7 +349,7 @@ public class RemoteWebElement implements WebElement, FindsByLinkText, FindsById,
     return new Coordinates() {
 
       public Point onScreen() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getCoordinates().inViewPort();
       }
 
       public Point inViewPort() {
