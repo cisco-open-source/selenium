@@ -86,8 +86,7 @@ bot.storage.getSessionStorage = function(opt_window) {
 bot.storage.Storage = function(storageMap) {
   /**
    * Member variable to access the assigned HTML5 storage object.
-   * @type {Storage}
-   * @private
+   * @private {Storage}
    */
   this.storageMap_ = storageMap;
 };
@@ -123,7 +122,7 @@ bot.storage.Storage.prototype.setItem = function(key, value) {
  */
 bot.storage.Storage.prototype.getItem = function(key) {
   var value = this.storageMap_.getItem(key);
-  return  /** @type {?string} */ value;
+  return  /** @type {?string} */ (value);
 };
 
 

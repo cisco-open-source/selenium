@@ -45,7 +45,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 @Ignore(value = {IPHONE, OPERA, ANDROID, OPERA_MOBILE, PHANTOMJS},
@@ -98,7 +98,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
     Object result = executor.executeAsyncScript("arguments[arguments.length - 1]([]);");
     assertNotNull("Expected not to be null!", result);
     assertThat(result, instanceOf(List.class));
-    assertTrue(((List) result).isEmpty());
+    assertTrue(((List<?>) result).isEmpty());
   }
 
   @JavascriptEnabled
@@ -109,7 +109,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
     Object result = executor.executeAsyncScript("arguments[arguments.length - 1](new Array());");
     assertNotNull("Expected not to be null!", result);
     assertThat(result, instanceOf(List.class));
-    assertTrue(((List) result).isEmpty());
+    assertTrue(((List<?>) result).isEmpty());
   }
 
   @JavascriptEnabled
@@ -125,7 +125,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
     assertNotNull(result);
     assertThat(result, instanceOf(List.class));
 
-    Iterator results = ((List) result).iterator();
+    Iterator<?> results = ((List<?>) result).iterator();
     assertNull(results.next());
     assertEquals(123, ((Number) results.next()).longValue());
     assertEquals("abc", results.next());
@@ -156,7 +156,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
     assertNotNull(result);
     assertThat(result, instanceOf(List.class));
 
-    List list = (List) result;
+    List<?> list = (List<?>) result;
     assertEquals(2, list.size());
     assertThat(list.get(0), instanceOf(WebElement.class));
     assertThat(list.get(1), instanceOf(WebElement.class));
@@ -237,6 +237,31 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
     }
   }
 
+  @JavascriptEnabled
+  @Test
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT})
+  public void shouldCatchErrorsWithMessageAndStacktraceWhenExecutingInitialScript() {
+    driver.get(pages.ajaxyPage);
+    String js = "function functionB() { throw Error('errormessage'); };"
+                + "function functionA() { functionB(); };"
+                + "functionA();";
+    try {
+      executor.executeAsyncScript(js);
+      fail("Expected an exception");
+    } catch (WebDriverException e) {
+      assertTrue(e.getMessage(), e.getMessage().contains("errormessage"));
+
+      StackTraceElement [] st = e.getCause().getStackTrace();
+      boolean seen = false;
+      for (StackTraceElement s: st) {
+        if (s.getMethodName().equals("functionB")) {
+          seen = true;
+        }
+      }
+      assertTrue("Stacktrace has not js method info", seen);
+    }
+  }
+
   @Ignore(value = {ANDROID},
           reason = "Android: Emulator is too slow and latency causes test to fall out of sync with app;")
   @JavascriptEnabled
@@ -311,7 +336,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, SELENESE, QTWEBKIT})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, QTWEBKIT})
   @NeedsLocalEnvironment(reason = "Relies on timing")
   public void throwsIfScriptTriggersAlert() {
     driver.get(pages.simpleTestPage);
@@ -329,7 +354,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, SELENESE, QTWEBKIT})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, QTWEBKIT})
   @NeedsLocalEnvironment(reason = "Relies on timing")
   public void throwsIfAlertHappensDuringScript() {
     driver.get(pages.slowLoadingAlertPage);
@@ -345,7 +370,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, SELENESE, QTWEBKIT})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, QTWEBKIT})
   @NeedsLocalEnvironment(reason = "Relies on timing")
   public void throwsIfScriptTriggersAlertWhichTimesOut() {
     driver.get(pages.simpleTestPage);
@@ -363,7 +388,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, SELENESE, QTWEBKIT})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, QTWEBKIT})
   @NeedsLocalEnvironment(reason = "Relies on timing")
   public void throwsIfAlertHappensDuringScriptWhichTimesOut() {
     driver.get(pages.slowLoadingAlertPage);
@@ -380,9 +405,9 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, SELENESE, QTWEBKIT})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, QTWEBKIT})
   @NeedsLocalEnvironment(reason = "Relies on timing")
-  public void includesAlertInUnhandledAlertException() {
+  public void includesAlertTextInUnhandledAlertException() {
     driver.manage().timeouts().setScriptTimeout(5000, TimeUnit.MILLISECONDS);
     String alertText = "Look! An alert!";
     try {
@@ -391,9 +416,7 @@ public class ExecutingAsyncJavascriptTest extends JUnit4TestBase {
           + "'); }, 50);");
       fail("Expected UnhandledAlertException");
     } catch (UnhandledAlertException e) {
-      Alert alert = e.getAlert();
-      assertNotNull(alert);
-      assertEquals(alertText, alert.getText());
+      assertEquals(alertText, e.getAlertText());
     }
   }
 

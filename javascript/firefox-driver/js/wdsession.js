@@ -57,8 +57,7 @@ wdSession.CONTRACT_ID = '@googlecode.com/webdriver/wdsession;1';
 
 /**
  * This session's ID.
- * @type {?string}
- * @private
+ * @private {?string}
  */
 wdSession.prototype.id_ = null;
 
@@ -67,24 +66,28 @@ wdSession.prototype.id_ = null;
  * The main chrome window that this is session is currently focused on. All
  * command's for this session will be directed at the current window, which
  * may be inside a [I]FRAME, within this window.
- * @type {?ChromeWindow}
- * @private
+ * @private {?ChromeWindow}
  */
 wdSession.prototype.chromeWindow_ = null;
 
 
 /**
  * The content window this session is currently focused on.
- * @type {?nsIDOMWindow}
- * @private
+ * @private {?nsIDOMWindow}
  */
 wdSession.prototype.window_ = null;
 
 
 /**
- * The current user input speed setting for this session.
- * @type {number}
+ * The frame containing the content window this session is currently focused on.
  * @private
+ */
+wdSession.prototype.frame_ = null;
+
+
+/**
+ * The current user input speed setting for this session.
+ * @private {number}
  */
 wdSession.prototype.inputSpeed_ = 1;
 
@@ -97,16 +100,14 @@ wdSession.prototype.inputSpeed_ = 1;
  * When searching for multiple elements, the driver will wait up to this amount
  * of time for at least one element to be located before returning an empty
  * list.
- * @type {number}
- * @private
+ * @private {number}
  */
 wdSession.prototype.implicitWait_ = 0;
 
 /**
  * The amount of time in milliseconds to wait for a page to load before timing
  * out. A value less than 0 means that waits will be indefinite.
- * @type {number}
- * @private
+ * @private {number}
  */
 wdSession.prototype.pageLoadTimeout_ = -1;
 
@@ -130,8 +131,7 @@ wdSession.prototype.mousePosition_ = {
  * asynchronous scripts to finish executing. If set to 0, then the timeout will
  * not fire until the next event loop after the script is executed. This will
  * give scripts that employ a 0-based setTimeout to finish.
- * @type {number}
- * @private
+ * @private {number}
  */
 wdSession.prototype.scriptTimeout_ = 0;
 
@@ -179,17 +179,34 @@ wdSession.prototype.getChromeWindow = function() {
 wdSession.prototype.getWindow = function() {
   var win;
   try {
-    if (this.window_) {
-      win = this.window_.get();
+    // if there is a set frame, try to get its window
+    if (this.frame_) {
+      var frame = this.frame_.get()
+      if (frame) {
+        win = frame.contentWindow;
+      }
     }
   } catch (ex) {
     fxdriver.logging.error(ex);
     // ignore exception and try other way
   }
 
+  if (!win) {
+    try {
+      if (this.window_) {
+        win = this.window_.get();
+      }
+    } catch (ex) {
+      fxdriver.logging.error(ex);
+      // ignore exception and try other way
+    }
+  }
+
   if (!win || !win.document) {
-    // Uh-oh, we lost our DOM! Try to recover by changing focus to the
-    // main content window.
+    // Uh-oh, we lost our DOM! Try to recover by changing focus to the main
+    // content window. Note: this will cause problems in case the lost DOM
+    // was under a frame.
+    fxdriver.logging.error("Lost DOM in window " + win);
     win = this.chromeWindow_.getBrowser().contentWindow;
     this.setWindow(win);
   }
@@ -220,6 +237,8 @@ wdSession.prototype.setChromeWindow = function(win) {
  * @param {nsIDOMWindow} win The new window.
  */
 wdSession.prototype.setWindow = function(win) {
+  // reset the frame if the window is being set directly
+  this.frame_ = null;
   this.window_ = Components.utils.getWeakReference(win);
 
   // Our other means of testing for window unloads rely on window.closed, which
@@ -242,6 +261,16 @@ wdSession.prototype.setWindow = function(win) {
   win.addEventListener('unload',
                         handler,
                         /*useCapture=*/true);
+};
+
+
+/**
+ * Set this session's current frame.
+ * Setting the frame by its element was chosen, since weak references to the window can be unreferenced.
+ * @param frameElement The frame element.
+ */
+wdSession.prototype.setFrame = function(frameElement) {
+  this.frame_ = Components.utils.getWeakReference(frameElement);
 };
 
 
@@ -409,8 +438,7 @@ function wdSessionModule() {
 
 /**
  * Whether this module has already been registered.
- * @type {!boolean}
- * @private
+ * @private {!boolean}
  */
 wdSessionModule.prototype.hasRegistered_ = false;
 

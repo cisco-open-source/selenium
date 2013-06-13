@@ -1,4 +1,4 @@
-// Copyright 2011 Software Freedom Conservancy
+// Copyright 2013 Software Freedom Conservancy
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -12,6 +12,7 @@
 // limitations under the License.
 
 #include "Script.h"
+#include "AsyncScriptExecutor.h"
 #include "IECommandExecutor.h"
 #include "logging.h"
 
@@ -20,7 +21,7 @@ namespace webdriver {
 Script::Script(IHTMLDocument2* document,
                std::string script_source,
                unsigned long argument_count) {
-  std::wstring wide_script = CA2W(script_source.c_str(), CP_UTF8);
+  std::wstring wide_script = StringUtilities::ToWString(script_source);
   this->Initialize(document, wide_script, argument_count);
 }
 
@@ -31,7 +32,7 @@ Script::Script(IHTMLDocument2* document,
 }
 
 Script::~Script(void) {
-  ::SafeArrayDestroy(this->argument_array_);
+  //this->argument_array_.Destroy();
 }
 
 void Script::Initialize(IHTMLDocument2* document,
@@ -44,18 +45,16 @@ void Script::Initialize(IHTMLDocument2* document,
   this->argument_count_ = argument_count;
   this->current_arg_index_ = 0;
 
-  SAFEARRAYBOUND argument_bounds;
-  argument_bounds.lLbound = 0;
-  argument_bounds.cElements = this->argument_count_;
-
-  this->argument_array_ = ::SafeArrayCreate(VT_VARIANT, 1, &argument_bounds);
-
-  ::VariantInit(&this->result_);
+  // Calling vector::resize() is okay here, because the vector
+  // should be empty when Initialize() is called, and the
+  // reallocation of variants shouldn't give us too much of a
+  // negative impact.
+  this->argument_array_.resize(this->argument_count_);
 }
 
 void Script::AddArgument(const std::string& argument) {
   LOG(TRACE) << "Entering Script::AddArgument(std::string)";
-  std::wstring wide_argument = CA2W(argument.c_str(), CP_UTF8);
+  std::wstring wide_argument = StringUtilities::ToWString(argument);
   this->AddArgument(wide_argument);
 }
 
@@ -96,9 +95,8 @@ void Script::AddArgument(IHTMLElement* argument) {
 
 void Script::AddArgument(VARIANT argument) {
   LOG(TRACE) << "Entering Script::AddArgument(VARIANT)";
-  HRESULT hr = ::SafeArrayPutElement(this->argument_array_,
-                                     &this->current_arg_index_,
-                                     &argument);
+  CComVariant wrapped_argument(argument);
+  this->argument_array_[this->current_arg_index_] = wrapped_argument;
   ++this->current_arg_index_;
 }
 
@@ -143,7 +141,8 @@ bool Script::ResultIsElementCollection() {
   LOG(TRACE) << "Entering Script::ResultIsElementCollection";
 
   if (this->result_.vt == VT_DISPATCH) {
-    CComQIPtr<IHTMLElementCollection> is_collection(this->result_.pdispVal);
+    CComPtr<IHTMLElementCollection> is_collection;
+    this->result_.pdispVal->QueryInterface<IHTMLElementCollection>(&is_collection);
     if (is_collection) {
       return true;
     }
@@ -155,7 +154,8 @@ bool Script::ResultIsElement() {
   LOG(TRACE) << "Entering Script::ResultIsElement";
 
   if (this->result_.vt == VT_DISPATCH) {
-    CComQIPtr<IHTMLElement> is_element(this->result_.pdispVal);
+    CComPtr<IHTMLElement> is_element;
+    this->result_.pdispVal->QueryInterface<IHTMLElement>(&is_element);
     if (is_element) {
       return true;
     }
@@ -209,7 +209,7 @@ bool Script::ResultIsObject() {
 int Script::Execute() {
   LOG(TRACE) << "Entering Script::Execute";
 
-  VARIANT result;
+  CComVariant result;
 
   if (this->script_engine_host_ == NULL) {
     LOG(WARN) << "Script engine host is NULL";
@@ -239,36 +239,34 @@ int Script::Execute() {
     return EUNEXPECTEDJSERROR;
   }
 
-  DISPPARAMS call_parameters = { 0 };
-  memset(&call_parameters, 0, sizeof call_parameters);
-
-  long lower = 0;
-  ::SafeArrayGetLBound(this->argument_array_, 1, &lower);
-  long upper = 0;
-  ::SafeArrayGetUBound(this->argument_array_, 1, &upper);
-  long nargs = 1 + upper - lower;
-  call_parameters.cArgs = nargs + 1;
-
   CComPtr<IHTMLWindow2> win;
   hr = this->script_engine_host_->get_parentWindow(&win);
   if (FAILED(hr)) {
     LOGHR(WARN, hr) << "Cannot get parent window, IHTMLDocument2::get_parentWindow failed";
     return EUNEXPECTEDJSERROR;
   }
-  _variant_t* vargs = new _variant_t[nargs + 1];
-  hr = ::VariantCopy(&(vargs[nargs]), &CComVariant(win));
 
-  long index;
-  for (int i = 0; i < nargs; i++) {
-    index = i;
-    CComVariant v;
-    ::SafeArrayGetElement(this->argument_array_,
-                          &index,
-                          reinterpret_cast<void*>(&v));
-    hr = ::VariantCopy(&(vargs[nargs - 1 - i]), &v);
+  // IDispatch::Invoke() expects the arguments to be passed into it
+  // in reverse order. To accomplish this, we create a new variant
+  // array of size n + 1 where n is the number of arguments we have.
+  // we copy each element of arguments_array_ into the new array in
+  // reverse order, and add an extra argument, the window object,
+  // to the end of the array to use as the "this" parameter for the
+  // function invocation.
+  size_t arg_count = this->argument_array_.size();
+  vector<CComVariant> argument_array_copy(arg_count + 1);
+  CComVariant window_variant(win);
+  argument_array_copy[arg_count].Copy(&window_variant);
+
+  for (size_t index = 0; index < arg_count; ++index) {
+    argument_array_copy[arg_count - 1 - index].Copy(&this->argument_array_[index]);
   }
 
-  call_parameters.rgvarg = vargs;
+  DISPPARAMS call_parameters = { 0 };
+  memset(&call_parameters, 0, sizeof call_parameters);
+  call_parameters.cArgs = static_cast<unsigned int>(argument_array_copy.size());
+  call_parameters.rgvarg = &argument_array_copy[0];
+
   int return_code = WD_SUCCESS;
   EXCEPINFO exception;
   memset(&exception, 0, sizeof exception);
@@ -282,8 +280,9 @@ int Script::Execute() {
                                       0);
 
   if (FAILED(hr)) {
+    CComBSTR error_description = L"";
     if (DISP_E_EXCEPTION == hr) {
-      CComBSTR error_description(exception.bstrDescription ? exception.bstrDescription : L"EUNEXPECTEDJSERROR");
+      error_description = exception.bstrDescription ? exception.bstrDescription : L"EUNEXPECTEDJSERROR";
       CComBSTR error_source(exception.bstrSource ? exception.bstrSource : L"EUNEXPECTEDJSERROR");
       LOG(INFO) << "Exception message was: '" << error_description << "'";
       LOG(INFO) << "Exception source was: '" << error_source << "'";
@@ -291,31 +290,159 @@ int Script::Execute() {
       LOGHR(DEBUG, hr) << "Failed to execute anonymous function, no exception information retrieved";
     }
 
-    ::VariantClear(&result);
-    result.vt = VT_USERDEFINED;
-    if (exception.bstrDescription != NULL) {
-      result.bstrVal = ::SysAllocStringByteLen(reinterpret_cast<char*>(exception.bstrDescription),
-                                               ::SysStringByteLen(exception.bstrDescription));
-    } else {
-      result.bstrVal = ::SysAllocStringByteLen(NULL, 0);
-    }
+    result.Clear();
+    result.vt = VT_BSTR;
+    result.bstrVal = error_description;
     return_code = EUNEXPECTEDJSERROR;
   }
 
-  // If the script returned an IHTMLElement, we need to copy it to make it valid.
-  if(VT_DISPATCH == result.vt) {
-    CComQIPtr<IHTMLElement> element(result.pdispVal);
-    if(element) {
-      IHTMLElement* &dom_element = *(reinterpret_cast<IHTMLElement**>(&result.pdispVal));
-      hr = element.CopyTo(&dom_element);
-    }
-  }
-
-  this->result_ = result;
-
-  delete[] vargs;
+  this->result_.Copy(&result);
 
   return return_code;
+}
+
+int Script::ExecuteAsync(int timeout_in_milliseconds) {
+  LOG(TRACE) << "Entering Script::ExecuteAsync";
+  int return_code = WD_SUCCESS;
+  CComVariant result;
+  AsyncScriptExecutorThreadContext thread_context;
+  thread_context.script_source = this->source_code_.c_str();
+  thread_context.script_argument_count = this->argument_count_;
+
+  // We need exclusive access to this event. If it's already created,
+  // OpenEvent returns non-NULL, so we need to wait a bit and retry
+  // until OpenEvent returns NULL.
+  int retry_counter = 50;
+  HANDLE event_handle = ::OpenEvent(SYNCHRONIZE, FALSE, ASYNC_SCRIPT_EVENT_NAME);
+  if (event_handle != NULL && --retry_counter > 0) {
+    ::CloseHandle(event_handle);
+    ::Sleep(50);
+    event_handle = ::OpenEvent(SYNCHRONIZE, FALSE, ASYNC_SCRIPT_EVENT_NAME);
+  }
+
+  // Failure condition here.
+  if (event_handle != NULL) {
+    ::CloseHandle(event_handle);
+    LOG(WARN) << "OpenEvent() returned non-NULL, event already exists.";
+    result.Clear();
+    result.vt = VT_BSTR;
+    result.bstrVal = L"Couldn't create an event for synchronizing the creation of the thread. This generally means that you were trying to click on an option in two different instances.";
+    this->result_.Copy(&result);
+    return EUNEXPECTEDJSERROR;
+  }
+
+  LOG(DEBUG) << "Creating synchronization event for new thread";
+  event_handle = ::CreateEvent(NULL, TRUE, FALSE, ASYNC_SCRIPT_EVENT_NAME);
+  if (event_handle == NULL) {
+    LOG(WARN) << "CreateEvent() failed.";
+    result.Clear();
+    result.vt = VT_BSTR;
+    result.bstrVal = L"Couldn't create an event for synchronizing the creation of the thread. This is an internal failure at the Windows OS level, and is generally not due to an error in the IE driver.";
+    this->result_.Copy(&result);
+    return EUNEXPECTEDJSERROR;
+  }
+
+  // Start the thread and wait up to 1 second to be signaled that it is ready
+  // to receive messages, then close the event handle.
+  LOG(DEBUG) << "Starting new thread";
+  unsigned int thread_id = 0;
+  HANDLE thread_handle = reinterpret_cast<HANDLE>(_beginthreadex(NULL,
+                                                  0,
+                                                  AsyncScriptExecutor::ThreadProc,
+                                                  reinterpret_cast<void*>(&thread_context),
+                                                  0,
+                                                  &thread_id));
+
+  LOG(DEBUG) << "Waiting for new thread to be ready for messages";
+  DWORD event_wait_result = ::WaitForSingleObject(event_handle, 5000);
+  if (event_wait_result != WAIT_OBJECT_0) {
+    LOG(WARN) << "Waiting for event to be signaled returned unexpected value: " << event_wait_result;
+  }
+  ::CloseHandle(event_handle);
+
+  if (thread_handle == NULL) {
+    LOG(WARN) << "_beginthreadex() failed.";
+    result.Clear();
+    result.vt = VT_BSTR;
+    result.bstrVal = L"Couldn't create the thread for executing JavaScript asynchronously.";
+    this->result_.Copy(&result);
+    return EUNEXPECTEDJSERROR;
+  }
+
+  HWND executor_handle = thread_context.hwnd;
+
+  // Marshal the document and the element to click to streams for use in another thread.
+  LOG(DEBUG) << "Marshaling document to stream to send to new thread";
+  LPSTREAM document_stream;
+  HRESULT hr = ::CoMarshalInterThreadInterfaceInStream(IID_IHTMLDocument2, this->script_engine_host_, &document_stream);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "CoMarshalInterfaceThreadInStream() for document failed";
+    result.Clear();
+    result.vt = VT_BSTR;
+    result.bstrVal = L"Couldn't marshal the IHTMLDocument2 interface to a stream. This is an internal COM error.";
+    this->result_.Copy(&result);
+    return EUNEXPECTEDJSERROR;
+  }
+
+  ::SendMessage(executor_handle, WD_ASYNC_SCRIPT_SET_DOCUMENT, NULL, reinterpret_cast<LPARAM>(document_stream));
+  for (size_t index = 0; index < this->argument_array_.size(); ++index) {
+    CComVariant arg = this->argument_array_[index];
+    WPARAM wparam = static_cast<WPARAM>(arg.vt);
+    LPARAM lparam = NULL;
+    switch (arg.vt) {
+      case VT_DISPATCH: {
+        LPSTREAM dispatch_stream;
+        hr = ::CoMarshalInterThreadInterfaceInStream(IID_IDispatch, arg.pdispVal, &dispatch_stream);
+        if (FAILED(hr)) {
+          LOGHR(WARN, hr) << "CoMarshalInterfaceThreadInStream() for IDispatch argument failed";
+          result.Clear();
+          result.vt = VT_BSTR;
+          result.bstrVal = L"Couldn't marshal the IDispatch interface to a stream. This is an internal COM error.";
+          this->result_.Copy(&result);
+          return EUNEXPECTEDJSERROR;
+        }
+        lparam = reinterpret_cast<LPARAM>(dispatch_stream);
+        break;
+      }
+      default: {
+        // TODO: Marshal arguments of types other than VT_DISPATCH. At present,
+        // the asynchronous execution of JavaScript is only used for Automation
+        // Atoms on an element which take a single argument, an IHTMLElement
+        // object, which is represented as an IDispatch. This case statement
+        // will get much more complex should the need arise to execute
+        // arbitrary scripts in an asynchronous manner.
+      }
+    }
+    ::SendMessage(executor_handle, WD_ASYNC_SCRIPT_SET_ARGUMENT, wparam, lparam);
+  }
+  ::PostMessage(executor_handle, WD_EXECUTE_ASYNC_SCRIPT, NULL, NULL);
+  // We will wait a short bit and poll for the execution of the script to be
+  // complete. This will allow us to say synchronous for short-running scripts
+  // like clearing an input element, yet still be able to continue processing
+  // when the script is blocked, as when an alert() window is present.
+  retry_counter = static_cast<int>(timeout_in_milliseconds / 10);
+  bool is_execution_finished = ::SendMessage(executor_handle, WD_ASYNC_SCRIPT_IS_EXECUTION_COMPLETE, NULL, NULL) != 0;
+  while(!is_execution_finished && --retry_counter > 0) {
+    ::Sleep(10);
+    is_execution_finished = ::SendMessage(executor_handle, WD_ASYNC_SCRIPT_IS_EXECUTION_COMPLETE, NULL, NULL) != 0;
+  }
+
+  if (is_execution_finished) {
+    // TODO: Marshal the actual result from the AsyncScriptExecutor window
+    // thread to this one. At present, the asynchronous execution of JavaScript
+    // is only used for Automation Atoms on an element which could cause an
+    // alert to appear (e.g., clear, click, or submit), and do not return any
+    // return values back to the caller. In this case, the return code of the
+    // execution method is sufficent. Marshaling the return will require two
+    // more messages, one for determining the variant type of the return value,
+    // and another for actually retrieving that value from the worker window's
+    // thread.
+    int status_code = static_cast<int>(::SendMessage(executor_handle, WD_ASYNC_SCRIPT_GET_RESULT, NULL, NULL));
+    return status_code;
+  } else {
+    ::SendMessage(executor_handle, WD_ASYNC_SCRIPT_DETACH_LISTENTER, NULL, NULL);
+  }
+  return WD_SUCCESS;
 }
 
 int Script::ConvertResultToJsonValue(const IECommandExecutor& executor,
@@ -326,7 +453,8 @@ int Script::ConvertResultToJsonValue(const IECommandExecutor& executor,
   if (this->ResultIsString()) { 
     std::string string_value = "";
     if (this->result_.bstrVal) {
-      string_value = CW2A(this->result_.bstrVal, CP_UTF8);
+      std::wstring bstr_value = this->result_.bstrVal;
+      string_value = StringUtilities::ToString(bstr_value);
     }
     *value = string_value;
   } else if (this->ResultIsInteger()) {
@@ -382,14 +510,15 @@ int Script::ConvertResultToJsonValue(const IECommandExecutor& executor,
         int property_value_status = this->GetPropertyValue(executor,
                                                            property_names[i],
                                                            &property_value_result);
-        std::string name(CW2A(property_names[i].c_str(), CP_UTF8));
+        std::string name = StringUtilities::ToString(property_names[i]);
         result_object[name] = property_value_result;
       }
       *value = result_object;
     } else {
       LOG(INFO) << "Unknown type of dispatch is found in result, assuming IHTMLElement";
       IECommandExecutor& mutable_executor = const_cast<IECommandExecutor&>(executor);
-      IHTMLElement* node = reinterpret_cast<IHTMLElement*>(this->result_.pdispVal);
+      CComPtr<IHTMLElement> node;
+      this->result_.pdispVal->QueryInterface<IHTMLElement>(&node);
       ElementHandle element_wrapper;
       mutable_executor.AddManagedElement(node, &element_wrapper);
       *value = element_wrapper->ConvertToJson();
@@ -417,8 +546,8 @@ bool Script::ConvertResultToString(std::string* value) {
       if (!this->result_.bstrVal) {
         *value = "";
       } else {
-        std::string str_value = CW2A(this->result_.bstrVal, CP_UTF8);
-        *value = str_value;
+        std::wstring str_value = this->result_.bstrVal;
+        *value = StringUtilities::ToString(str_value);
       }
       return true;
   
@@ -575,14 +704,14 @@ int Script::GetArrayItem(const IECommandExecutor& executor,
 bool Script::CreateAnonymousFunction(VARIANT* result) {
   LOG(TRACE) << "Entering Script::CreateAnonymousFunction";
 
-  CComBSTR function_eval_script(L"window.document.__webdriver_script_fn = ");
-  HRESULT hr = function_eval_script.Append(this->source_code_.c_str());
-  CComBSTR code(function_eval_script);
+  std::wstring function_eval_script = L"window.document.__webdriver_script_fn = ";
+  function_eval_script.append(this->source_code_.c_str());
+  CComBSTR code(function_eval_script.c_str());
   CComBSTR lang(L"JScript");
   CComVariant exec_script_result;
 
   CComPtr<IHTMLWindow2> window;
-  hr = this->script_engine_host_->get_parentWindow(&window);
+  HRESULT hr = this->script_engine_host_->get_parentWindow(&window);
   if (FAILED(hr)) {
     LOGHR(WARN, hr) << "Unable to get parent window, call to IHTMLDocument2::get_parentWindow failed";
     return false;

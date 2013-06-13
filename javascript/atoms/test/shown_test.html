@@ -230,7 +230,7 @@
        if (goog.userAgent.IE && !bot.userAgent.isProductVersion(7)) {
        return;
       }
-      var element = goog.dom.createDom('div', {style: 'width:0;height:0'},
+      var element = goog.dom.createDom('div', {id:"ZeroSizedDiv", style: 'width:0;height:0'},
           goog.dom.createDom('div', null,
               goog.dom.createDom('img', {
                 src: 'testdata/map.png',
@@ -398,6 +398,22 @@
       }
       var negativeParentButItemShown = findElement({id: "click"});
       assertTrue(isShown(negativeParentButItemShown));
+    }
+    function testElementWithZeroHeightAndWidthIsNotVisible() {
+      var zeroHeighWidth = findElement({id: "bug5022"});
+      assertFalse(isShown(zeroHeighWidth));
+    }
+    function testChildOfAnElementWithZeroHeightAndWidthAndOverflowHiddenIsNotVisible() {
+      var child = findElement({id: "bug5140-1-child"});
+      assertFalse(isShown(child));
+    }
+    function testFarShiftedChildOfAnElementWitOverflowHiddenIsNotVisible() {
+      var child = findElement({id: "bug5140-2-child"});
+      assertFalse(isShown(child));
+    }
+    function testNotFarShiftedChildOfAnElementWitOverflowHiddenIsVisible() {
+      var child = findElement({id: "bug5140-3-child"});
+      assertTrue(isShown(child));
     }
   </script>
 
@@ -585,7 +601,11 @@
 <div id='negative-percentage-transform'>I have a negative percentage transform</div>
 <div style="display:-webkit-flex;display:-o-flex;display:flex;-webkit-transform: translate3d(-100px, 0, 0);-ms-transform: translate3d(-100px, 0, 0);-o-transform:translate3d(-100px, 0,0); transform: translate3d(-100px, 0,0)">
     <div style="width:200px">first</div>
-      <a href='http://www.google.com' id="click">second</a>
+      <a href='/' id="click">second</a>
 </div>
+<div id='bug5022' style="overflow:hidden; height:0; width:0;">This is a zero height/width div and overflow hidden</div>
+<div id='bug5140-1' style="overflow:hidden; height:0; width:0;"><div id='bug5140-1-child' style="height:25px; width:25px;">.</div></div>
+<div id='bug5140-2' style="overflow:hidden; height:50px; width:50px;"><div id='bug5140-2-child' style="height:25px; width:25px; margin:50px; background-color:red;">.</div></div>
+<div id='bug5140-3' style="overflow:hidden; height:50px; width:50px;"><div id='bug5140-3-child' style="height:25px; width:25px; margin:49px; background-color:red;">.</div></div>
 </body>
 </html>

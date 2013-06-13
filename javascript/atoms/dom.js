@@ -140,9 +140,8 @@ bot.dom.isSelected = function(element) {
 /**
  * List of the focusable fields, according to
  * http://www.w3.org/TR/html401/interact/scripts.html#adef-onfocus
- * @type {!Array.<!goog.dom.TagName>}
  * @const
- * @private
+ * @private {!Array.<!goog.dom.TagName>}
  */
 bot.dom.FOCUSABLE_FORM_FIELDS_ = [
   goog.dom.TagName.A,
@@ -195,9 +194,8 @@ bot.dom.getProperty = function(element, propertyName) {
  * Helper for {@link bot.dom.standardizeStyleAttribute_}.
  * If the style attribute ends with a semicolon this will include an empty
  * string at the end of the array
- * @type {!RegExp}
  * @const
- * @private
+ * @private {!RegExp}
  */
 bot.dom.SPLIT_STYLE_ATTRIBUTE_ON_SEMICOLONS_REGEXP_ =
     new RegExp('[;]+' +
@@ -294,9 +292,8 @@ bot.dom.getAttribute = function(element, attributeName) {
 /**
  * List of elements that support the "disabled" attribute, as defined by the
  * HTML 4.01 specification.
- * @type {!Array.<goog.dom.TagName>}
  * @const
- * @private
+ * @private {!Array.<goog.dom.TagName>}
  * @see http://www.w3.org/TR/html401/interact/forms.html#h-17.12.1
  */
 bot.dom.DISABLED_ATTRIBUTE_SUPPORTED_ = [
@@ -333,15 +330,43 @@ bot.dom.isEnabled = function(el) {
       goog.dom.TagName.OPTION == tagName) {
     return bot.dom.isEnabled((/**@type{!Element}*/el.parentNode));
   }
+
+  // Is there an ancestor of the current element that is a disabled fieldset
+  // and whose child is also an ancestor-or-self of the current element but is
+  // not the first legend child of the fieldset. If so then the element is
+  // disabled.
+  if (goog.dom.getAncestor(el, function (e) {
+    var parent = e.parentNode;
+
+    if (parent &&
+        bot.dom.isElement(parent, goog.dom.TagName.FIELDSET) &&
+        bot.dom.getProperty(/** @type {!Element} */ (parent), 'disabled')) {
+      if (!bot.dom.isElement(e, goog.dom.TagName.LEGEND)) {
+        return true;
+      }
+
+      var sibling = e;
+      // Are there any previous legend siblings? If so then we are not the
+      // first and the element is disabled
+      while (sibling = goog.dom.getPreviousElementSibling(sibling)) {
+        if (bot.dom.isElement(sibling, goog.dom.TagName.LEGEND)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, true)) {
+    return false;
+  }
+
   return true;
 };
 
 
 /**
  * List of input types that create text fields.
- * @type {!Array.<String>}
  * @const
- * @private
+ * @private {!Array.<String>}
  * @see http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  */
 bot.dom.TEXTUAL_INPUT_TYPES_ = [
@@ -548,7 +573,7 @@ bot.dom.isBodyScrollBarShown_ = function(bodyElement) {
  * @return {!goog.math.Size} The dimensions of the element.
  */
 bot.dom.getElementSize = function(element) {
-  if (goog.isFunction(element['getBBox'])) {
+  if (goog.isFunction(element['getBBox']) && !bot.dom.isElement(element, goog.dom.TagName.SVG)) {
     try {
       var bb = element['getBBox']();
       if (bb) {
@@ -691,8 +716,9 @@ bot.dom.isShown = function(elem, opt_ignoreOpacity) {
     // Zero-sized elements should still be considered to have positive size
     // if they have a child element or text node with positive size.
     return goog.array.some(e.childNodes, function(n) {
-      return n.nodeType == goog.dom.NodeType.TEXT ||
-             (bot.dom.isElement(n) && positiveSize(n));
+      return (n.nodeType == goog.dom.NodeType.TEXT &&
+              bot.dom.getEffectiveStyle(e, 'overflow') != 'hidden') ||
+              (bot.dom.isElement(n) && positiveSize(n));
     });
   }
   if (!positiveSize(elem)) {
@@ -702,36 +728,33 @@ bot.dom.isShown = function(elem, opt_ignoreOpacity) {
   // Elements should be hidden if their parent has a fixed size AND has the
   // style overflow:hidden AND the element's location is not within the fixed
   // size of the parent
-  function isOverflowHiding(e) {
-    var parent = goog.style.getOffsetParent(e);
-    var parentNode = goog.userAgent.GECKO || goog.userAgent.IE ||
-        goog.userAgent.OPERA ? bot.dom.getParentElement(e) : parent;
-
-    // Gecko will skip the BODY tag when calling getOffsetParent. However, the
-    // combination of the overflow values on the BODY _and_ HTML tags determine
-    // whether scroll bars are shown, so we need to guarantee that both values
-    // are checked.
-    if ((goog.userAgent.GECKO || goog.userAgent.IE || goog.userAgent.OPERA) &&
-        bot.dom.isElement(parentNode, goog.dom.TagName.BODY)) {
-      parent = parentNode;
+  function isOverflowHiding(e, block) {
+    var parent;
+    if (block == null) {
+      parent = goog.dom.getParentElement(e);
+    } else {
+      parent = goog.dom.getParentElement(block);
     }
 
-    if (parent && bot.dom.getEffectiveStyle(parent, 'overflow') == 'hidden') {
+    if (parent && (bot.dom.getEffectiveStyle(parent, 'overflow-x') == 'hidden' ||
+        bot.dom.getEffectiveStyle(parent, 'overflow-y') == 'hidden')) {
       var sizeOfParent = bot.dom.getElementSize(parent);
       var locOfParent = goog.style.getClientPosition(parent);
       var locOfElement = goog.style.getClientPosition(e);
-      if (locOfParent.x + sizeOfParent.width < locOfElement.x) {
+      if (locOfParent.x + sizeOfParent.width <= locOfElement.x &&
+          bot.dom.getEffectiveStyle(parent, 'overflow-x') == 'hidden') {
         return false;
       }
-      if (locOfParent.y + sizeOfParent.height < locOfElement.y) {
+      if (locOfParent.y + sizeOfParent.height <= locOfElement.y &&
+          bot.dom.getEffectiveStyle(parent, 'overflow-y') == 'hidden') {
         return false;
       }
-      return isOverflowHiding(parent);
+      return true;
     }
-    return true;
+    return !parent || isOverflowHiding(e, parent);
   }
 
-  if (!isOverflowHiding(elem)) {
+  if (!isOverflowHiding(elem, null)) {
     return false;
   }
 
@@ -749,8 +772,8 @@ bot.dom.isShown = function(elem, opt_ignoreOpacity) {
     if (transform && transform !== "none") {
       var locOfElement = goog.style.getClientPosition(e);
       var sizeOfElement = bot.dom.getElementSize(e);
-      if ((locOfElement.x + (sizeOfElement.width/2)) >= 0 && 
-          (locOfElement.y + (sizeOfElement.height/2)) >= 0){
+      if ((locOfElement.x + (sizeOfElement.width)) >= 0 && 
+          (locOfElement.y + (sizeOfElement.height)) >= 0){
         return true;
       } else {
         return false;
@@ -763,6 +786,64 @@ bot.dom.isShown = function(elem, opt_ignoreOpacity) {
   return isTransformHiding(elem);
 };
 
+/**
+* Checks whether the element is currently scrolled into the parent's overflow
+* region, such that the offset given, relative to the top-left corner of the
+* element, is currently in the overflow region.
+*
+* @param {!Element} element The element to check.
+* @param {!goog.math.Coordinate=} opt_coords Coordinate in the element,
+*     relative to the top-left corner of the element, to check. If none are
+*     specified, checks that the center of the element is in in the overflow.
+* @return {boolean} Whether the coordinates specified, relative to the element,
+*     are scrolled in the parent overflow.
+*/
+bot.dom.isInParentOverflow = function (element, opt_coords) {
+  var parent = goog.style.getOffsetParent(element);
+  var parentNode = goog.userAgent.GECKO || goog.userAgent.IE ||
+      goog.userAgent.OPERA ? bot.dom.getParentElement(element) : parent;
+
+  // Gecko will skip the BODY tag when calling getOffsetParent. However, the
+  // combination of the overflow values on the BODY _and_ HTML tags determine
+  // whether scroll bars are shown, so we need to guarantee that both values
+  // are checked.
+  if ((goog.userAgent.GECKO || goog.userAgent.IE || goog.userAgent.OPERA) &&
+      bot.dom.isElement(parentNode, goog.dom.TagName.BODY)) {
+    parent = parentNode;
+  }
+
+  if (parent && (bot.dom.getEffectiveStyle(parent, 'overflow') == 'scroll' ||
+                 bot.dom.getEffectiveStyle(parent, 'overflow') == 'auto')) {
+    var sizeOfParent = bot.dom.getElementSize(parent);
+    var locOfParent = goog.style.getClientPosition(parent);
+    var locOfElement = goog.style.getClientPosition(element);
+    var offsetX, offsetY;
+    if (opt_coords) {
+      offsetX = opt_coords.x;
+      offsetY = opt_coords.y;
+    } else {
+      var sizeOfElement = bot.dom.getElementSize(element);
+      offsetX = sizeOfElement.width / 2;
+      offsetY = sizeOfElement.height / 2;
+    }
+    var elementPointX = locOfElement.x + offsetX;
+    var elementPointY = locOfElement.y + offsetY;
+    if (elementPointX >= locOfParent.x + sizeOfParent.width) {
+      return true;
+    }
+    if (elementPointX <= locOfParent.x) {
+      return true;
+    }
+    if (elementPointY >= locOfParent.y + sizeOfParent.height) {
+      return true;
+    }
+    if (elementPointY <= locOfParent.y) {
+      return true;
+    }
+    return bot.dom.isInParentOverflow(parent);
+  }
+  return false;
+};
 
 /**
  * Trims leading and trailing whitespace from strings, leaving non-breaking
@@ -881,8 +962,7 @@ bot.dom.appendVisibleTextLinesFromElement_ = function(elem, lines) {
 /**
  * Elements with one of these effective "display" styles are treated as inline
  * display boxes and have their visible text appended to the current line.
- * @type {!Array.<string>}
- * @private
+ * @private {!Array.<string>}
  * @const
  */
 bot.dom.INLINE_DISPLAY_BOXES_ = [
@@ -1186,8 +1266,8 @@ bot.dom.scrollElementRegionIntoClientView = function(elem, elemRegion) {
   var viewportSize = goog.dom.getDomHelper(doc).getViewportSize();
 
   var region = new goog.math.Rect(
-      elemPageOffset.x + elemRegion.left - doc.body.scrollLeft,
-      elemPageOffset.y + elemRegion.top - doc.body.scrollTop,
+      elemPageOffset.x + elemRegion.left - (doc.body ? doc.body.scrollLeft : 0),
+      elemPageOffset.y + elemRegion.top - (doc.body ? doc.body.scrollTop : 0),
       viewportSize.width - elemRegion.width,
       viewportSize.height - elemRegion.height);
 

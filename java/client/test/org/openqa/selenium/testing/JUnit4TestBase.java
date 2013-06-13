@@ -17,10 +17,12 @@ limitations under the License.
 
 package org.openqa.selenium.testing;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -33,11 +35,12 @@ import org.openqa.selenium.environment.TestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SeleniumTestRunner.class)
@@ -70,18 +73,65 @@ public abstract class JUnit4TestBase implements WrapsDriver {
   }
 
   @Rule
+  public TestName testName = new TestName();
+
+  @Rule
   public TestRule traceMethodName = new TestWatcher() {
     @Override
     protected void starting(Description description) {
       super.starting(description);
       logger.info(">>> Starting " + description);
+
+        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addCommand(commands.get(i));
+        }
     }
 
     @Override
     protected void finished(Description description) {
       super.finished(description);
       logger.info("<<< Finished " + description);
+
+        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+        }
+
+        if(description.toString().contains("org.openqa.selenium.html5"))
+            logger.info("####[JUnit4TestBase] Finished and have commands: " + commands.size());
+
+        QtWebDriverExecutor.clearExecutedList();
     }
+
+    @Override
+    protected void succeeded(org.junit.runner.Description description)
+    {
+        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
+        }
+
+        if(description.toString().contains("org.openqa.selenium.html5"))
+            logger.info("####[JUnit4TestBase] Succeded and have commands: " + commands.size());
+
+        QtWebDriverExecutor.clearExecutedList();
+    }
+
+      @Override
+      protected void failed(java.lang.Throwable e, org.junit.runner.Description description)
+      {
+          ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+          for (int i=0; i<commands.size(); i++)
+          {
+              ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+          }
+
+          QtWebDriverExecutor.clearExecutedList();
+      }
   };
   
   public WebDriver getWrappedDriver() {

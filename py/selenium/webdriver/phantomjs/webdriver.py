@@ -15,12 +15,11 @@
 # limitations under the License.
 
 import base64
-import httplib
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import WebDriverException
-from service import Service
+from .service import Service
 
 class WebDriver(RemoteWebDriver):
     """
@@ -31,7 +30,8 @@ class WebDriver(RemoteWebDriver):
     """
 
     def __init__(self, executable_path="phantomjs",
-                 port=0, desired_capabilities=DesiredCapabilities.PHANTOMJS):
+                 port=0, desired_capabilities=DesiredCapabilities.PHANTOMJS,
+                 service_args=None, service_log_path=None):
         """
         Creates a new instance of the PhantomJS / Ghostdriver.
 
@@ -42,8 +42,11 @@ class WebDriver(RemoteWebDriver):
          - port - port you would like the service to run, if left as 0, a free port will be found.
          - desired_capabilities: Dictionary object with non-browser specific
            capabilities only, such as "proxy" or "loggingPref".
+         - service_args : A List of command line arguments to pass to PhantomJS
+         - service_log_path: Path for phantomjs service to log to.
         """
-        self.service = Service(executable_path, port=port)
+        self.service = Service(executable_path, port=port,
+            service_args=service_args, log_path=service_log_path)
         self.service.start()
 
         try:

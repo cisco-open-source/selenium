@@ -29,7 +29,11 @@ namespace OpenQA.Selenium
 
         [Test]
         [Category("Javascript")]
+        [IgnoreBrowser(Browser.Android)]
+        [IgnoreBrowser(Browser.Opera)]
         [IgnoreBrowser(Browser.Chrome, "WebKit bug 28804")]
+        [IgnoreBrowser(Browser.IPhone, "WebKit bug 28804")]
+        [IgnoreBrowser(Browser.Safari, "WebKit bug 28804")]
         [IgnoreBrowser(Browser.PhantomJS, "WebKit bug 28804")]
         [IgnoreBrowser(Browser.IE, "Position and size are always integer in IE")]
         public void ShouldHandleNonIntegerPositionAndSize()
@@ -51,6 +55,9 @@ namespace OpenQA.Selenium
 
         [Test]
         [Category("Javascript")]
+        [IgnoreBrowser(Browser.Android)]
+        [IgnoreBrowser(Browser.IPhone)]
+        [IgnoreBrowser(Browser.Opera)]
         public void ShouldAllowInheritedStylesToBeUsed()
         {
             driver.Url = javascriptPage;
@@ -64,7 +71,9 @@ namespace OpenQA.Selenium
         [Test]
         [Category("Javascript")]
         [IgnoreBrowser(Browser.IPhone)]
+        [IgnoreBrowser(Browser.Opera)]
         [IgnoreBrowser(Browser.HtmlUnit)]
+        [IgnoreBrowser(Browser.Safari, "Advanced user interactions not implemented for Safari")]
         public void ShouldAllowUsersToHoverOverElements()
         {
             driver.Url = javascriptPage;
@@ -119,8 +128,8 @@ namespace OpenQA.Selenium
 
         [Test]
         [Category("Javascript")]
-        //[Ignore]
-        public void CanClickOnSuckerFishMenuItem()
+        [IgnoreBrowser(Browser.Safari, "Advanced user interactions not implemented for Safari")]
+        public void CanClickOnSuckerFishStyleMenu()
         {
             driver.Url = javascriptPage;
 
@@ -150,7 +159,32 @@ namespace OpenQA.Selenium
 
         [Test]
         [Category("Javascript")]
+        public void CanClickOnSuckerFishMenuItem()
+        {
+
+            driver.Url = javascriptPage;
+
+            // Move to a different element to make sure the mouse is not over the
+            // element with id 'item1' (from a previous test).
+            new Actions(driver).MoveToElement(driver.FindElement(By.Id("dynamo"))).Build().Perform();
+
+            IWebElement element = driver.FindElement(By.Id("menu1"));
+
+            new Actions(driver).MoveToElement(element).Build().Perform();
+
+            IWebElement target = driver.FindElement(By.Id("item1"));
+
+            Assert.IsTrue(target.Displayed);
+            target.Click();
+
+            IWebElement result = driver.FindElement(By.Id("result"));
+            WaitFor(() => { return result.Text.Contains("item 1"); });
+        }
+
+        [Test]
+        [Category("Javascript")]
         [IgnoreBrowser(Browser.HtmlUnit, "Advanced mouse actions only implemented in rendered browsers")]
+        [IgnoreBrowser(Browser.Safari, "Advanced user interactions not implemented for Safari")]
         public void MovingMouseByRelativeOffset()
         {
             driver.Url = mouseTrackerPage;
@@ -170,6 +204,7 @@ namespace OpenQA.Selenium
         [Test]
         [Category("Javascript")]
         [IgnoreBrowser(Browser.HtmlUnit, "Advanced mouse actions only implemented in rendered browsers")]
+        [IgnoreBrowser(Browser.Safari, "Advanced user interactions not implemented for Safari")]
         public void MovingMouseToRelativeElementOffset()
         {
             driver.Url = mouseTrackerPage;
@@ -186,6 +221,7 @@ namespace OpenQA.Selenium
         [Category("Javascript")]
         [NeedsFreshDriver(BeforeTest = true)]
         [IgnoreBrowser(Browser.HtmlUnit, "Advanced mouse actions only implemented in rendered browsers")]
+        [IgnoreBrowser(Browser.Safari, "Advanced user interactions not implemented for Safari")]
         public void MoveRelativeToBody()
         {
             driver.Url = mouseTrackerPage;

@@ -26,17 +26,17 @@ import org.openqa.grid.internal.utils.SelfRegisteringRemote;
 import org.openqa.grid.web.Hub;
 import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 
 public class ConfigInheritanceTest {
-  private Hub hub;
+  private static Hub hub;
 
-  @BeforeClass(alwaysRun = false)
-  public void prepare() throws Exception {
+  @BeforeClass
+  public static void prepare() throws Exception {
     GridHubConfiguration config = new GridHubConfiguration();
     config.setPort(PortProber.findFreePort());
     config.getAllParams().put("A", "valueA");
@@ -72,8 +72,8 @@ public class ConfigInheritanceTest {
 
   }
 
-  @AfterClass(alwaysRun = false)
-  public void stop() throws Exception {
+  @AfterClass
+  public static void stop() throws Exception {
     hub.stop();
   }
 }

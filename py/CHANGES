@@ -1,3 +1,22 @@
+Selenium 2.32
+* Support for FF20 Native Events
+* Python 3 support
+* Misc Python 3 patches
+* Allow easy FirefoxBinary subclassing
+
+Selenium 2.31
+* Support for FF19 native events
+* web element equality is now in conformance with other language bindings
+
+Selenium 2.30
+* Allow env to be specified for the chromedriver service
+* Allow log path to be specified for phantomjs driver service.
+* Bug Fixes: 4608 4940 4974 5034 5075
+
+Selenium 2.29
+* Allow subclassing of driver and have the ability to send_keys Issue 4877, 5017
+* Simplifying save_screenshot and allow phantomjs to take screenshots
+
 Selenium 2.28
 * "null" can now be passed to executeScript
 * Add transparent and extended colour keywords to color support module. Fixes issue 4866 

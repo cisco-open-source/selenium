@@ -16,6 +16,10 @@ limitations under the License.
 
 package org.openqa.selenium.android.library;
 
+import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -32,10 +36,7 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -76,6 +77,7 @@ import org.openqa.selenium.internal.FindsByName;
 import org.openqa.selenium.internal.FindsByTagName;
 import org.openqa.selenium.internal.FindsByXPath;
 import org.openqa.selenium.internal.WrapsElement;
+import org.openqa.selenium.io.IOUtils;
 import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.remote.ErrorCodes;
 
@@ -665,34 +667,62 @@ public class AndroidWebDriver implements WebDriver, SearchContext, JavascriptExe
     }
 
     public WebDriver frame(int index) {
-      DomWindow window = (DomWindow) executeRawScript(
+      DomWindow window = executeRawFrameSwitchingJs(
           "(" + AndroidAtoms.FRAME_BY_INDEX.getValue() + ")(" + index + ")");
-      if (window == null) {
-        throw new NoSuchFrameException("Frame with index '" + index + "' does not exists.");
-      }
       currentWindowOrFrame = window;
       return AndroidWebDriver.this;
     }
 
     public WebDriver frame(String frameNameOrId) {
-      DomWindow window = (DomWindow) executeRawScript(
+      DomWindow window = executeRawFrameSwitchingJs(
           "(" + AndroidAtoms.FRAME_BY_ID_OR_NAME.getValue() + ")('" + frameNameOrId + "')");
-      if (window == null) {
-        throw new NoSuchFrameException("Frame with ID or name '" + frameNameOrId
-            + "' does not exists.");
-      }
+
       currentWindowOrFrame = window;
       return AndroidWebDriver.this;
     }
 
     public WebDriver frame(WebElement frameElement) {
-      DomWindow window = (DomWindow) executeScript("return arguments[0].contentWindow;",
-          ((AndroidWebElement) ((WrapsElement) frameElement).getWrappedElement()));
-      if (window == null) {
-        throw new NoSuchFrameException("Frame does not exists.");
-      }
+      DomWindow window = executeFrameSwitchingJs("return arguments[0].contentWindow;",
+        ((WrapsElement) frameElement).getWrappedElement());
+
       currentWindowOrFrame = window;
       return AndroidWebDriver.this;
+    }
+
+    private DomWindow executeRawFrameSwitchingJs(String js) {
+      Object result;
+
+      try {
+        result = executeRawScript(js);
+      } catch (WebDriverException e) {
+        throw new NoSuchFrameException("Cannot switch to frame", e);
+      }
+
+      return processFrameResult(result);
+    }
+
+    private DomWindow executeFrameSwitchingJs(String js, Object arg) {
+      Object result;
+
+      try {
+        result = executeScript(js, arg);
+      } catch (WebDriverException e) {
+        throw new NoSuchFrameException("Cannot switch to frame", e);
+      }
+
+      return processFrameResult(result);
+    }
+
+
+    private DomWindow processFrameResult(Object result) {
+      if (result == null) {
+        throw new NoSuchFrameException("Cannot switch to frame");
+      }
+
+      if (!(result instanceof DomWindow)) {
+        throw new NoSuchFrameException("A result was returned, but it was not a window: " + result);
+      }
+      return (DomWindow) result;
     }
 
     public WebDriver window(final String nameOrHandle) {
@@ -855,9 +885,7 @@ public class AndroidWebDriver implements WebDriver, SearchContext, JavascriptExe
 
 
   private Object executeRawScript(String toExecute) {
-    String result = null;
-
-    result = executeJavascriptInWebView("window.webdriver.resultMethod(" + toExecute + ")");
+    String result = executeJavascriptInWebView("window.webdriver.resultMethod(" + toExecute + ")");
 
     if (result == null || "undefined".equals(result)) {
       return null;
@@ -1201,7 +1229,7 @@ public class AndroidWebDriver implements WebDriver, SearchContext, JavascriptExe
             throw new RuntimeException(
                 "I/O Error while capturing screenshot: " + e.getMessage());
           } finally {
-            Closeables.closeQuietly(stream);
+            IOUtils.closeQuietly(stream);
           }
           rawPng[0] = stream.toByteArray();
           done = true;

@@ -23,6 +23,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.common.SeleniumProtocol;
 import org.openqa.grid.common.exception.RemoteException;
@@ -37,7 +39,9 @@ import org.openqa.grid.internal.listeners.TimeoutListener;
 import org.openqa.grid.internal.BaseRemoteProxy;
 import org.openqa.grid.internal.utils.HtmlRenderer;
 import org.openqa.grid.selenium.utils.WebProxyHtmlRenderer;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 
 import java.io.IOException;
@@ -247,11 +251,25 @@ public class DefaultRemoteProxy extends BaseRemoteProxy
   public void beforeSession(TestSession session) {
     if (session.getSlot().getProtocol() == SeleniumProtocol.WebDriver) {
       Map<String, Object> cap = session.getRequestedCapabilities();
-      if ("firefox".equals(cap.get(CapabilityType.BROWSER_NAME))) {
+      if (BrowserType.FIREFOX.equals(cap.get(CapabilityType.BROWSER_NAME))) {
         if (session.getSlot().getCapabilities().get(FirefoxDriver.BINARY) != null
             && cap.get(FirefoxDriver.BINARY) == null) {
           session.getRequestedCapabilities().put(FirefoxDriver.BINARY,
               session.getSlot().getCapabilities().get(FirefoxDriver.BINARY));
+        }
+      }
+      if (BrowserType.CHROME.equals(cap.get(CapabilityType.BROWSER_NAME))) {
+        if (session.getSlot().getCapabilities().get("chrome_binary") != null) {
+          JSONObject options = (JSONObject) cap.get(ChromeOptions.CAPABILITY);
+          if (options == null) {
+            options = new JSONObject();
+          }
+          try {
+            options.put("binary", session.getSlot().getCapabilities().get("chrome_binary"));
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+          cap.put(ChromeOptions.CAPABILITY, options);
         }
       }
     }

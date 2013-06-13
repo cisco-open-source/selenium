@@ -104,7 +104,53 @@ module CrazyFunVisualStudio
 end
 
 module CrazyFunDotNet
-  class DotNetLibrary < Tasks
+  class DotNetTasks < Tasks
+    def get_reference_assemblies_dir()
+      @reference_assemblies_dir ||= (
+        program_files_dir = find_environment_variable(['ProgramFiles(x86)', 'programfiles(x86)', 'PROGRAMFILES(X86)'], "C:/Program Files (x86)")
+        unless File.exists? program_files_dir
+          program_files_dir = find_environment_variable(['ProgramFiles', 'programfiles', 'PROGRAMFILES'], "C:/Program Files")
+        end
+        File.join(program_files_dir, 'Reference Assemblies', 'Microsoft', 'Framework')
+      )
+    end
+
+    def get_framework_dir()
+      @framework_dir ||= (
+        windows_dir = find_environment_variable(['WinDir', 'windir', 'WINDIR'], "C:/Windows")
+        File.join(windows_dir, 'Microsoft.NET', 'Framework')
+      )
+    end
+
+	def get_reference_assemblies_version_dir(version)
+      if version == "net35"
+        return File.join(get_reference_assemblies_dir(), "v3.5").to_s
+      end
+      return File.join(get_reference_assemblies_dir(), '.NETFramework', "v4.0").to_s
+	end
+
+    def resolve_framework_reference(ref, version)
+      if version == "net35"
+        assembly = File.join(get_reference_assemblies_version_dir(version), ref)
+        unless File.exists? assembly
+          assembly = File.join(get_framework_dir(), "v2.0.50727", ref)
+        end
+
+        return assembly.to_s
+      end
+      return File.join(get_reference_assemblies_version_dir(version), ref).to_s
+    end
+
+    def find_environment_variable(possible_vars, fallback)
+      var_name = possible_vars.find { |e| ENV[e] }
+      if var_name.nil?
+        return fallback
+      end
+      return ENV[var_name]
+    end
+  end
+
+  class DotNetLibrary < DotNetTasks
     def handle(fun, dir, args)
       base_dir = "build/dotnet"
       framework_ver = "net40"
@@ -209,43 +255,6 @@ module CrazyFunDotNet
       return references
     end
 
-    def get_reference_assemblies_dir()
-      @reference_assemblies_dir ||= (
-        program_files_dir = find_environment_variable(['ProgramFiles(x86)', 'programfiles(x86)', 'PROGRAMFILES(X86)'], "C:/Program Files (x86)")
-        unless File.exists? program_files_dir
-          program_files_dir = find_environment_variable(['ProgramFiles', 'programfiles', 'PROGRAMFILES'], "C:/Program Files")
-        end
-        File.join(program_files_dir, 'Reference Assemblies', 'Microsoft', 'Framework')
-      )
-    end
-
-    def get_framework_dir()
-      @framework_dir ||= (
-        windows_dir = find_environment_variable(['WinDir', 'windir', 'WINDIR'], "C:/Windows")
-        File.join(windows_dir, 'Microsoft.NET', 'Framework')
-      )
-    end
-
-    def resolve_framework_reference(ref, version)
-      if version == "net35"
-        assembly = File.join(get_reference_assemblies_dir(), "v3.5", ref)
-        unless File.exists? assembly
-          assembly = File.join(get_framework_dir(), "v2.0.50727", ref)
-        end
-
-        return assembly.to_s
-      end
-      return File.join(get_reference_assemblies_dir(), '.NETFramework', "v4.0", ref).to_s
-    end
-
-    def find_environment_variable(possible_vars, fallback)
-      var_name = possible_vars.find { |e| ENV[e] }
-      if var_name.nil?
-        return fallback
-      end
-      return ENV[var_name]
-    end
-
     def resolve_buildable_targets(target_candidates)
       buildable_targets = []
       unless target_candidates.nil?
@@ -259,7 +268,7 @@ module CrazyFunDotNet
     end
   end
   
-  class MergeAssemblies < Tasks
+  class MergeAssemblies < DotNetTasks
     def handle(fun, dir, args)
       base_dir = "build/dotnet"
       framework_ver = "net40"
@@ -280,12 +289,12 @@ module CrazyFunDotNet
       unless args[:merge_refs].nil?
         params = ["/t:library",
                  "/xmldocs",
-                 "/align:512",
-				 "/internalize"]
+                 "/align:512"]
         if framework_ver == "net35"
           params << "/v2"
         else
-          params << "/v4"
+		  mscorlib_location = get_reference_assemblies_version_dir("net40").gsub('/', Platform.dir_separator)
+          params << "/targetplatform:v4,\"#{mscorlib_location}\""
         end
         params << "/keyfile:#{args[:keyfile]}" unless args[:keyfile].nil?
         params << "/out:#{full_path.gsub('/', Platform.dir_separator)}"
@@ -299,6 +308,17 @@ module CrazyFunDotNet
         target = exec task_name do |cmd|
           puts "Merging: #{task_name} as #{desc_path}"
           FileUtils.mkdir_p output_dir
+          if args[:exclude_merge_types].nil?
+            params << "/internalize"
+          else
+            exclude_types_file = File.join(unmerged_dir, "#{args[:out]}.mergeexclude.txt")
+            f = File.open(exclude_types_file, 'w')
+            args[:exclude_merge_types].each do |exclude_type|
+              f.write exclude_type + "\n"
+            end
+            f.close
+            params << "/internalize:#{exclude_types_file.gsub('/', Platform.dir_separator)}"
+          end
           cmd.command = "third_party/dotnet/ilmerge/ILMerge.exe"
           cmd.parameters = params.join " "
         end
@@ -431,7 +451,6 @@ module CrazyFunDotNet
         puts "Generating help file: at #{help_file_path_desc}"
         mv File.join(web_documentation_path, args[:helpfile]), File.dirname(args[:out])
         File.rename(File.join(web_documentation_path, "Index.html"), File.join(web_documentation_path, "index.html"))
-        File.rename(File.join(web_documentation_path, "styles", "Presentation.css"), File.join(web_documentation_path, "styles", "presentation.css"))
       end
     end
   end

@@ -438,10 +438,6 @@ public class EventFiringWebDriver implements WebDriver, JavascriptExecutor, Take
       return driver;
     }
 
-    public Point getLocationOnScreenOnceScrolledIntoView() {
-      return ((Locatable) underlyingElement).getLocationOnScreenOnceScrolledIntoView();
-    }
-
     public Coordinates getCoordinates() {
       return ((Locatable) underlyingElement).getCoordinates();
     }

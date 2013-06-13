@@ -32,6 +32,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         IndividualKeyboardActionsTest.class,
         IndividualMouseActionsTest.class,
         StaleElementReferenceTest.class,
+        VisibilityTest.class,
         BasicMouseInterfaceTest.class
 })
 public class NativeWebDriverTests {

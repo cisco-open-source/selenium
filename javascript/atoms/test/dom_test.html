@@ -18,7 +18,8 @@
   }
 
   function testGetInViewLocationWithPositiveOffset() {
-    if (bot.userAgent.MOBILE || (goog.userAgent.IE && !bot.userAgent.isProductVersion(7))) {
+    if (bot.userAgent.MOBILE || (goog.userAgent.IE && !bot.userAgent.isProductVersion(7)) ||
+        goog.userAgent.product.SAFARI) {
       // Scroll offsets are not reliable on mobile viewports.
       return;
     }
@@ -40,8 +41,9 @@
     assertEquals(1000, inViewLocation.y + goog.dom.getDocumentScroll().y);
   }
 
-  function testGetInViewLocationwithNegativeOffsetX() {
-    if (bot.userAgent.MOBILE || (goog.userAgent.IE && !bot.userAgent.isProductVersion(7))) {
+  function testGetInViewLocationWithNegativeOffsetX() {
+    if (bot.userAgent.MOBILE || (goog.userAgent.IE && !bot.userAgent.isProductVersion(7)) ||
+        goog.userAgent.product.SAFARI) {
       // Scroll offsets are not reliable on mobile viewports.
       return;
     }
@@ -61,8 +63,9 @@
         goog.dom.getDocumentScroll().x);
   }
 
-  function testGetInViewLocationwithNegativeOffsetY() {
-    if (bot.userAgent.MOBILE || (goog.userAgent.IE && !bot.userAgent.isProductVersion(7))) {
+  function testGetInViewLocationWithNegativeOffsetY() {
+    if (bot.userAgent.MOBILE || (goog.userAgent.IE && !bot.userAgent.isProductVersion(7)) ||
+        goog.userAgent.product.SAFARI) {
       // Scroll offsets are not reliable on mobile viewports.
       return;
     }
@@ -129,8 +132,8 @@
     var toTest = [
       {input: "Left: 0px; Text-align: center;",
         expected: "left: 0px; text-align: center;"},
-      {input: "background-image: url('http://www.google.ca/Test.gif');",
-        expected: "background-image: url('http://www.google.ca/Test.gif');"},
+      {input: "background-image: url('testdata/kitten3.jpg');",
+        expected: "background-image: url('testdata/kitten3.jpg');"},
       {input: "-ms-filter: 'progid:DXImageTransform(strength=50)," +
           " progid:DXImageTransform.(mirror=1)';",
         expected: "-ms-filter: 'progid:DXImageTransform(strength=50)," +
@@ -150,6 +153,10 @@
   }
 
   function testStandardizeStyleAttributeShouldWorkWithQuotesAndParens() {
+    if (goog.userAgent.IE && !bot.userAgent.isProductVersion(7)) {
+      // IE6 cannot properly parse the embedded semicolons below. 
+      return;
+    }
     var toTest = [
       {input: "key:value", expected: "key:value;"},
       {input: "key:value;", expected: "key:value;"},

@@ -19,21 +19,24 @@ limitations under the License.
 
 package org.openqa.selenium.logging;
 
-import org.json.JSONObject;
-
-import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+
+import org.json.JSONObject;
 
 /**
  * Represents a single log statement.
  */
 public class LogEntry {
 
-  private static final SimpleDateFormat DATE_FORMAT =
-      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+  private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT =
+      new ThreadLocal<SimpleDateFormat>();
+  private static final String DATE_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ssZ";
+//  private static final SimpleDateFormat DATE_FORMAT =
+//      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
   private final Level level;
   private final long timestamp;
@@ -80,10 +83,19 @@ public class LogEntry {
   @Override
   public String toString() {
     return String.format("[%s] [%s] %s",
-                         DATE_FORMAT.format(new Date(timestamp)), level, message);
+        getDateFormat().format(new Date(timestamp)), level, message);
   }
 
-  @SuppressWarnings("unused")
+  private SimpleDateFormat getDateFormat() {
+    SimpleDateFormat format = DATE_FORMAT.get();
+    if (format == null) {
+      format = new SimpleDateFormat(DATE_FORMAT_STRING);
+      DATE_FORMAT.set(format);
+    }
+
+    return format;
+  }
+  
   public JSONObject toJson() {
     Map<String, Object> map = new HashMap<String, Object>();
     map.put("timestamp", timestamp);

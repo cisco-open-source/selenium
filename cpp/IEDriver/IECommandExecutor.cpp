@@ -81,11 +81,6 @@ LRESULT IECommandExecutor::OnInit(UINT uMsg,
                                   LPARAM lParam,
                                   BOOL& bHandled) {
   LOG(TRACE) << "Entering IECommandExecutor::OnInit";
-
-  // If we wanted to be a little more clever, we could create a struct
-  // containing the HWND and the port number and pass them into the
-  // ThreadProc via lpParameter and avoid this message handler altogether.
-  this->port_ = (int)wParam;
   return 0;
 }
 
@@ -94,6 +89,12 @@ LRESULT IECommandExecutor::OnCreate(UINT uMsg,
                                     LPARAM lParam,
                                     BOOL& bHandled) {
   LOG(TRACE) << "Entering IECommandExecutor::OnCreate";
+  
+  CREATESTRUCT* create = reinterpret_cast<CREATESTRUCT*>(lParam);
+  IECommandExecutorThreadContext* context = reinterpret_cast<IECommandExecutorThreadContext*>(create->lpCreateParams);
+  this->port_ = context->port;
+  this->force_createprocess_api_ = context->force_createprocess_api;
+  this->ie_switches_ = context->ie_switches;
 
   // NOTE: COM should be initialized on this thread, so we
   // could use CoCreateGuid() and StringFromGUID2() instead.
@@ -107,7 +108,7 @@ LRESULT IECommandExecutor::OnCreate(UINT uMsg,
   wchar_t* cast_guid_string = reinterpret_cast<wchar_t*>(guid_string);
   this->SetWindowText(cast_guid_string);
 
-  std::string session_id = CW2A(cast_guid_string, CP_UTF8);
+  std::string session_id = StringUtilities::ToString(cast_guid_string);
   this->session_id_ = session_id;
   this->is_valid_ = true;
 
@@ -127,15 +128,11 @@ LRESULT IECommandExecutor::OnCreate(UINT uMsg,
   this->implicit_wait_timeout_ = 0;
   this->async_script_timeout_ = -1;
   this->page_load_timeout_ = -1;
+  this->browser_attach_timeout_ = 0;
 
   this->input_manager_ = new InputManager();
   this->input_manager_->Initialize(&this->managed_elements_);
 
-  // Only execute atoms on a separate thread for IE 9 or below.
-  // Attempting this on IE 10 crashes unpredictably at the moment
-  // on Windows 8, and no one has a development environment available
-  // to debug the issue.
-  this->allow_asynchronous_javascript_ = this->factory_.browser_version() <= 9;
   return 0;
 }
 
@@ -242,6 +239,8 @@ LRESULT IECommandExecutor::OnWait(UINT uMsg,
                                                         &thread_id));
         if (thread_handle != NULL) {
           ::CloseHandle(thread_handle);
+        } else {
+          LOGERR(DEBUG) << "Unable to create waiter thread";
         }
       }
     }
@@ -264,6 +263,10 @@ LRESULT IECommandExecutor::OnBrowserNewWindow(UINT uMsg,
   HRESULT hr = ::CoMarshalInterThreadInterfaceInStream(IID_IWebBrowser2,
                                                        browser,
                                                        stream);
+  if (FAILED(hr)) {
+    LOGHR(DEBUG, hr) << "Marshalling of interface pointer b/w threads is failed.";
+  }
+
   return 0;
 }
 
@@ -342,7 +345,24 @@ LRESULT IECommandExecutor::OnRefreshManagedElements(UINT uMsg,
   return 0;
 }
 
+LRESULT IECommandExecutor::OnHandleUnexpectedAlerts(UINT uMsg,
+                                                    WPARAM wParam,
+                                                    LPARAM lParam,
+                                                    BOOL& bHandled) {
+  LOG(TRACE) << "Entering IECommandExecutor::OnHandleUnexpectedAlerts";
+  BrowserMap::const_iterator it = this->managed_browsers_.begin();
+  for (; it != this->managed_browsers_.end(); ++it) {
+    HWND alert_handle = it->second->GetActiveDialogWindowHandle();
+    if (alert_handle != NULL) {
+      this->HandleUnexpectedAlert(it->second, alert_handle, true);
+      it->second->Close();
+    }
+  }
+  return 0;
+}
+
 unsigned int WINAPI IECommandExecutor::WaitThreadProc(LPVOID lpParameter) {
+  LOG(TRACE) << "Entering IECommandExecutor::WaitThreadProc";
   HWND window_handle = reinterpret_cast<HWND>(lpParameter);
   ::Sleep(WAIT_TIME_IN_MILLISECONDS);
   ::PostMessage(window_handle, WD_WAIT, NULL, NULL);
@@ -351,19 +371,34 @@ unsigned int WINAPI IECommandExecutor::WaitThreadProc(LPVOID lpParameter) {
 
 
 unsigned int WINAPI IECommandExecutor::ThreadProc(LPVOID lpParameter) {
-  // Optional TODO: Create a struct to pass in via lpParameter
-  // instead of just a pointer to an HWND. That way, we could
-  // pass the mongoose server port via a single call, rather than
-  // having to send an init message after the window is created.
-  HWND *window_handle = reinterpret_cast<HWND*>(lpParameter);
+  LOG(TRACE) << "Entering IECommandExecutor::ThreadProc";
+
+  IECommandExecutorThreadContext* thread_context = reinterpret_cast<IECommandExecutorThreadContext*>(lpParameter);
+  HWND window_handle = thread_context->hwnd;
+
+  // it is better to use IECommandExecutorSessionContext instead
+  // but use ThreadContext for code minimization
+  IECommandExecutorThreadContext* session_context = new IECommandExecutorThreadContext();
+  session_context->port = thread_context->port;
+  session_context->ie_switches = thread_context->ie_switches;
+  session_context->force_createprocess_api = thread_context->force_createprocess_api;
+
   DWORD error = 0;
   HRESULT hr = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  if (FAILED(hr)) {
+    LOGHR(DEBUG, hr) << "COM library initialization has some problem";
+  }
+
   IECommandExecutor new_session;
-  HWND session_window_handle = new_session.Create(HWND_MESSAGE,
-                                                  CWindow::rcDefault);
+  HWND session_window_handle = new_session.Create(/*HWND*/ HWND_MESSAGE,
+                                                  /*_U_RECT rect*/ CWindow::rcDefault,
+                                                  /*LPCTSTR szWindowName*/ NULL,
+                                                  /*DWORD dwStyle*/ NULL,
+                                                  /*DWORD dwExStyle*/ NULL,
+                                                  /*_U_MENUorID MenuOrID*/ 0U,
+                                                  /*LPVOID lpCreateParam*/ reinterpret_cast<LPVOID*>(session_context));
   if (session_window_handle == NULL) {
-    error = ::GetLastError();
-    LOG(WARN) << "Unable to create new session: " << error;
+    LOGERR(WARN) << "Unable to create new IECommandExecutor session";
   }
 
   MSG msg;
@@ -371,11 +406,13 @@ unsigned int WINAPI IECommandExecutor::ThreadProc(LPVOID lpParameter) {
 
   // Return the HWND back through lpParameter, and signal that the
   // window is ready for messages.
-  *window_handle = session_window_handle;
+  thread_context->hwnd = session_window_handle;
   HANDLE event_handle = ::OpenEvent(EVENT_ALL_ACCESS, FALSE, EVENT_NAME);
   if (event_handle != NULL) {
     ::SetEvent(event_handle);
     ::CloseHandle(event_handle);
+  } else {
+    LOGERR(DEBUG) << "Unable to signal that window is ready";
   }
 
   // Run the message loop
@@ -385,6 +422,7 @@ unsigned int WINAPI IECommandExecutor::ThreadProc(LPVOID lpParameter) {
   }
 
   ::CoUninitialize();
+  delete session_context;
   return 0;
 }
 
@@ -406,23 +444,9 @@ void IECommandExecutor::DispatchCommand() {
       // is the "newSession" command.
       status_code = this->GetCurrentBrowser(&browser);
       if (status_code == WD_SUCCESS) {
-        bool alert_is_active = false;
-        HWND alert_handle = browser->GetActiveDialogWindowHandle();
-        if (alert_handle != NULL) {
-          // Found a window handle, make sure it's an actual alert,
-          // and not a showModalDialog() window.
-          vector<char> window_class_name(34);
-          ::GetClassNameA(alert_handle, &window_class_name[0], 34);
-          if (strcmp(ALERT_WINDOW_CLASS, &window_class_name[0]) == 0) {
-            alert_is_active = true;
-          } else {
-            LOG(WARN) << "Found alert handle does not have a window class consistent with an alert";
-          }
-        } else {
-          LOG(DEBUG) << "No alert handle is found";
-        }
+        HWND alert_handle = NULL;
+        bool alert_is_active = this->IsAlertActive(browser, &alert_handle);
         if (alert_is_active) {
-          Alert dialog(browser, alert_handle);
           std::string command_type = this->current_command_.command_type();
           if (command_type == webdriver::CommandType::GetAlertText ||
               command_type == webdriver::CommandType::SendKeysToAlert ||
@@ -431,22 +455,9 @@ void IECommandExecutor::DispatchCommand() {
             LOG(DEBUG) << "Alert is detected, and the sent command is valid";
           } else {
             LOG(DEBUG) << "Unexpected alert is detected, and the sent command is invalid when an alert is present";
-            std::string alert_text = dialog.GetText();
-            if (this->unexpected_alert_behavior_ == ACCEPT_UNEXPECTED_ALERTS) {
-              LOG(DEBUG) << "Automatically accepting the alert";
-              dialog.Accept();
-            } else if (this->unexpected_alert_behavior_ == DISMISS_UNEXPECTED_ALERTS || command_type == webdriver::CommandType::Quit) {
-              // If a quit command was issued, we should not ignore an unhandled
-              // alert, even if the alert behavior is set to "ignore".
-              LOG(DEBUG) << "Automatically dismissing the alert";
-              if (dialog.is_standard_alert()) {
-                dialog.Dismiss();
-              } else {
-                // The dialog was non-standard. The most common case of this is
-                // an onBeforeUnload dialog, which must be accepted to continue.
-                dialog.Accept();
-              }
-            }
+            std::string alert_text = this->HandleUnexpectedAlert(browser,
+                                                                 alert_handle,
+                                                                 command_type == webdriver::CommandType::Quit);
             if (command_type != webdriver::CommandType::Quit) {
               // To keep pace with what Firefox does, we'll return the text of the
               // alert in the error response.
@@ -465,7 +476,7 @@ void IECommandExecutor::DispatchCommand() {
         LOG(WARN) << "Unable to find current browser";
       }
     }
-	  CommandHandlerHandle command_handler = found_iterator->second;
+    CommandHandlerHandle command_handler = found_iterator->second;
     command_handler->Execute(*this, this->current_command_, &response);
 
     status_code = this->GetCurrentBrowser(&browser);
@@ -487,6 +498,50 @@ void IECommandExecutor::DispatchCommand() {
   this->serialized_response_ = response.Serialize();
 }
 
+bool IECommandExecutor::IsAlertActive(BrowserHandle browser, HWND* alert_handle) {
+  LOG(TRACE) << "Entering IECommandExecutor::IsAlertActive";
+  HWND dialog_handle = browser->GetActiveDialogWindowHandle();
+  if (dialog_handle != NULL) {
+    // Found a window handle, make sure it's an actual alert,
+    // and not a showModalDialog() window.
+    vector<char> window_class_name(34);
+    ::GetClassNameA(dialog_handle, &window_class_name[0], 34);
+    if (strcmp(ALERT_WINDOW_CLASS, &window_class_name[0]) == 0) {
+      *alert_handle = dialog_handle;
+      return true;
+    } else {
+      LOG(WARN) << "Found alert handle does not have a window class consistent with an alert";
+    }
+  } else {
+    LOG(DEBUG) << "No alert handle is found";
+  }
+  return false;
+}
+
+std::string IECommandExecutor::HandleUnexpectedAlert(BrowserHandle browser,
+                                                     HWND alert_handle,
+                                                     bool force_use_dismiss) {
+  LOG(TRACE) << "Entering IECommandExecutor::HandleUnexpectedAlert";
+  Alert dialog(browser, alert_handle);
+  std::string alert_text = dialog.GetText();
+  if (this->unexpected_alert_behavior_ == ACCEPT_UNEXPECTED_ALERTS) {
+    LOG(DEBUG) << "Automatically accepting the alert";
+    dialog.Accept();
+  } else if (this->unexpected_alert_behavior_ == DISMISS_UNEXPECTED_ALERTS || force_use_dismiss) {
+    // If a quit command was issued, we should not ignore an unhandled
+    // alert, even if the alert behavior is set to "ignore".
+    LOG(DEBUG) << "Automatically dismissing the alert";
+    if (dialog.is_standard_alert()) {
+      dialog.Dismiss();
+    } else {
+      // The dialog was non-standard. The most common case of this is
+      // an onBeforeUnload dialog, which must be accepted to continue.
+      dialog.Accept();
+    }
+  }
+  return alert_text;
+}
+
 int IECommandExecutor::GetCurrentBrowser(BrowserHandle* browser_wrapper) const {
   LOG(TRACE) << "Entering IECommandExecutor::GetCurrentBrowser";
   return this->GetManagedBrowser(this->current_browser_id_, browser_wrapper);
@@ -497,6 +552,7 @@ int IECommandExecutor::GetManagedBrowser(const std::string& browser_id,
   LOG(TRACE) << "Entering IECommandExecutor::GetManagedBrowser";
 
   if (!this->is_valid()) {
+    LOG(TRACE) << "Current command executor is not valid";
     return ENOSUCHDRIVER;
   }
 
@@ -551,7 +607,10 @@ int IECommandExecutor::CreateNewBrowser(std::string* error_message) {
   }
 
   DWORD process_id = this->factory_.LaunchBrowserProcess(initial_url,
-      this->ignore_protected_mode_settings_, error_message);
+                                                         this->ignore_protected_mode_settings_, 
+                                                         this->force_createprocess_api_,
+                                                         this->ie_switches_,
+                                                         error_message);
   if (process_id == NULL) {
     LOG(WARN) << "Unable to launch browser, received NULL process ID";
     this->is_waiting_ = false;
@@ -563,6 +622,7 @@ int IECommandExecutor::CreateNewBrowser(std::string* error_message) {
   process_window_info.hwndBrowser = NULL;
   process_window_info.pBrowser = NULL;
   bool attached = this->factory_.AttachToBrowser(&process_window_info,
+                                                 this->browser_attach_timeout_,
                                                  this->ignore_zoom_setting_,
                                                  error_message);
   if (!attached) { 
@@ -639,7 +699,7 @@ int IECommandExecutor::LocateElement(const ElementHandle parent_wrapper,
     return status_code;
   }
 
-  std::wstring wide_criteria = CA2W(criteria.c_str(), CP_UTF8);
+  std::wstring wide_criteria = StringUtilities::ToWString(criteria);
   return this->element_finder().FindElement(*this,
                                             parent_wrapper,
                                             mechanism_translation,
@@ -661,7 +721,7 @@ int IECommandExecutor::LocateElements(const ElementHandle parent_wrapper,
     return status_code;
   }
 
-  std::wstring wide_criteria = CA2W(criteria.c_str(), CP_UTF8);
+  std::wstring wide_criteria = StringUtilities::ToWString(criteria);
   return this->element_finder().FindElements(*this,
                                              parent_wrapper,
                                              mechanism_translation,

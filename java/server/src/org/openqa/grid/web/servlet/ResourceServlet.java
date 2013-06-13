@@ -21,6 +21,12 @@ import com.google.common.io.ByteStreams;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -56,6 +62,11 @@ public class ResourceServlet extends HttpServlet {
       ByteStreams.copy(in, response.getOutputStream());
     } finally {
       in.close();
+      Calendar c = Calendar.getInstance();
+      c.setTime(new Date());
+      c.add(Calendar.DATE, 10);
+      response.setDateHeader("Expires", c.getTime().getTime());
+      response.setHeader("Cache-Control", "max-age=864000");
       response.flushBuffer();
     }
 

@@ -77,8 +77,8 @@ WebElement.clickElement = function(respond, parameters) {
   var isOption = 'option' == unwrapped.tagName.toLowerCase();
 
   var location = Utils.getLocation(unwrapped, unwrapped.tagName == 'A');
-  var elementHalfWidth = (location.width ? location.width / 2 : 0);
-  var elementHalfHeight = (location.height ? location.height / 2 : 0);
+  var elementHalfWidth = (location.width ? Math.floor(location.width / 2) : 0);
+  var elementHalfHeight = (location.height ? Math.floor(location.height / 2) : 0);
 
   if (!isOption && this.enableNativeEvents && nativeMouse && node && useNativeClick && thmgr_cls) {
     fxdriver.logging.info('Using native events for click');
@@ -87,7 +87,9 @@ WebElement.clickElement = function(respond, parameters) {
         unwrapped,
         new goog.math.Coordinate(elementHalfWidth, elementHalfHeight));
 
-    if (!inViewAfterScroll) {
+    var isSVG = Utils.isSVG(element.ownerDocument);
+
+    if (!isSVG && !inViewAfterScroll) {
         respond.sendError(
             new WebDriverError(bot.ErrorCode.MOVE_TARGET_OUT_OF_BOUNDS,
                 'Element cannot be scrolled into view:' + element));
@@ -160,11 +162,7 @@ WebElement.clickElement.preconditions =
 WebElement.getElementText = function(respond, parameters) {
   var element = Utils.getElementAt(parameters.id,
                                    respond.session.getDocument());
-  if (bot.dom.isElement(element, goog.dom.TagName.TITLE)) {
-    respond.value = respond.session.getBrowser().contentTitle;
-  } else {
-    respond.value = webdriver.atoms.element.getText(element);
-  }
+  respond.value = webdriver.atoms.element.getText(element);
   respond.send();
 };
 
@@ -302,7 +300,7 @@ WebElement.submitElement = function(respond, parameters) {
         return;
       }
     } else {
-      throw new WebDriverError(bot.ErrorCode.INVALID_ELEMENT_STATE,
+      throw new WebDriverError(bot.ErrorCode.NO_SUCH_ELEMENT,
           "Element was not in a form so couldn't submit");
     }
   }
@@ -388,7 +386,7 @@ WebElement.getElementLocationOnceScrolledIntoView = function(
                                    respond.session.getDocument());
 
   var theDoc = element.ownerDocument;
-  theDoc.body.focus();
+  Utils.getMainDocumentElement(theDoc).focus();
   var elementLocation = Utils.getLocationOnceScrolledIntoView(element);
 
   respond.value = {

@@ -17,14 +17,18 @@ limitations under the License.
 
 package org.openqa.selenium;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.alertToBePresent;
 import static org.openqa.selenium.WaitingConditions.elementTextToEqual;
+import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
 import static org.openqa.selenium.WaitingConditions.windowHandleCountToBe;
+import static org.openqa.selenium.WaitingConditions.windowToBeSwitchedToWithName;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
@@ -34,7 +38,6 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
@@ -48,9 +51,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-@Ignore({ANDROID, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, SELENESE, OPERA_MOBILE})
+@Ignore({ANDROID, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE})
 public class AlertsTest extends JUnit4TestBase {
 
   @Before
@@ -186,7 +188,6 @@ public class AlertsTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {IE}, issues = {4594})
   public void testShouldAllowTheUserToGetTheTextOfAPrompt() {
     driver.findElement(By.id("prompt")).click();
 
@@ -208,7 +209,9 @@ public class AlertsTest extends JUnit4TestBase {
     try {
       alert.getText();
     } catch (NoAlertPresentException expected) {
+      return;
     }
+    fail("Expected NoAlertPresentException");
   }
 
   @Ignore(ANDROID)
@@ -241,23 +244,6 @@ public class AlertsTest extends JUnit4TestBase {
     assertEquals("Testing Alerts", driver.getTitle());
   }
 
-  // Andrii Moroz: On our WebDriver test return title even when alert present
-  // To change this - add checking for alert in Automation::ExecuteScript
-@Ignore({ANDROID, CHROME, HTMLUNIT, QTWEBKIT})
-  @Test
-  public void testShouldThrowAnExceptionIfAnAlertHasNotBeenDealtWithAndDismissTheAlert() {
-    driver.findElement(By.id("alert")).click();
-    try {
-      driver.getTitle();
-      fail("Expected UnhandledAlertException");
-    } catch (UnhandledAlertException e) {
-      // this is expected
-    }
-
-    // But the next call should be good.
-    assertEquals("Testing Alerts", driver.getTitle());
-  }
-
   @JavascriptEnabled
   @Test
   public void testSwitchingToMissingAlertThrows() throws Exception {
@@ -270,14 +256,15 @@ public class AlertsTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, IE}, issues = {2764, 2834})
+  @Ignore(value = {CHROME, QTWEBKIT}, issues = {2764})
   @Test
   public void testSwitchingToMissingAlertInAClosedWindowThrows() throws Exception {
     String mainWindow = driver.getWindowHandle();
     try {
       driver.findElement(By.id("open-new-window")).click();
       waitFor(windowHandleCountToBe(driver, 2));
-      driver.switchTo().window("newwindow").close();
+      waitFor(windowToBeSwitchedToWithName(driver, "newwindow"));
+      driver.close();
 
       try {
         alertToBePresent(driver).call();
@@ -362,25 +349,24 @@ public class AlertsTest extends JUnit4TestBase {
 
   // Andrii Moroz : new windows doesn't supported
   @JavascriptEnabled
-  @Ignore(value = {FIREFOX, IE, CHROME, QTWEBKIT}, reason = "FF waits too long, may be hangs out." +
-      "Android currently does not store the source of the alert. IE8: Not confirmed working.")
+  @Ignore(value = {CHROME, FIREFOX, IE, QTWEBKIT}, reason = "IE: fails in versions 6 and 7")
   @Test
   public void testShouldNotHandleAlertInAnotherWindow() {
     String mainWindow = driver.getWindowHandle();
+    Set<String> currentWindowHandles = driver.getWindowHandles();
     String onloadWindow = null;
     try {
       driver.findElement(By.id("open-window-with-onload-alert")).click();
-      Set<String> allWindows = driver.getWindowHandles();
-      allWindows.remove(mainWindow);
-      assertEquals(1, allWindows.size());
-      onloadWindow = allWindows.iterator().next();
+      onloadWindow = waitFor(newWindowIsOpened(driver, currentWindowHandles));
 
+      boolean gotException = false;
       try {
-        waitFor(alertToBePresent(driver), 5, TimeUnit.SECONDS);
-        fail("Expected exception");
-      } catch (NoAlertPresentException expected) {
+        waitFor(alertToBePresent(driver));
+      } catch (AssertionError expected) {
         // Expected
+        gotException = true;
       }
+      assertTrue(gotException);
 
     } finally {
       driver.switchTo().window(onloadWindow);
@@ -409,8 +395,8 @@ public class AlertsTest extends JUnit4TestBase {
 
   // Andrii Moroz : new windows not supported
   @JavascriptEnabled
-  @Ignore(value = {IE, ANDROID, CHROME, QTWEBKIT}, reason = "IE crashes. On Android, alerts do not pop up" +
-     " when a window is closed.")
+  @Ignore(value = {ANDROID, CHROME, QTWEBKIT}, reason = "On Android, alerts do not pop up" +
+      " when a window is closed.")
   @Test
   public void testShouldHandleAlertOnWindowClose() {
     if (TestUtilities.isFirefox(driver) &&
@@ -423,7 +409,8 @@ public class AlertsTest extends JUnit4TestBase {
     try {
       driver.findElement(By.id("open-window-with-onclose-alert")).click();
       waitFor(windowHandleCountToBe(driver, 2));
-      driver.switchTo().window("onclose").close();
+      waitFor(windowToBeSwitchedToWithName(driver, "onclose"));
+      driver.close();
 
       Alert alert = waitFor(alertToBePresent(driver));
       String value = alert.getText();
@@ -439,18 +426,17 @@ public class AlertsTest extends JUnit4TestBase {
 
   // Andrii Moroz : our webdriver returns title even alert present
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, SELENESE, QTWEBKIT})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, QTWEBKIT})
   @Test
-  public void testIncludesAlertInUnhandledAlertException() {
+  public void testIncludesAlertTextInUnhandledAlertException() {
     driver.findElement(By.id("alert")).click();
     waitFor(alertToBePresent(driver));
     try {
       driver.getTitle();
       fail("Expected UnhandledAlertException");
     } catch (UnhandledAlertException e) {
-      Alert alert = e.getAlert();
-      assertNotNull(alert);
-      assertEquals("cheese", alert.getText());
+      assertEquals("cheese", e.getAlertText());
+      assertThat(e.getMessage(), containsString("cheese"));
     }
   }
 

@@ -25,6 +25,7 @@ from selenium.common.exceptions import NoSuchFrameException
 from selenium.common.exceptions import NoSuchWindowException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import UnableToSetCookieException
+from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium.common.exceptions import NoAlertPresentException
 from selenium.common.exceptions import ErrorInResponseException
 from selenium.common.exceptions import TimeoutException
@@ -110,6 +111,8 @@ class ErrorHandler(object):
             exception_class = TimeoutException
         elif status == ErrorCode.UNKNOWN_ERROR:
             exception_class = WebDriverException
+        elif status == ErrorCode.UNEXPECTED_ALERT_OPEN:
+            exception_class = UnexpectedAlertPresentException
         elif status == ErrorCode.NO_ALERT_OPEN:
             exception_class = NoAlertPresentException
         elif status == ErrorCode.IME_NOT_AVAILABLE:
@@ -121,7 +124,7 @@ class ErrorHandler(object):
         else:
             exception_class = WebDriverException
         value = response['value']
-        if type(value) is str:
+        if isinstance(value, basestring):
             if exception_class == ErrorInResponseException:
                 raise exception_class(response, value)
             raise exception_class(value)
@@ -135,18 +138,24 @@ class ErrorHandler(object):
 
         stacktrace = None
         if 'stackTrace' in value and value['stackTrace']:
-            zeroeth = ''
+            stacktrace = []
             try:
-                zeroeth = value['stackTrace'][0]
-            except:
+                for frame in value['stackTrace']:
+                    line = self._value_or_default(frame, 'lineNumber', '')
+                    file = self._value_or_default(frame, 'fileName', '<anonymous>')
+                    if line:
+                        file = "%s:%s" % (file, line)
+                    meth = self._value_or_default(frame, 'methodName', '<anonymous>')
+                    if 'className' in frame:
+                        meth = "%s.%s" % (frame['className'], meth)
+                    msg = "    at %s (%s)"
+                    msg = msg % (meth, file)
+                    stacktrace.append(msg)
+            except TypeError:
                 pass
-            if zeroeth.has_key('methodName'):
-                stacktrace = "Method %s threw an error in %s" % \
-                    (zeroeth['methodName'],
-                    self._value_or_default(zeroeth, 'fileName', '[No file name]'))
         if exception_class == ErrorInResponseException:
             raise exception_class(response, message)
         raise exception_class(message, screen, stacktrace)
 
     def _value_or_default(self, obj, key, default):
-      return obj[key] if obj.has_key(key) else default
+      return obj[key] if key in obj else default

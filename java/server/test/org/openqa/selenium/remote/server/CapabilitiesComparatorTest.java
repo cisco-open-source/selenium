@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThan;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.remote.server.CapabilitiesComparator.getBestMatch;
 
@@ -30,6 +29,7 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.util.Comparator;
@@ -41,92 +41,66 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void shouldMatchByBrowserName_assumingAllOtherPropertiesAreNull() {
-    comparator = compareBy(capabilities("firefox", "", Platform.ANY, true));
+    comparator = compareBy(capabilities(BrowserType.FIREFOX, "", Platform.ANY, true));
 
-    Capabilities c1 = capabilities("firefox", null, null, false);
-    Capabilities c2 = capabilities("chrome", null, null, false);
+    Capabilities c1 = capabilities(BrowserType.FIREFOX, null, null, false);
+    Capabilities c2 = capabilities(BrowserType.CHROME, null, null, false);
 
     assertGreaterThan(c1, c2);
   }
 
   @Test
   public void shouldMatchByBrowserName_assumingAllOtherPropertiesAreTheSame() {
-    comparator = compareBy(capabilities("firefox", "", Platform.ANY, true));
+    comparator = compareBy(capabilities(BrowserType.FIREFOX, "", Platform.ANY, true));
 
-    Capabilities c1 = capabilities("firefox", "", Platform.ANY, true);
-    Capabilities c2 = capabilities("chrome", "", Platform.ANY, true);
+    Capabilities c1 = capabilities(BrowserType.FIREFOX, "", Platform.ANY, true);
+    Capabilities c2 = capabilities(BrowserType.CHROME, "", Platform.ANY, true);
 
     assertGreaterThan(c1, c2);
   }
 
   @Test
   public void shouldIgnoreVersionIfNullOnAnInput() {
-    comparator = compareBy(capabilities("firefox", "6", Platform.ANY, true));
+    comparator = compareBy(capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true));
 
-    Capabilities c1 = capabilities("firefox", null, Platform.ANY, true);
-    Capabilities c2 = capabilities("firefox", "7", Platform.ANY, true);
+    Capabilities c1 = capabilities(BrowserType.FIREFOX, null, Platform.ANY, true);
+    Capabilities c2 = capabilities(BrowserType.FIREFOX, "7", Platform.ANY, true);
     assertGreaterThan(c1, c2);
 
-    Capabilities c3 = capabilities("firefox", "7", Platform.ANY, true);
-    Capabilities c4 = capabilities("firefox", null, Platform.ANY, true);
+    Capabilities c3 = capabilities(BrowserType.FIREFOX, "7", Platform.ANY, true);
+    Capabilities c4 = capabilities(BrowserType.FIREFOX, null, Platform.ANY, true);
     assertGreaterThan(c4, c3);
   }
 
   @Test
   public void shouldMatchByVersion_assumingAllOtherPropertiesAreTheSame_versionSpecified() {
-    comparator = compareBy(capabilities("firefox", "6", Platform.ANY, true));
+    comparator = compareBy(capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true));
 
-    Capabilities c1 = capabilities("firefox", "6", Platform.ANY, true);
-    Capabilities c2 = capabilities("firefox", "7", Platform.ANY, true);
-    Capabilities c3 = capabilities("firefox", null, Platform.ANY, true);
-
-    assertGreaterThan(c1, c2);
-    assertGreaterThan(c1, c3);
-  }
-
-  @Test
-  public void shouldMatchByVersion_assumingAllOtherPropertiesAreTheSame_emptyVersion() {
-    comparator = compareBy(capabilities("firefox", "", Platform.ANY, true));
-
-    Capabilities c1 = capabilities("firefox", "", Platform.ANY, true);
-    Capabilities c2 = capabilities("firefox", "6", Platform.ANY, true);
-    Capabilities c3 = capabilities("firefox", null, Platform.ANY, true);
+    Capabilities c1 = capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true);
+    Capabilities c2 = capabilities(BrowserType.FIREFOX, "7", Platform.ANY, true);
+    Capabilities c3 = capabilities(BrowserType.FIREFOX, null, Platform.ANY, true);
 
     assertGreaterThan(c1, c2);
     assertGreaterThan(c1, c3);
-  }
-
-  @Test
-  public void shouldMatchByVersion_assumingAllOtherPropertiesAreTheSame_nullVersion() {
-    comparator = compareBy(capabilities("firefox", null, Platform.ANY, true));
-
-    Capabilities c1 = capabilities("firefox", null, Platform.ANY, true);
-    Capabilities c2 = capabilities("firefox", "", Platform.ANY, true);
-    Capabilities c3 = capabilities("firefox", "6", Platform.ANY, true);
-
-    assertEquals(0, comparator.compare(c1, c2));
-    assertEquals(0, comparator.compare(c2, c1));
-    assertEquals(0, comparator.compare(c1, c3));
-    assertEquals(0, comparator.compare(c3, c1));
   }
 
   @Test
   public void shouldMatchByPlatform_assumingAllOtherPropertiesAreTheSame() {
-    comparator = compareBy(capabilities("firefox", "6", Platform.ANY, true));
+    comparator = compareBy(capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true));
 
-    Capabilities c1 = capabilities("firefox", "6", Platform.ANY, true);
-    Capabilities c2 = capabilities("firefox", "6", Platform.LINUX, true);
+    Capabilities c1 = capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true);
+    Capabilities c2 = capabilities(BrowserType.FIREFOX, "6", Platform.LINUX, true);
 
     assertGreaterThan(c1, c2);
   }
 
   @Test
   public void shouldPreferCurrentPlatformOverOthers() {
-    comparator = compareBy(capabilities("firefox", "6", Platform.ANY, true), Platform.LINUX);
+    comparator = compareBy(capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true), Platform.LINUX);
 
-    Capabilities c1 = capabilities("firefox", "6", Platform.ANY, true);
-    Capabilities c2 = capabilities("firefox", "6", Platform.LINUX, true);
-    Capabilities c3 = capabilities("firefox", "6", Platform.WINDOWS, true);
+    Capabilities c1 = capabilities(BrowserType.FIREFOX, "6", Platform.ANY, true);
+    Capabilities c2 = capabilities(BrowserType.FIREFOX, "6", Platform.LINUX, true);
+    Capabilities c3 = capabilities(BrowserType.FIREFOX, "6", Platform.WINDOWS, true);
 
     assertGreaterThan(c2, c1);
     assertGreaterThan(c2, c3);
@@ -141,21 +115,21 @@ public class CapabilitiesComparatorTest {
 
     DesiredCapabilities desired = new DesiredCapabilities();
 
-    desired.setBrowserName("chrome");
+    desired.setBrowserName(BrowserType.CHROME);
     assertThat(getBestMatch(desired, list), equalTo(chrome));
 
-    desired.setBrowserName("firefox");
+    desired.setBrowserName(BrowserType.FIREFOX);
     assertThat(getBestMatch(desired, list), equalTo(firefox));
 
-    desired.setBrowserName("opera");
+    desired.setBrowserName(BrowserType.OPERA);
     assertThat(getBestMatch(desired, list), equalTo(opera));
   }
 
   @Test
   public void shouldPickAnyIfPlatformChoicesAreAnyOrWindowsAndDesireLinux() {
-    Capabilities any = capabilities("firefox", "", Platform.ANY, true);
-    Capabilities windows = capabilities("firefox", "", Platform.WINDOWS, true);
-    Capabilities linux = capabilities("firefox", "", Platform.LINUX, true);
+    Capabilities any = capabilities(BrowserType.FIREFOX, "", Platform.ANY, true);
+    Capabilities windows = capabilities(BrowserType.FIREFOX, "", Platform.WINDOWS, true);
+    Capabilities linux = capabilities(BrowserType.FIREFOX, "", Platform.LINUX, true);
 
     assertThat(getBestMatch(linux, Lists.newArrayList(any, windows)), equalTo(any));
     // Registration order should not matter.
@@ -164,17 +138,17 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void shouldPickWindowsIfPlatformChoiceIsAny() {
-    Capabilities any = capabilities("internet explorer", "", Platform.ANY, true);
-    Capabilities windows = capabilities("internet explorer", "", Platform.WINDOWS, true);
+    Capabilities any = capabilities(BrowserType.IE, "", Platform.ANY, true);
+    Capabilities windows = capabilities(BrowserType.IE, "", Platform.WINDOWS, true);
     assertThat(getBestMatch(any, Lists.newArrayList(windows)), equalTo(windows));
   }
 
   @Test
   public void shouldPickMostSpecificOperatingSystem() {
-    Capabilities any = capabilities("internet explorer", "", Platform.ANY, true);
-    Capabilities windows = capabilities("internet explorer", "", Platform.WINDOWS, true);
-    Capabilities xp = capabilities("internet explorer", "", Platform.XP, true);
-    Capabilities vista = capabilities("internet explorer", "", Platform.VISTA, true);
+    Capabilities any = capabilities(BrowserType.IE, "", Platform.ANY, true);
+    Capabilities windows = capabilities(BrowserType.IE, "", Platform.WINDOWS, true);
+    Capabilities xp = capabilities(BrowserType.IE, "", Platform.XP, true);
+    Capabilities vista = capabilities(BrowserType.IE, "", Platform.VISTA, true);
 
     List<Capabilities> list = newArrayList(any, windows, xp, vista);
     assertThat(getBestMatch(any, list), equalTo(any));
@@ -185,10 +159,10 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void pickingWindowsFromVariousLists() {
-    Capabilities any = capabilities("internet explorer", "", Platform.ANY, true);
-    Capabilities windows = capabilities("internet explorer", "", Platform.WINDOWS, true);
-    Capabilities xp = capabilities("internet explorer", "", Platform.XP, true);
-    Capabilities vista = capabilities("internet explorer", "", Platform.VISTA, true);
+    Capabilities any = capabilities(BrowserType.IE, "", Platform.ANY, true);
+    Capabilities windows = capabilities(BrowserType.IE, "", Platform.WINDOWS, true);
+    Capabilities xp = capabilities(BrowserType.IE, "", Platform.XP, true);
+    Capabilities vista = capabilities(BrowserType.IE, "", Platform.VISTA, true);
 
     assertThat(getBestMatch(windows, newArrayList(any)), equalTo(any));
     assertThat(getBestMatch(windows, newArrayList(any, windows)), equalTo(windows));
@@ -201,10 +175,10 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void pickingXpFromVariousLists() {
-    Capabilities any = capabilities("internet explorer", "", Platform.ANY, true);
-    Capabilities windows = capabilities("internet explorer", "", Platform.WINDOWS, true);
-    Capabilities xp = capabilities("internet explorer", "", Platform.XP, true);
-    Capabilities vista = capabilities("internet explorer", "", Platform.VISTA, true);
+    Capabilities any = capabilities(BrowserType.IE, "", Platform.ANY, true);
+    Capabilities windows = capabilities(BrowserType.IE, "", Platform.WINDOWS, true);
+    Capabilities xp = capabilities(BrowserType.IE, "", Platform.XP, true);
+    Capabilities vista = capabilities(BrowserType.IE, "", Platform.VISTA, true);
 
     assertThat(getBestMatch(xp, newArrayList(any)), equalTo(any));
     assertThat(getBestMatch(xp, newArrayList(any, windows)), equalTo(windows));
@@ -217,10 +191,10 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void pickingVistaFromVariousLists() {
-    Capabilities any = capabilities("internet explorer", "", Platform.ANY, true);
-    Capabilities windows = capabilities("internet explorer", "", Platform.WINDOWS, true);
-    Capabilities xp = capabilities("internet explorer", "", Platform.XP, true);
-    Capabilities vista = capabilities("internet explorer", "", Platform.VISTA, true);
+    Capabilities any = capabilities(BrowserType.IE, "", Platform.ANY, true);
+    Capabilities windows = capabilities(BrowserType.IE, "", Platform.WINDOWS, true);
+    Capabilities xp = capabilities(BrowserType.IE, "", Platform.XP, true);
+    Capabilities vista = capabilities(BrowserType.IE, "", Platform.VISTA, true);
 
     Platform current = Platform.WINDOWS;
     assertThat(getBestMatch(vista, newArrayList(any), current), equalTo(any));
@@ -254,10 +228,10 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void pickingUnixFromVariousLists() {
-    Capabilities any = capabilities("firefox", "", Platform.ANY, true);
-    Capabilities mac = capabilities("firefox", "", Platform.MAC, true);
-    Capabilities unix = capabilities("firefox", "", Platform.UNIX, true);
-    Capabilities linux = capabilities("firefox", "", Platform.LINUX, true);
+    Capabilities any = capabilities(BrowserType.FIREFOX, "", Platform.ANY, true);
+    Capabilities mac = capabilities(BrowserType.FIREFOX, "", Platform.MAC, true);
+    Capabilities unix = capabilities(BrowserType.FIREFOX, "", Platform.UNIX, true);
+    Capabilities linux = capabilities(BrowserType.FIREFOX, "", Platform.LINUX, true);
 
     assertThat(getBestMatch(unix, newArrayList(any)), equalTo(any));
     assertThat(getBestMatch(unix, newArrayList(any, mac)), equalTo(any));
@@ -269,10 +243,10 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void pickingLinuxFromVariousLists() {
-    Capabilities any = capabilities("firefox", "", Platform.ANY, true);
-    Capabilities mac = capabilities("firefox", "", Platform.MAC, true);
-    Capabilities unix = capabilities("firefox", "", Platform.UNIX, true);
-    Capabilities linux = capabilities("firefox", "", Platform.LINUX, true);
+    Capabilities any = capabilities(BrowserType.FIREFOX, "", Platform.ANY, true);
+    Capabilities mac = capabilities(BrowserType.FIREFOX, "", Platform.MAC, true);
+    Capabilities unix = capabilities(BrowserType.FIREFOX, "", Platform.UNIX, true);
+    Capabilities linux = capabilities(BrowserType.FIREFOX, "", Platform.LINUX, true);
 
     assertThat(getBestMatch(linux, newArrayList(any)), equalTo(any));
     assertThat(getBestMatch(linux, newArrayList(any, mac)), equalTo(any));
@@ -286,23 +260,23 @@ public class CapabilitiesComparatorTest {
   @Test
   public void matchesByCapabilitiesProvided() {
     DesiredCapabilities sparse = new DesiredCapabilities();
-    sparse.setBrowserName("firefox");
+    sparse.setBrowserName(BrowserType.FIREFOX);
 
-    Capabilities windows = capabilities("internet explorer", "", Platform.WINDOWS, true);
-    Capabilities firefox = capabilities("firefox", "", Platform.WINDOWS, true);
+    Capabilities windows = capabilities(BrowserType.IE, "", Platform.WINDOWS, true);
+    Capabilities firefox = capabilities(BrowserType.FIREFOX, "", Platform.WINDOWS, true);
 
     assertThat(getBestMatch(sparse, Lists.newArrayList(windows, firefox)),
         equalTo(firefox));
 
-    sparse.setBrowserName("internet explorer");
+    sparse.setBrowserName(BrowserType.IE);
     assertThat(getBestMatch(sparse, Lists.newArrayList(windows, firefox)),
         equalTo(windows));
   }
 
   @Test
   public void matchesWithPreferenceToCurrentPlatform() {
-    Capabilities chromeUnix = capabilities("chrome", "", Platform.UNIX, true);
-    Capabilities chromeVista = capabilities("chrome", "", Platform.VISTA, true);
+    Capabilities chromeUnix = capabilities(BrowserType.CHROME, "", Platform.UNIX, true);
+    Capabilities chromeVista = capabilities(BrowserType.CHROME, "", Platform.VISTA, true);
     Capabilities anyChrome = DesiredCapabilities.chrome();
 
     List<Capabilities> allCaps = newArrayList(anyChrome, chromeVista, chromeUnix,
@@ -329,8 +303,8 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void currentPlatformCheckDoesNotTrumpExactPlatformMatch() {
-    Capabilities chromeUnix = capabilities("chrome", "", Platform.UNIX, true);
-    Capabilities chromeVista = capabilities("chrome", "", Platform.VISTA, true);
+    Capabilities chromeUnix = capabilities(BrowserType.CHROME, "", Platform.UNIX, true);
+    Capabilities chromeVista = capabilities(BrowserType.CHROME, "", Platform.VISTA, true);
     Capabilities anyChrome = DesiredCapabilities.chrome();
 
     List<Capabilities> allCaps = newArrayList(anyChrome, chromeVista, chromeUnix);
@@ -346,9 +320,9 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void currentPlatformCheckDoesNotTrumpExactVersionMatch() {
-    Capabilities chromeUnix = capabilities("chrome", "", Platform.UNIX, true);
-    Capabilities chromeBetaUnix = capabilities("chrome", "beta", Platform.UNIX, true);
-    Capabilities chromeVista = capabilities("chrome", "", Platform.VISTA, true);
+    Capabilities chromeUnix = capabilities(BrowserType.CHROME, "", Platform.UNIX, true);
+    Capabilities chromeBetaUnix = capabilities(BrowserType.CHROME, "beta", Platform.UNIX, true);
+    Capabilities chromeVista = capabilities(BrowserType.CHROME, "", Platform.VISTA, true);
     Capabilities anyChrome = DesiredCapabilities.chrome();
 
     List<Capabilities> allCaps = newArrayList(anyChrome, chromeVista, chromeUnix, chromeBetaUnix);
@@ -359,8 +333,8 @@ public class CapabilitiesComparatorTest {
 
   @Test
   public void absentExactMatchPrefersItemsInInputOrder() {
-    Capabilities chromeWindows = capabilities("chrome", "", Platform.WINDOWS, true);
-    Capabilities chromeVista = capabilities("chrome", "", Platform.VISTA, true);
+    Capabilities chromeWindows = capabilities(BrowserType.CHROME, "", Platform.WINDOWS, true);
+    Capabilities chromeVista = capabilities(BrowserType.CHROME, "", Platform.VISTA, true);
     Capabilities anyChrome = DesiredCapabilities.chrome();
 
     List<Capabilities> allCaps = newArrayList(chromeWindows, chromeVista);
@@ -368,6 +342,38 @@ public class CapabilitiesComparatorTest {
 
     assertThat(getBestMatch(anyChrome, allCaps, Platform.UNIX), equalTo(chromeWindows));
     assertThat(getBestMatch(anyChrome, reversedCaps, Platform.UNIX), equalTo(chromeVista));
+  }
+
+  @Test
+  public void filtersByVersionStringIfNonEmpty() {
+    Capabilities anyChrome = DesiredCapabilities.chrome();
+    Capabilities chromeBeta = new DesiredCapabilities(anyChrome) {{ setVersion("beta"); }};
+    Capabilities chromeDev = new DesiredCapabilities(anyChrome) {{ setVersion("dev"); }};
+
+    List<Capabilities> allCaps = newArrayList(anyChrome, chromeBeta, chromeDev);
+
+    assertThat(getBestMatch(anyChrome, allCaps), equalTo(anyChrome));
+    assertThat(getBestMatch(chromeBeta, allCaps), equalTo(chromeBeta));
+    assertThat(getBestMatch(chromeDev, allCaps), equalTo(chromeDev));
+  }
+
+  @Test
+  public void ignoresVersionStringIfEmpty() {
+    Capabilities anyChrome = DesiredCapabilities.chrome();
+    Capabilities chromeNoVersion = new DesiredCapabilities() {{
+      setBrowserName(BrowserType.CHROME);
+      setPlatform(Platform.UNIX);
+    }};
+    Capabilities chromeEmptyVersion = new DesiredCapabilities(chromeNoVersion) {{
+      setVersion("");
+    }};
+
+    List<Capabilities> allCaps = newArrayList(anyChrome, chromeNoVersion);
+
+    assertThat(getBestMatch(chromeEmptyVersion, allCaps, Platform.UNIX), equalTo(chromeNoVersion));
+    assertThat(getBestMatch(chromeNoVersion, allCaps, Platform.UNIX), equalTo(chromeNoVersion));
+    // Unix does not match windows.
+    assertThat(getBestMatch(anyChrome, allCaps, Platform.WINDOWS), equalTo(anyChrome));
   }
 
   private void assertGreaterThan(Capabilities a, Capabilities b) {

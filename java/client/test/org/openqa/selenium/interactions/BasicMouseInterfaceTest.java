@@ -48,7 +48,6 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox30;
@@ -100,7 +99,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, SELENESE})
+  @Ignore({ANDROID, IPHONE})
   @Test
   public void testDraggingElementWithMouseMovesItToAnotherList() {
     performDragAndDropWithMouse();
@@ -110,7 +109,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Ignore(
-      value = {HTMLUNIT, ANDROID, IPHONE, SELENESE},
+      value = {HTMLUNIT, ANDROID, IPHONE},
       reason = "Advanced mouse actions only implemented in rendered browsers")
   // This test is very similar to testDraggingElementWithMouse. The only
   // difference is that this test also verifies the correct events were fired.
@@ -134,7 +133,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, SELENESE})
+  @Ignore({ANDROID, IPHONE})
   @Test
   public void testDoubleClickThenGet() {
     // Fails in ff3 if WebLoadingListener removes browser listener
@@ -149,7 +148,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, SELENESE})
+  @Ignore({ANDROID, IPHONE})
   @Test
   public void testDragAndDrop() throws InterruptedException {
     driver.get(pages.droppableItems);
@@ -186,7 +185,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, OPERA, SELENESE})
+  @Ignore({ANDROID, IPHONE, OPERA})
   @Test
   public void testDoubleClick() {
     driver.get(pages.javascriptPage);
@@ -203,7 +202,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, HTMLUNIT, IPHONE, SELENESE})
+  @Ignore({ANDROID, HTMLUNIT, IPHONE})
   @Test
   public void testContextClick() {
     driver.get(pages.javascriptPage);
@@ -218,7 +217,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, SELENESE})
+  @Ignore({ANDROID, IPHONE})
   @Test
   public void testMoveAndClick() {
     driver.get(pages.javascriptPage);
@@ -236,7 +235,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, CHROME, IE, IPHONE, SELENESE, FIREFOX})
+  @Ignore({ANDROID, CHROME, IE, IPHONE, FIREFOX})
   @Test
   public void testCannotMoveToANullLocator() {
     driver.get(pages.javascriptPage);
@@ -252,7 +251,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, CHROME, IE, IPHONE, SELENESE, FIREFOX, OPERA, HTMLUNIT, OPERA_MOBILE, QTWEBKIT})
+  @Ignore({ANDROID, CHROME, IE, IPHONE, FIREFOX, OPERA, HTMLUNIT, OPERA_MOBILE, QTWEBKIT})
   @Test
   public void testMousePositionIsNotPreservedInActionsChain() {
     driver.get(pages.javascriptPage);
@@ -270,7 +269,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     }
   }
 
-  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, REMOTE, SELENESE, FIREFOX, OPERA, QTWEBKIT},
+  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, REMOTE, FIREFOX, OPERA, QTWEBKIT},
           reason = "Behaviour not finalized yet regarding linked images.")
   @Test
   public void testMovingIntoAnImageEnclosedInALink() {
@@ -296,6 +295,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     waitFor(pageTitleToBe(driver, "We Arrive Here"));
   }
 
+  @SuppressWarnings("unchecked")
   private Map<String, Object> getElementSize(WebElement element) {
     return (Map<String, Object>) ((JavascriptExecutor) driver).executeScript(
         "return arguments[0].getBoundingClientRect()", element);
@@ -313,7 +313,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     return (int) Double.parseDouble(sizeRect.get(fieldName).toString());
   }
 
-  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, SELENESE, CHROME, QTWEBKIT},
+  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME, QTWEBKIT},
           reason = "Not implemented yet.")
   @Test
   public void testMovingMousePastViewPort() {
@@ -352,7 +352,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     waitFor(elementTextToContain(resultArea, "parent matches"));
   }
 
-  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, SELENESE, CHROME, OPERA, OPERA_MOBILE, QTWEBKIT},
+  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME, OPERA, OPERA_MOBILE, QTWEBKIT},
           reason = "Not implemented yet.")
   @Test
   public void testMovingMouseBackAndForthPastViewPort() {
@@ -388,7 +388,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(resultArea, expectedEvents));
   }
 
-  @Ignore({ANDROID, IPHONE, SELENESE, OPERA, OPERA_MOBILE})
+  @Ignore({ANDROID, IPHONE, OPERA, OPERA_MOBILE})
   @Test
   public void testShouldClickElementInIFrame() {
     driver.get(pages.clicksPage);

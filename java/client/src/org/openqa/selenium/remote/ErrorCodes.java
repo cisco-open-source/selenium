@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.openqa.selenium.remote;
 
+import com.google.common.collect.ImmutableMap;
+import org.openqa.selenium.Beta;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.ImeActivationFailedException;
 import org.openqa.selenium.ImeNotAvailableException;
@@ -35,9 +37,10 @@ import org.openqa.selenium.UnableToSetCookieException;
 import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.UnsupportedCommandException;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.XPathLookupException;
 import org.openqa.selenium.interactions.InvalidCoordinatesException;
 import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
+
+import java.util.Map;
 
 /**
  * Defines common error codes for the wire protocol.
@@ -49,6 +52,8 @@ public class ErrorCodes {
   // These codes were all pulled from ChromeCommandExecutor and seem all over the place.
   // TODO(jmleyba): Clean up error codes?
 
+  @Beta
+  public static final String SUCCESS_STRING = "success";
   public static final int SUCCESS = 0;
   public static final int NO_SUCH_SESSION = 6;
   public static final int NO_SUCH_ELEMENT = 7;
@@ -74,11 +79,42 @@ public class ErrorCodes {
   public static final int INVALID_SELECTOR_ERROR = 32;
   public static final int SESSION_NOT_CREATED = 33;
   public static final int MOVE_TARGET_OUT_OF_BOUNDS = 34;
-  public static final int SQL_DATABASE_ERROR = 35;
   public static final int INVALID_XPATH_SELECTOR = 51;
   public static final int INVALID_XPATH_SELECTOR_RETURN_TYPER = 52;
   // The following error codes are derived straight from HTTP return codes.
   public static final int METHOD_NOT_ALLOWED = 405;
+
+  // TODO(simon): Convert the strings to constants. Sadly the constant names
+  // will be the ones used by the ints now. *sigh*
+  private static Map<Integer, String> statusToState = ImmutableMap.<Integer, String>builder()
+      .put(ASYNC_SCRIPT_TIMEOUT, "async script timeout")
+      .put(ELEMENT_NOT_SELECTABLE, "element not selectable")
+      .put(ELEMENT_NOT_VISIBLE, "element not visible")
+      .put(IME_ENGINE_ACTIVATION_FAILED, "ime engine activation failed")
+      .put(IME_NOT_AVAILABLE, "ime not available")
+      .put(INVALID_COOKIE_DOMAIN, "invalid cookie domain")
+      .put(INVALID_ELEMENT_COORDINATES, "invalid element coordinates")
+      .put(INVALID_ELEMENT_STATE, "invalid element state")
+      .put(INVALID_SELECTOR_ERROR, "invalid selector")
+      .put(INVALID_XPATH_SELECTOR, "invalid selector")
+      .put(INVALID_XPATH_SELECTOR_RETURN_TYPER, "invalid selector")
+      .put(JAVASCRIPT_ERROR, "javascript error")
+      .put(METHOD_NOT_ALLOWED, "method not allowed")
+      .put(MOVE_TARGET_OUT_OF_BOUNDS, "move target out of bounds")
+      .put(NO_SUCH_ELEMENT, "no such element")
+      .put(NO_SUCH_FRAME, "no such frame")
+      .put(NO_SUCH_SESSION, "no such session")
+      .put(NO_SUCH_WINDOW, "no such window")
+      .put(SESSION_NOT_CREATED, "session not created")
+      .put(STALE_ELEMENT_REFERENCE, "stale element reference")
+      .put(SUCCESS, "success")
+      .put(TIMEOUT, "timeout")
+      .put(UNABLE_TO_SET_COOKIE, "unable to set cookie")
+      .put(UNEXPECTED_ALERT_PRESENT, "no such alert") // @Beta: not sure if this is the right name
+      .put(UNHANDLED_ERROR, "unhandled error")
+      .put(UNKNOWN_COMMAND, "unknown command")
+      .put(XPATH_LOOKUP_ERROR, "invalid selector")
+      .build();
 
   /**
    * Returns the exception type that corresponds to the given {@code statusCode}. All unrecognized
@@ -105,6 +141,7 @@ public class ErrorCodes {
       case INVALID_SELECTOR_ERROR:
       case INVALID_XPATH_SELECTOR:
       case INVALID_XPATH_SELECTOR_RETURN_TYPER:
+      case XPATH_LOOKUP_ERROR:
         return InvalidSelectorException.class;
       case MOVE_TARGET_OUT_OF_BOUNDS:
         return MoveTargetOutOfBoundsException.class;
@@ -120,8 +157,6 @@ public class ErrorCodes {
       case ELEMENT_NOT_SELECTABLE:
       case INVALID_ELEMENT_STATE:
         return InvalidElementStateException.class;
-      case XPATH_LOOKUP_ERROR:
-        return XPathLookupException.class;
       case ASYNC_SCRIPT_TIMEOUT:
       case TIMEOUT:
         return TimeoutException.class;
@@ -185,8 +220,6 @@ public class ErrorCodes {
       return UNABLE_TO_SET_COOKIE;
     } else if (thrown instanceof UnhandledAlertException) {
       return UNEXPECTED_ALERT_PRESENT;
-    } else if (thrown instanceof XPathLookupException) {
-      return XPATH_LOOKUP_ERROR;
     } else {
       return UNHANDLED_ERROR;
     }
@@ -201,5 +234,10 @@ public class ErrorCodes {
   public boolean isMappableError(Throwable thrown) {
     int statusCode = toStatusCode(thrown);
     return statusCode != SUCCESS && statusCode != UNHANDLED_ERROR;
+  }
+
+  @Beta
+  public String toState(int status) {
+    return statusToState.get(status);
   }
 }

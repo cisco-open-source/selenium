@@ -48,6 +48,6 @@ public class CoordinatesTest extends JUnit4TestBase {
 
     private Point getLocationOnScreen(By locator) {
         WebElement element = driver.findElement(locator);
-        return ((Locatable) element).getCoordinates().getLocationOnScreen();
+        return ((Locatable) element).getCoordinates().onScreen();
     }
 }

@@ -17,24 +17,11 @@ limitations under the License.
 
 package org.openqa.grid.web;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Map;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.servlet.Servlet;
-
 import com.google.common.collect.Maps;
 
 import org.openqa.grid.internal.Registry;
 import org.openqa.grid.internal.utils.GridHubConfiguration;
-import org.openqa.grid.web.servlet.ConsoleServlet;
+import org.openqa.grid.web.servlet.beta.ConsoleServlet;
 import org.openqa.grid.web.servlet.DisplayHelpServlet;
 import org.openqa.grid.web.servlet.DriverServlet;
 import org.openqa.grid.web.servlet.Grid1HeartbeatServlet;
@@ -45,12 +32,17 @@ import org.openqa.grid.web.servlet.RegistrationServlet;
 import org.openqa.grid.web.servlet.ResourceServlet;
 import org.openqa.grid.web.servlet.TestSessionStatusServlet;
 import org.openqa.grid.web.utils.ExtraServletUtil;
+import org.openqa.selenium.net.NetworkUtils;
 import org.seleniumhq.jetty7.server.Server;
 import org.seleniumhq.jetty7.server.bio.SocketConnector;
 import org.seleniumhq.jetty7.servlet.ServletContextHandler;
-import org.openqa.selenium.net.NetworkUtils;
-import org.openqa.selenium.server.RemoteControlConfiguration;
-import org.openqa.selenium.server.log.TerseFormatter;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.servlet.Servlet;
 
 /**
  * Jetty server. Main entry point for everything about the grid. <p/> Except for unit tests, this
@@ -81,32 +73,6 @@ public class Hub {
   }
 
   public Hub(GridHubConfiguration config) {
-    Level logLevel = config.isDebug() ? Level.FINE : Level.INFO;
-    Logger.getLogger("").setLevel(logLevel);
-
-    for (Handler handler : Logger.getLogger("").getHandlers()) {
-      Logger.getLogger("").removeHandler(handler);
-    }
-
-    String logFilename =
-        config.getLogFilename() == null
-        ? RemoteControlConfiguration.getDefaultLogOutFile()
-        : config.getLogFilename();
-    if (logFilename != null) {
-      try {
-        Handler logFile = new FileHandler(new File(logFilename).getAbsolutePath(), true);
-        logFile.setFormatter(new TerseFormatter(true));
-        logFile.setLevel(logLevel);
-        Logger.getLogger("").addHandler(logFile);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      Handler console = new ConsoleHandler();
-      console.setLevel(logLevel);
-      Logger.getLogger("").addHandler(console);
-    }
-
     registry = Registry.newInstance(this, config);
 
     if (config.getHost() != null) {
@@ -147,8 +113,8 @@ public class Hub {
       root.addServlet(DisplayHelpServlet.class.getName(), "/*");
 
       root.addServlet(ConsoleServlet.class.getName(), "/grid/console/*");
-      root.addServlet(org.openqa.grid.web.servlet.beta.ConsoleServlet.class.getName(),
-                      "/grid/beta/console/*");
+      root.addServlet(ConsoleServlet.class.getName(), "/grid/beta/console/*");
+      root.addServlet(org.openqa.grid.web.servlet.ConsoleServlet.class.getName(), "/grid/old/console/*");
       root.addServlet(RegistrationServlet.class.getName(), "/grid/register/*");
       // TODO remove at some point. Here for backward compatibility of
       // tests etc.

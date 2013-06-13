@@ -407,8 +407,4 @@ public class AndroidWebElement implements WebElement,
     }
     return coordinates;
   }
-
-  public Point getLocationOnScreenOnceScrolledIntoView() {
-    return getLocation();
-  }
 }

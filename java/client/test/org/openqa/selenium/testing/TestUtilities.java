@@ -21,10 +21,13 @@ import static org.junit.Assume.assumeTrue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Before;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.HasCapabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.testing.drivers.SauceDriver;
 
@@ -52,15 +55,23 @@ public class TestUtilities {
   }
 
   public static boolean isFirefox(WebDriver driver) {
-    return getUserAgent(driver).contains("Firefox");
+    return !(driver instanceof HtmlUnitDriver)
+        && getUserAgent(driver).contains("Firefox");
   }
 
   public static boolean isInternetExplorer(WebDriver driver) {
-    return getUserAgent(driver).contains("MSIE");
+    return !(driver instanceof HtmlUnitDriver)
+        && getUserAgent(driver).contains("MSIE");
   }
 
   public static boolean isIe6(WebDriver driver) {
-    return getUserAgent(driver).contains("MSIE 6");
+    return isInternetExplorer(driver)
+        && getUserAgent(driver).contains("MSIE 6");
+  }
+
+  public static boolean isIe7(WebDriver driver) {
+    return isInternetExplorer(driver)
+           && getUserAgent(driver).contains("MSIE 7");
   }
 
   public static boolean isOldIe(WebDriver driver) {
@@ -74,17 +85,48 @@ public class TestUtilities {
   }
 
   public  static boolean isFirefox30(WebDriver driver) {
-    return getUserAgent(driver).contains("Firefox/3.0.");
+    return isFirefox(driver)
+        && getUserAgent(driver).contains("Firefox/3.0.");
   }
 
   public static boolean isFirefox35(WebDriver driver) {
-    return getUserAgent(driver).contains("Firefox/3.5.");
+    return isFirefox(driver)
+        && getUserAgent(driver).contains("Firefox/3.5.");
   }
 
   public static boolean isFirefox9(WebDriver driver) {
-    return getUserAgent(driver).contains("Firefox/9.0");
+    return isFirefox(driver)
+        && getUserAgent(driver).contains("Firefox/9.0");
   }
-  
+
+  public static boolean isChrome(WebDriver driver) {
+    return !(driver instanceof HtmlUnitDriver)
+        && getUserAgent(driver).contains("Chrome");
+  }
+
+  public static boolean isOldChromedriver(WebDriver driver) {
+    Capabilities caps;
+    try {
+      caps = ((HasCapabilities) driver).getCapabilities();
+    } catch (ClassCastException e) {
+      // Driver does not support capabilities -- not a chromedriver at all.
+      return false;
+    }
+    String chromedriverVersion = (String) caps.getCapability("chrome.chromedriverVersion");
+    if (chromedriverVersion != null) {
+      String[] versionMajorMinor = chromedriverVersion.split("\\.", 2);
+      if (versionMajorMinor.length > 1) {
+        try {
+          return 20 < Long.parseLong(versionMajorMinor[0]);
+        } catch (NumberFormatException e) {
+          // First component of the version is not a number -- not a chromedriver.
+          return false;
+        }
+      }
+    }
+    return false;
+  }
+
   /**
    * Finds the Firefox version of the given webdriver and returns it as an integer. 
    * For instance, '14.0.1' will translate to 14.

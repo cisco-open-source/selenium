@@ -23,8 +23,7 @@ import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.Random;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,13 +35,12 @@ import static org.junit.Assert.fail;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementToExist;
 import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
+import static org.openqa.selenium.testing.Ignore.Driver.ALL;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
 public class FrameSwitchingTest extends JUnit4TestBase {
 
@@ -134,7 +132,6 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     assertThat(driver.findElement(By.tagName("body")).getText(), containsString("Page number 3"));
   }
 
-  @Ignore(value = {SELENESE}, reason = "switchTo().frame(WebElement) not supported with Selenium")
   @Test
   public void testShouldBeAbleToSwitchToAFrameUsingAPreviouslyLocatedWebElement() {
     driver.get(pages.framesetPage);
@@ -154,7 +151,6 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     assertThat(element.getAttribute("value"), equalTo("name"));
   }
 
-  @Ignore(value = {SELENESE}, reason = "switchTo().frame(WebElement) not supported with Selenium")
   @Test
   public void testShouldEnsureElementIsAFrameBeforeSwitching() {
     driver.get(pages.framesetPage);
@@ -328,6 +324,18 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     assertThat(getTextOfGreetingElement(), equalTo("Success!"));
   }
 
+  // See https://code.google.com/p/selenium/issues/detail?id=5237
+  @Ignore({OPERA, ANDROID, OPERA_MOBILE})
+  @JavascriptEnabled
+  @Test
+  public void testShouldBeAbleToClickInAFrameThatRewritesTopWindowLocation() {
+    driver.get(appServer.whereIs("click_tests/issue5237.html"));
+    driver.switchTo().frame("search");
+    driver.findElement(By.id("submit")).click();
+    driver.switchTo().defaultContent();
+    waitFor(pageTitleToBe(driver, "Google"));
+  }
+
   @Ignore({OPERA, ANDROID, OPERA_MOBILE})
   @Test
   public void testShouldBeAbleToClickInASubFrame() {
@@ -380,7 +388,7 @@ public class FrameSwitchingTest extends JUnit4TestBase {
   @Ignore(value = {ANDROID, OPERA, OPERA_MOBILE, PHANTOMJS})
   @JavascriptEnabled
   @Test
-  public void testShouldBeAbleToCarryOnWorkingIfTheFrameIsDeletedFromUnderUs() {
+  public void testShouldBeAbleToSwitchToTheTopIfTheFrameIsDeletedFromUnderUs() {
     driver.get(pages.deletingFrame);
 
     driver.switchTo().frame("iframe1");
@@ -404,7 +412,24 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     }
   }
 
-  @Ignore(value = {CHROME, SELENESE}, reason = "These drivers still return frame title.")
+  @Ignore(ALL)
+  @JavascriptEnabled
+  @Test
+  public void testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs() {
+    driver.get(pages.deletingFrame);
+
+    driver.switchTo().frame("iframe1");
+
+    WebElement killIframe = driver.findElement(By.id("killIframe"));
+    killIframe.click();
+    
+    try {
+      driver.findElement(By.id("killIframe")).click();
+      fail("NoSuchFrameException should be thrown");
+    } catch (NoSuchFrameException expected) {
+    }
+  }
+
   @Test
   public void testShouldReturnWindowTitleInAFrameset() {
     driver.get(pages.framesetPage);
@@ -421,6 +446,31 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     assertTrue((Boolean) executor.executeScript("return window == window.top"));
     driver.switchTo().frame("third");
     assertTrue((Boolean) executor.executeScript("return window != window.top"));
+  }
+
+  @Test
+  public void testShouldNotSwitchMagicallyToTheTopWindow() {
+    String baseUrl = appServer.whereIs("frame_switching_tests/");
+    driver.get(baseUrl + "bug4876.html");
+    driver.switchTo().frame(0);
+    waitFor(elementToExist(driver, "inputText"));
+
+    for (int i = 0; i < 20; i++) {
+      try {
+        WebElement input = driver.findElement(By.id("inputText"));
+        WebElement submit = driver.findElement(By.id("submitButton"));
+        input.clear();
+        input.sendKeys("rand" + new Random().nextInt());
+        submit.click();
+      } finally {
+        String url = driver.getCurrentUrl();
+        // IE6 and Chrome add "?"-symbol to the end of the URL
+        if (url.endsWith("?")) {
+          url = url.substring(0, url.length()-1);
+        }
+        assertEquals(baseUrl + "bug4876_iframe.html", url);
+      }
+    }
   }
 
   private void assertFrameNotPresent(WebDriver driver, String locator) {

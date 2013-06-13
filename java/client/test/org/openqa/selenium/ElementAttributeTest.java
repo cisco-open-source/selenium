@@ -26,7 +26,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,12 +35,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
 public class ElementAttributeTest extends JUnit4TestBase {
 
@@ -83,7 +81,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
     assertThat(body.getAttribute("style"), equalTo(""));
   }
 
-  @Ignore({CHROME, OPERA, IPHONE, ANDROID, SELENESE})
+  @Ignore({OPERA, IPHONE, ANDROID})
   @Test
   public void testShouldReturnTheValueOfTheDisabledAttributeAsNullIfNotSet() {
     driver.get(pages.formPage);
@@ -128,7 +126,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
     assertThat(disabledSubmitElement.isEnabled(), is(false));
   }
 
-  @Ignore(value = {IPHONE, SELENESE},
+  @Ignore(value = {IPHONE},
           reason = "sendKeys does not determine whether the element is disabled")
   @Test
   public void testShouldThrowExceptionIfSendingKeysToElementDisabledUsingRandomDisabledStrings() {
@@ -281,8 +279,6 @@ public class ElementAttributeTest extends JUnit4TestBase {
   }
 
   // This is a test-case re-creating issue 900.
-  @SuppressWarnings("unchecked")
-  @Ignore(SELENESE)
   @Test
   public void testShouldReturnValueOfOnClickAttribute() {
     driver.get(pages.javascriptPage);
@@ -338,7 +334,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
     assertEquals("hello world", element.getAttribute("value"));
   }
 
-  @Ignore({CHROME, OPERA, IPHONE, ANDROID, SELENESE})
+  @Ignore({OPERA, IPHONE, ANDROID})
   @Test
   public void testShouldReturnNullForNonPresentBooleanAttributes() {
     driver.get(pages.booleanAttributes);
@@ -348,7 +344,7 @@ public class ElementAttributeTest extends JUnit4TestBase {
     assertNull(element2.getAttribute("nowrap"));
   }
 
-  @Ignore({IPHONE, ANDROID, SELENESE})
+  @Ignore({IPHONE, ANDROID})
   @Test
   public void testShouldReturnTrueForPresentBooleanAttributes() {
     driver.get(pages.booleanAttributes);

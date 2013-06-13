@@ -27,6 +27,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementTextToEqual;
@@ -34,21 +35,18 @@ import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox30;
 import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
+import static org.openqa.selenium.testing.TestUtilities.isOldIe;
 
-@Ignore(value = {HTMLUNIT, IE, OPERA, SELENESE, OPERA_MOBILE},
+@Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE},
         reason = "HtmlUnit: SVG interaction is only implemented in rendered browsers")
 public class SvgElementTest extends JUnit4TestBase {
 
-  @Before
-  public void checkSupportsCssSelectors() {
-    assumeTrue(driver instanceof FindsByCssSelector);
-  }
-
   @Test
   public void testShouldClickOnGraphVisualElements() {
+    assumeFalse("IE version < 9 doesn't support SVG", isOldIe(driver));
+
     driver.get(pages.svgPage);
     WebElement svg = driver.findElement(By.cssSelector("svg"));
 
@@ -86,6 +84,8 @@ public class SvgElementTest extends JUnit4TestBase {
 
   @Test
   public void testShouldClickOnGraphTextElements() {
+    assumeFalse("IE version < 9 doesn't support SVG", isOldIe(driver));
+
     driver.get(pages.svgPage);
     WebElement svg = driver.findElement(By.cssSelector("svg"));
     List<WebElement> textElements = svg.findElements(By.cssSelector("text"));

@@ -24,6 +24,7 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
@@ -31,6 +32,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 import org.openqa.selenium.Build;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -43,12 +45,13 @@ import org.openqa.selenium.testing.DevMode;
 import org.openqa.selenium.testing.InProject;
 import org.openqa.selenium.testing.drivers.Browser;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
-import org.openqa.selenium.v1.SeleneseBackedWebDriver;
 import org.openqa.selenium.v1.SeleniumTestEnvironment;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import static com.thoughtworks.selenium.BrowserConfigurationOptions.MULTI_WINDOW;
@@ -61,9 +64,11 @@ public class InternalSelenseTestBase extends SeleneseTestBase {
   private static final ThreadLocal<Selenium> instance = new ThreadLocal<Selenium>();
   private static String seleniumServerUrl;
 
+  private static final AtomicBoolean mustBuild = new AtomicBoolean(true);
+
   @BeforeClass
   public static void buildJavascriptLibraries() throws IOException {
-    if (!DevMode.isInDevMode()) {
+    if (!DevMode.isInDevMode() || !mustBuild.compareAndSet(true, false)) {
       return;
     }
 
@@ -112,8 +117,7 @@ public class InternalSelenseTestBase extends SeleneseTestBase {
     seleniumServerUrl = env.getSeleniumServerUrl();
   }
 
-  @Rule
-  public TestRule traceMethodName = new TestWatcher() {
+  public TestWatcher traceMethodName = new TestWatcher() {
     @Override
     protected void starting(Description description) {
       super.starting(description);
@@ -149,10 +153,13 @@ public class InternalSelenseTestBase extends SeleneseTestBase {
       caps.setCapability("selenium.base.url", baseUrl);
       caps.setCapability("selenium.server.url", seleniumServerUrl);
 
-      WebDriver driver = new WebDriverBuilder().setDesiredCapabilities(caps).get();
-      if (driver instanceof SeleneseBackedWebDriver) {
-        selenium = ((SeleneseBackedWebDriver) driver).getWrappedSelenium();
+      if (Boolean.getBoolean("selenium.browser.selenium")) {
+        URL serverUrl = new URL(seleniumServerUrl);
+        selenium = new DefaultSelenium(serverUrl.getHost(), serverUrl.getPort(), determineBrowserName(), baseUrl);
+        selenium.start();
+
       } else {
+        WebDriver driver = new WebDriverBuilder().setDesiredCapabilities(caps).get();
         selenium = new WebDriverBackedSelenium(driver, baseUrl);
       }
 
@@ -160,6 +167,37 @@ public class InternalSelenseTestBase extends SeleneseTestBase {
       instance.set(selenium);
     }
   };
+
+  private String determineBrowserName() {
+    String property = System.getProperty("selenium.browser");
+    if (property == null) {
+      return "*chrome";  // Default to firefox
+    }
+
+    if (property.startsWith("*")) {
+      return property;
+    }
+
+    Browser browser = Browser.valueOf(property);
+    switch (browser) {
+      case chrome:
+        return "*googlechrome";
+
+      case ie:
+        return "*iexplore";
+
+      case ff:
+        return "*firefox";
+
+      case safari:
+        return "*safari";
+
+      default:
+        fail("Attempt to use an unsupported browser: " + property);
+    }
+
+    return null; // we never get here.
+  }
 
   public ExternalResource addNecessaryJavascriptCommands = new ExternalResource() {
     @Override
@@ -203,11 +241,26 @@ public class InternalSelenseTestBase extends SeleneseTestBase {
     }
   };
 
+  public TestWatcher filter = new TestWatcher() {
+    @Override
+    public Statement apply(Statement base, Description description) {
+      String onlyRun = System.getProperty("only_run");
+      Assume.assumeTrue(onlyRun == null ||
+          Arrays.asList(onlyRun.split(",")).contains(description.getTestClass().getSimpleName()));
+      String mth = System.getProperty("method");
+      Assume.assumeTrue(mth == null ||
+          Arrays.asList(mth.split(",")).contains(description.getMethodName()));
+      return super.apply(base, description);
+    }
+  };
+
   @Rule
   public TestRule chain =
-      RuleChain.outerRule(initializeSelenium)
+      RuleChain.outerRule(filter)
+               .around(initializeSelenium)
                .around(returnFocusToMainWindow)
-               .around(addNecessaryJavascriptCommands);
+               .around(addNecessaryJavascriptCommands)
+               .around(traceMethodName);
 
   @After
   public void checkVerifications() {

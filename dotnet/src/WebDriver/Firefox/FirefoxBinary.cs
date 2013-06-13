@@ -44,7 +44,7 @@ namespace OpenQA.Selenium.Firefox
         private Dictionary<string, string> extraEnv = new Dictionary<string, string>();
         private Executable executable;
         private Process process;
-        private long timeoutInMilliseconds = 45000;
+        private TimeSpan timeout = TimeSpan.FromSeconds(45);
         private StreamReader stream; 
         #endregion
 
@@ -71,10 +71,20 @@ namespace OpenQA.Selenium.Firefox
         /// <summary>
         /// Gets or sets the timeout (in milliseconds) to wait for command execution.
         /// </summary>
+        [Obsolete("Timeouts should be expressed as a TimeSpan. Use the Timeout property instead")]
         public long TimeoutInMilliseconds
         {
-            get { return this.timeoutInMilliseconds; }
-            set { this.timeoutInMilliseconds = value; }
+            get { return Convert.ToInt64(this.Timeout.TotalMilliseconds); }
+            set { this.Timeout = TimeSpan.FromMilliseconds(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout to wait for Firefox to be available for command execution.
+        /// </summary>
+        public TimeSpan Timeout
+        {
+            get { return this.timeout; }
+            set { this.timeout = value; }
         }
 
         /// <summary>
@@ -166,7 +176,14 @@ namespace OpenQA.Selenium.Firefox
 
             foreach (string environmentVar in this.extraEnv.Keys)
             {
-                builder.StartInfo.EnvironmentVariables.Add(environmentVar, this.extraEnv[environmentVar]);
+                if (builder.StartInfo.EnvironmentVariables.ContainsKey(environmentVar))
+                {
+                    builder.StartInfo.EnvironmentVariables[environmentVar] = this.extraEnv[environmentVar];
+                }
+                else
+                {
+                    builder.StartInfo.EnvironmentVariables.Add(environmentVar, this.extraEnv[environmentVar]);
+                }
             }
 
             this.BinaryExecutable.SetLibraryPath(builder);

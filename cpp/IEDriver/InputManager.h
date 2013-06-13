@@ -21,6 +21,7 @@
 #include "keycodes.h"
 
 #define USER_INTERACTION_MUTEX_NAME L"WebDriverUserInteractionMutex"
+#define WAIT_TIME_IN_MILLISECONDS_PER_INPUT_EVENT 100
 
 using namespace std;
 
@@ -66,10 +67,10 @@ class InputManager {
     this->scroll_behavior_ = scroll_behavior;
   }
 
-  CComVariant keyboard_state(void) const { return this->keyboard_state_; }
+  VARIANT keyboard_state(void) const { return this->keyboard_state_; }
   void set_keyboard_state(VARIANT state) { this->keyboard_state_ = state; }
 
-  CComVariant mouse_state(void) const { return this->mouse_state_; }
+  VARIANT mouse_state(void) const { return this->mouse_state_; }
   void set_mouse_state(VARIANT state) { this->mouse_state_ = state; }
 
   long last_known_mouse_x(void) const { return this->last_known_mouse_x_; }
@@ -91,6 +92,11 @@ class InputManager {
   void AddMouseInput(HWND window_handle, long flag, int x, int y);
   void AddKeyboardInput(HWND window_handle, wchar_t character);
   
+  void InstallInputEventHooks(void);
+  void UninstallInputEventHooks(void);
+  HHOOK InstallWindowsHook(std::string hook_procedure_name, int hook_type);
+  bool WaitForInputEventProcessing(int input_count);
+
   bool use_native_events_;
   bool require_window_focus_;
   long last_known_mouse_x_;
@@ -108,6 +114,8 @@ class InputManager {
   ElementRepository* element_map_;
 
   std::vector<INPUT> inputs_;
+  HHOOK keyboard_hook_handle_;
+  HHOOK mouse_hook_handle_;
 };
 
 } // namespace webdriver

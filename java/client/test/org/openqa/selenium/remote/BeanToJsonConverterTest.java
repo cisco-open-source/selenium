@@ -107,10 +107,10 @@ public class BeanToJsonConverterTest {
   public void testShouldConvertNumbersAsLongs() throws Exception {
 
     String json = new BeanToJsonConverter().convert(new Exception());
-    Map map = new JsonToBeanConverter().convert(Map.class, json);
+    Map<?,?> map = new JsonToBeanConverter().convert(Map.class, json);
 
-    List stack = (List) map.get("stackTrace");
-    Map line = (Map) stack.get(0);
+    List<?> stack = (List<?>) map.get("stackTrace");
+    Map<?,?> line = (Map<?,?>) stack.get(0);
 
     Object o = line.get("lineNumber");
     assertTrue("line number is of type: " + o.getClass(), o instanceof Long);
@@ -377,7 +377,6 @@ public class BeanToJsonConverterTest {
     assertEquals("foo", object.get("message"));
     assertEquals(17, object.get("timestamp"));
     assertEquals("OFF", object.get("level"));
-    
   }
 
   @Test
@@ -424,7 +423,7 @@ public class BeanToJsonConverterTest {
   private static class BeanWithCollection {
 
     @SuppressWarnings("unused")
-    public Set getSomething() {
+    public Set<?> getSomething() {
       Set<Integer> integers = new HashSet<Integer>();
       integers.add(1);
       integers.add(43);
@@ -435,7 +434,7 @@ public class BeanToJsonConverterTest {
   private static class BeanWithNullCollection {
 
     @SuppressWarnings("unused")
-    public List getList() {
+    public List<?> getList() {
       return null;
     }
   }

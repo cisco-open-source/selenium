@@ -31,31 +31,19 @@ safaridriver.Tab = function(source) {
   goog.base(this, source);
   this.setLogger('safaridriver.Tab');
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.id_ = goog.string.getRandomString();
 
-  /**
-   * @type {boolean}
-   * @private
-   */
+  /** @private {boolean} */
   this.isReady_ = true;
 
-  /**
-   * @type {!Array.<function()>}
-   * @private
-   */
+  /** @private {!Array.<function()>} */
   this.readyListeners_ = [];
 };
 goog.inherits(safaridriver.Tab, safaridriver.message.MessageTarget);
 
 
-/**
- * @type {?number}
- * @private
- */
+/** @private {?number} */
 safaridriver.Tab.prototype.idleStateWaitKey_ = null;
 
 
@@ -99,7 +87,7 @@ safaridriver.Tab.prototype.whenReady = function(callback) {
  * Notifies the registered listeners that this tab is ready to continue.
  */
 safaridriver.Tab.prototype.notifyReady = function() {
-  this.log('Tab may be ready; waiting for idle state');
+  this.logConfig('Tab may be ready; waiting for idle state');
   var self = this;
   if (!self.idleStateWaitKey_) {
     self.idleStateWaitKey_ = setTimeout(function() {
@@ -108,7 +96,7 @@ safaridriver.Tab.prototype.notifyReady = function() {
       self.log('Tab looks ready; notifying listeners');
       while (self.readyListeners_.length) {
         if (!self.isReady_) {
-          self.log('Tab is no longer ready');
+          self.logConfig('Tab is no longer ready');
           return;
         }
         var callback = self.readyListeners_.shift();

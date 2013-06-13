@@ -226,14 +226,20 @@ this.options = {
           '        except NoSuchElementException, e: return False\n' +
           '        return True\n' +
           '    \n' +
+          '    def is_alert_present(self):\n' +
+          '        try: self.driver.switch_to_alert()\n' +
+          '        except NoAlertPresentException, e: return False\n' +
+          '        return True\n' +
+          '    \n' +
           '    def close_alert_and_get_its_text(self):\n' +
           '        try:\n' +
           '            alert = self.driver.switch_to_alert()\n' +
+          '            alert_text = alert.text\n' +
           '            if self.accept_next_alert:\n' +
           '                alert.accept()\n' +
           '            else:\n' +
           '                alert.dismiss()\n' +
-          '            return alert.text\n' +
+          '            return alert_text\n' +
           '        finally: self.accept_next_alert = True\n' +
           '    \n' +
           '    def tearDown(self):\n' +
@@ -362,7 +368,7 @@ WDAPI.Driver.prototype.chooseOkOnNextConfirmation = function() {
 };
 
 WDAPI.Driver.prototype.chooseCancelOnNextConfirmation = function() {
-  return "self.accept_next_alert = false";
+  return "self.accept_next_alert = False";
 };
 
 WDAPI.Driver.prototype.refresh = function() {
@@ -437,4 +443,8 @@ WDAPI.Utils = function() {
 
 WDAPI.Utils.isElementPresent = function(how, what) {
   return "self.is_element_present(" + WDAPI.Driver.searchContextArgs(how, what) + ")";
+};
+
+WDAPI.Utils.isAlertPresent = function() {
+  return "self.is_alert_present()";
 };

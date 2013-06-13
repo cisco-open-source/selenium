@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * Utility class for converting between JSON and Java Objects.
@@ -131,6 +132,10 @@ public class BeanToJsonConverter {
         toConvert instanceof CharSequence ||
         toConvert instanceof Number) {
       return toConvert;
+    }
+
+    if (toConvert instanceof Level) {
+      return toConvert.toString();
     }
 
     if (toConvert.getClass().isEnum() || toConvert instanceof Enum) {
@@ -239,7 +244,7 @@ public class BeanToJsonConverter {
   }
 
   private Object mapObject(Object toConvert, int maxDepth, boolean skipNulls) throws Exception {
-    if (maxDepth == 0) {
+    if (maxDepth < 1) {
       return null;
     }
 

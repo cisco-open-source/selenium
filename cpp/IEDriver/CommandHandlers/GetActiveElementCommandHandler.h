@@ -22,7 +22,7 @@ namespace webdriver {
 
 class GetActiveElementCommandHandler : public IECommandHandler {
  public:
-  GetActiveElementCommandHandler(void) 	{
+  GetActiveElementCommandHandler(void) {
   }
 
   virtual ~GetActiveElementCommandHandler(void) {
@@ -53,9 +53,11 @@ class GetActiveElementCommandHandler : public IECommandHandler {
     // For some contentEditable frames, the <body> element will be the
     // active element. However, to properly have focus, we must explicitly
     // set focus to the element.
-    CComQIPtr<IHTMLBodyElement> body_element(element);
+    CComPtr<IHTMLBodyElement> body_element;
+    HRESULT body_hr = element->QueryInterface<IHTMLBodyElement>(&body_element);
     if (body_element) {
-      CComQIPtr<IHTMLElement2> body_element2(body_element);
+      CComPtr<IHTMLElement2> body_element2;
+      body_element->QueryInterface<IHTMLElement2>(&body_element2);
       body_element2->focus();
     }
 
@@ -67,11 +69,11 @@ class GetActiveElementCommandHandler : public IECommandHandler {
 
     if (element) {
       IECommandExecutor& mutable_executor = const_cast<IECommandExecutor&>(executor);
-      IHTMLElement* dom_element;
-      HRESULT hr = element.CopyTo(&dom_element);
       ElementHandle element_wrapper;
-      mutable_executor.AddManagedElement(dom_element, &element_wrapper);
+      mutable_executor.AddManagedElement(element, &element_wrapper);
       response->SetSuccessResponse(element_wrapper->ConvertToJson());
+    } else {
+      response->SetErrorResponse(ENOSUCHELEMENT, "An unexpected error occurred getting the active element");
     }
   }
 };

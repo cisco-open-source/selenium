@@ -46,11 +46,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 public class ExecutingJavascriptTest extends JUnit4TestBase {
 
@@ -230,7 +226,7 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
 
   @SuppressWarnings("unchecked")
   @JavascriptEnabled
-  @Ignore({IE, HTMLUNIT, OPERA, OPERA_MOBILE})
+  @Ignore({IE, OPERA, OPERA_MOBILE})
   @Test
   public void testShouldBeAbleToExecuteSimpleJavascriptAndReturnAComplexObject() {
     if (!(driver instanceof JavascriptExecutor)) {
@@ -307,11 +303,43 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
     try {
       executeScript("return squiggle();");
       fail("Expected an exception");
-    } catch (Exception e) {
+    } catch (WebDriverException e) {
       // This is expected
       assertFalse(e.getMessage(), e.getMessage().startsWith("null "));
     }
   }
+
+  @JavascriptEnabled
+  @Test
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT})
+  public void testShouldThrowAnExceptionWithMessageAndStacktraceWhenTheJavascriptIsBad() {
+    if (!(driver instanceof JavascriptExecutor)) {
+      return;
+    }
+
+    driver.get(pages.xhtmlTestPage);
+
+    String js = "function functionB() { throw Error('errormessage'); };"
+                + "function functionA() { functionB(); };"
+                + "functionA();";
+    try {
+      executeScript(js);
+      fail("Expected an exception");
+    } catch (WebDriverException e) {
+      assertTrue(e.getMessage(), e.getMessage().contains("errormessage"));
+
+      StackTraceElement [] st = e.getCause().getStackTrace();
+      boolean seen = false;
+      for (StackTraceElement s: st) {
+        if (s.getMethodName().equals("functionB")) {
+          seen = true;
+        }
+      }
+      assertTrue("Stacktrace has not js method info", seen);
+    }
+  }
+
+
 
   @JavascriptEnabled
   @Test
@@ -581,8 +609,8 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, HTMLUNIT, OPERA, OPERA_MOBILE},
-          reason = "Opera and HtmlUnit obey the method contract. Android not tested")
+  @Ignore(value = {ANDROID, OPERA, OPERA_MOBILE},
+          reason = "Opera obeys the method contract. Android not tested")
   @Test
   public void testCanPassAMapAsAParameter() {
     driver.get(pages.simpleTestPage);
@@ -594,4 +622,35 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
 
     assertEquals(2, ((Number) res).intValue());
   }
+
+  @JavascriptEnabled
+  @Test
+  @Ignore(value = {OPERA, OPERA_MOBILE}, reason = "Opera: failed")
+  public void testShouldThrowAnExceptionWhenArgumentsWithStaleElementPassed() {
+    if (!(driver instanceof JavascriptExecutor)) {
+      return;
+    }
+
+    driver.get(pages.simpleTestPage);
+
+    final WebElement el = driver.findElement(By.id("oneline"));
+
+    driver.get(pages.simpleTestPage);
+
+    Map<String, Object> args = new HashMap<String, Object>() {
+      {
+        put("key", Arrays.asList("a", new Object[]{"zero", 1, true, 3.14159, false, el}, "c"));
+      }
+    };
+
+    try {
+      executeScript("return undefined;", args);
+      fail("Expected an exception");
+    } catch (StaleElementReferenceException e) {
+      // This is expected
+    } catch (Exception ex) {
+      fail("Expected an StaleElementReferenceException exception, got " + ex);
+    }
+  }
+
 }

@@ -29,15 +29,15 @@ class AndroidCoordinates implements Coordinates {
     this.point = pointOfLocationOfElement;
   }
 
-  public Point getLocationOnScreen() {
+  public Point onScreen() {
     return point;
   }
 
-  public Point getLocationInViewPort() {
+  public Point inViewPort() {
     return point;
   }
 
-  public Point getLocationInDOM() {
+  public Point onPage() {
     return point;
   }
 

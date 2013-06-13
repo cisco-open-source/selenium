@@ -26,6 +26,7 @@ goog.require('bot.userAgent');
 goog.require('fxdriver.logging');
 goog.require('fxdriver.moz');
 goog.require('fxdriver.utils');
+goog.require('fxdriver.error');
 goog.require('goog.dom');
 goog.require('goog.string');
 goog.require('goog.style');
@@ -148,7 +149,7 @@ Utils.getActiveElement = function(doc) {
 
   // Default to the body
   if (!element) {
-    element = doc.body;
+    element = Utils.getMainDocumentElement(doc);
   }
 
   return element;
@@ -646,31 +647,11 @@ Utils.triggerMouseEvent = function(element, eventType, clientX, clientY) {
 
 
 Utils.getElementLocation = function(element) {
-  var x = element.offsetLeft;
-  var y = element.offsetTop;
-  var elementParent = element.offsetParent;
-  while (elementParent != null) {
-    if (elementParent.tagName == 'TABLE') {
-      var parentBorder = parseInt(elementParent.border);
-      if (isNaN(parentBorder)) {
-        var parentFrame = elementParent.getAttribute('frame');
-        if (parentFrame != null) {
-          x += 1;
-          y += 1;
-        }
-      } else if (parentBorder > 0) {
-        x += parentBorder;
-        y += parentBorder;
-      }
-    }
-    x += elementParent.offsetLeft;
-    y += elementParent.offsetTop;
-    elementParent = elementParent.offsetParent;
-  }
+  var rect = element.getBoundingClientRect()
 
   var location = new Object();
-  location.x = x;
-  location.y = y;
+  location.x = rect.left;
+  location.y = rect.top;
   return location;
 };
 
@@ -716,6 +697,53 @@ Utils.getLocation = function(element, opt_onlyFirstRect) {
 
     // Firefox 3.5
     if (clientRect['width']) {
+      if ('area' == element.tagName.toLowerCase()) {
+        // TODO: implement coordinates specified in percents
+        var coords = element.coords.split(',');
+        if (element.shape == 'rect') {
+          var leftX = Number(coords[0]);
+          var topY = Number(coords[1]);
+          var rightX = Number(coords[2]);
+          var bottomY = Number(coords[3]);
+          return {
+            x: clientRect.left + leftX,
+            y: clientRect.top + topY,
+            width: rightX - leftX,
+            height: bottomY - topY
+          };
+        } else if (element.shape == 'circle') {
+          var centerX = Number(coords[0]);
+          var centerY = Number(coords[1]);
+          var radius = Number(coords[2]);
+          return {
+            x: clientRect.left + centerX - radius,
+            y: clientRect.top + centerY - radius,
+            width: 2*radius,
+            height: 2*radius
+          };
+        } else if (element.shape == 'poly') {
+          var minX = Number(coords[0]);
+          var minY = Number(coords[1]);
+          var maxX = minX;
+          var maxY = minY;
+          for (i = 0; i < coords.length / 2; i++) {
+            var xi = Number(coords[i*2]);
+            var yi = Number(coords[i*2 + 1]);
+            minX = Math.min(minX, xi);
+            minY = Math.min(minY, yi);
+            maxX = Math.max(maxX, xi);
+            maxY = Math.max(maxY, yi);
+          }
+
+          return {
+            x: clientRect.left + minX,
+            y: clientRect.top + minY,
+            width: maxX - minX,
+            height: maxY - minY
+          };
+        }
+      }
+      
       return {
         x: clientRect.left,
         y: clientRect.top,
@@ -773,13 +801,9 @@ Utils.getLocationRelativeToWindowHandle = function(element, opt_onlyFirstRect) {
   if (bot.userAgent.isProductVersion(3.6)) {
     // Get the ultimate parent frame
     var currentParent = element.ownerDocument.defaultView;
-    var ultimateParent = element.ownerDocument.defaultView.parent;
-    while (ultimateParent != currentParent) {
-      currentParent = ultimateParent;
-      ultimateParent = currentParent.parent;
-    }
+    var ultimateParent = currentParent.top;
 
-    var offX = element.ownerDocument.defaultView.mozInnerScreenX - ultimateParent.mozInnerScreenX;
+    var offX = currentParent.mozInnerScreenX - ultimateParent.mozInnerScreenX;
     var offY = element.ownerDocument.defaultView.mozInnerScreenY - ultimateParent.mozInnerScreenY;
 
     location.x += offX;
@@ -819,7 +843,7 @@ Utils.getLocationOnceScrolledIntoView = function(element, opt_onlyFirstRect) {
     element.scrollIntoView();
   }
 
-  return Utils.getLocation(element, opt_onlyFirstRect);
+  return Utils.getLocationRelativeToWindowHandle(element, opt_onlyFirstRect);
 };
 
 
@@ -911,7 +935,12 @@ Utils.wrapResult = function(result, doc) {
       try {
         // There's got to be a better way, but 'result instanceof Error' returns false
         if (Object.getPrototypeOf(result) != null && goog.string.endsWith(Object.getPrototypeOf(result).toString(), 'Error')) {
-          return result.toString();
+          try {
+            return fxdriver.error.toJSON(result);
+          } catch (ignored2) {
+            fxdriver.logging.info(ignored2);
+            return result.toString();
+          }
         }
       } catch (ignored) {
         fxdriver.logging.info(ignored);
@@ -996,13 +1025,24 @@ Utils.installClickListener = function(respond, WebLoadingListener) {
 
   var clickListener = new WebLoadingListener(browser, function(timedOut) {
     fxdriver.logging.info('New page loading.');
-    // currentWindow.closed is only reliable for top-level windows,
-    // not frames/iframes
-    // (see http://msdn.microsoft.com/en-us/library/ms533574(VS.85).aspx),
-    // because from most javascript contexts, the only way to access window
-    // objects is for a popup, for from a currently open window.
-    // wdsession.getWindow has some fallback logic in case this doesn't work.
-    if (currentWindow.closed) {
+
+    var currentWindowGone;
+
+    try {
+      // currentWindow.closed is only reliable for top-level windows,
+      // not frames/iframes
+      // (see http://msdn.microsoft.com/en-us/library/ms533574(VS.85).aspx),
+      // because from most javascript contexts, the only way to access window
+      // objects is for a popup, for from a currently open window.
+      // wdsession.getWindow has some fallback logic in case this doesn't work.
+      //
+      currentWindowGone = currentWindow.closed;
+    } catch(e) {
+      // dead object
+      currentWindowGone = true;
+    };
+
+    if (currentWindowGone) {
      fxdriver.logging.info('Detected page load in top window; changing session focus from ' +
                            'frame to new top window.');
      respond.session.setWindow(browser.contentWindow);
@@ -1129,8 +1169,8 @@ Utils.getPageUnloadedIndicator = function(element) {
   var unloadFunction = function() { toReturn.wasUnloaded = true };
   toReturn.callback = unloadFunction;
 
-  element.ownerDocument.body.addEventListener('unload',
-      unloadFunction, false);
+  var mainDocumentElement = Utils.getMainDocumentElement(element.ownerDocument);
+  mainDocumentElement.addEventListener('unload', unloadFunction, false);
 
   // This is a Firefox specific event - See:
   // https://developer.mozilla.org/En/Using_Firefox_1.5_caching
@@ -1144,8 +1184,9 @@ Utils.removePageUnloadEventListener = function(element, pageUnloadData) {
   if (pageUnloadData.callback) {
     // Remove event listeners...
     if (element.ownerDocument) {
-      if (element.ownerDocument.body) {
-        element.ownerDocument.body.removeEventListener('unload',
+      var mainDocumentElement = Utils.getMainDocumentElement(element.ownerDocument);
+      if (mainDocumentElement) {
+        mainDocumentElement.removeEventListener('unload',
             pageUnloadData.callback, false);
       }
       if (element.ownerDocument.defaultView) {
@@ -1179,4 +1220,14 @@ Utils.convertNSIArrayToNative = function(arrayToConvert) {
   }
 
   return returnArray;
+};
+
+Utils.isSVG = function(doc) {
+  return doc.documentElement && doc.documentElement.nodeName == 'svg';
+};
+
+Utils.getMainDocumentElement = function(doc) {
+  if (Utils.isSVG(doc))
+    return doc.documentElement;
+  return doc.body;
 };

@@ -33,10 +33,12 @@ import java.util.Map;
  * A CommandProcessor which delegates commands down to an underlying webdriver instance.
  */
 public class WebDriverCommandProcessor implements CommandProcessor, WrapsDriver {
+
   private final Map<String, SeleneseCommand<?>> seleneseMethods = Maps.newHashMap();
   private final String baseUrl;
   private final Timer timer;
   private final CompoundMutator scriptMutator;
+  private boolean enableAlertOverrides = true;
   private Supplier<WebDriver> maker;
   private WebDriver driver;
 
@@ -170,12 +172,21 @@ public class WebDriverCommandProcessor implements CommandProcessor, WrapsDriver 
     }
   }
 
+  /**
+   * Sets whether to enable emulation of Selenium's alert handling functions or
+   * to preserve WebDriver's alert handling. This has no affect after calling
+   * {@link #start()}.
+   */
+  public void setEnableAlertOverrides(boolean enableAlertOverrides) {
+    this.enableAlertOverrides = enableAlertOverrides;
+  }
+
   private void setUpMethodMap() {
     JavascriptLibrary javascriptLibrary = new JavascriptLibrary();
     ElementFinder elementFinder = new ElementFinder(javascriptLibrary);
     KeyState keyState = new KeyState();
 
-    AlertOverride alertOverride = new AlertOverride();
+    AlertOverride alertOverride = new AlertOverride(enableAlertOverrides);
     Windows windows = new Windows(driver);
 
     // Note the we use the names used by the CommandProcessor

@@ -20,12 +20,13 @@ import pytest
 import time
 import unittest
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 def not_available_on_remote(func):
     def testMethod(self):
-        print self.driver
+        print(self.driver)
         if type(self.driver) == 'remote':
             return lambda x: None
         else:
@@ -125,15 +126,12 @@ class ApiExampleTest (unittest.TestCase):
     def testSwitchToWindow(self):
         title_1 = "XHTML Test Page"
         title_2 = "We Arrive Here"
+        switch_to_window_timeout = 5
+        wait = WebDriverWait(self.driver, switch_to_window_timeout, ignored_exceptions=[NoSuchWindowException])
         self._loadPage("xhtmlTest")
         self.driver.find_element_by_link_text("Open new window").click()
         self.assertEquals(title_1, self.driver.title)
-        try:
-            self.driver.switch_to_window("result")
-        except:
-            # This may fail because the window is not loading fast enough, so try again
-            time.sleep(1)
-            self.driver.switch_to_window("result")
+        wait.until(lambda dr: dr.switch_to_window("result") is None)
         self.assertEquals(title_2, self.driver.title)
 
     def testSwitchFrameByName(self):
@@ -230,15 +228,16 @@ class ApiExampleTest (unittest.TestCase):
         loc = self.driver.get_window_position()
         # note can't test 0,0 since some OS's dont allow that location
         # because of system toolbars
-        newLoc = [50,50]
-        if loc['x'] == 50:
-            newLoc[0] = 60
-        if loc['y'] == 50:
-            newLoc[1] = 60
-        self.driver.set_window_position(newLoc[0], newLoc[1])
+        new_x = 50
+        new_y = 50
+        if loc['x'] == new_x:
+            new_x += 10
+        if loc['y'] == new_y:
+            new_y += 10
+        self.driver.set_window_position(new_x, new_y)
         loc = self.driver.get_window_position()
-        self.assertEquals(loc['x'], newLoc[0])
-        self.assertEquals(loc['y'], newLoc[1])
+        self.assertEquals(loc['x'], new_x)
+        self.assertEquals(loc['y'], new_y)
 
     def testChangeWindowSize(self):
         self._loadPage("blank")
@@ -261,4 +260,3 @@ class ApiExampleTest (unittest.TestCase):
 
     def _loadPage(self, name):
         self.driver.get(self._pageURL(name))
-

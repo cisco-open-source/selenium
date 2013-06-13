@@ -58,7 +58,7 @@ public class ClasspathExtension implements Extension {
       stream = new FileOutputStream(extractedXpi);
       Resources.copy(resourceUrl, stream);
     } finally {
-      Closeables.closeQuietly(stream);
+      Closeables.close(stream, false);
     }
     new FileExtension(extractedXpi).writeTo(extensionsDir);
   }

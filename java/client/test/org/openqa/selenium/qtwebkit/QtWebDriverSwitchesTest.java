@@ -7,12 +7,12 @@ import java.util.Arrays;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
+import org.openqa.selenium.testing.Ignore;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -47,8 +47,9 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return;
         }
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         driver = new RemoteWebDriver(
-                hostURL, capabilities);
+                executor, capabilities);
 
         driver.get(pages.colorPage);
 
@@ -76,8 +77,9 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return;
         }
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         driver = new RemoteWebDriver(
-                hostURL, capabilities);
+                executor, capabilities);
 
         driver.get(pages.colorPage);
 
@@ -90,6 +92,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
 
     @NeedsLocalEnvironment
     @Test
+    @Ignore({QTWEBKIT})
     public void canStartWebDriverMaximized() {
         URL hostURL;
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
@@ -101,8 +104,9 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return;
         }
+        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
         driver = new RemoteWebDriver(
-                hostURL, capabilities);
+                executor, capabilities);
 
         driver.get(pages.colorPage);
 

@@ -45,9 +45,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
-@Ignore(SELENESE)
 public class CookieImplementationTest extends JUnit4TestBase {
 
   private DomainHelper domainHelper;
@@ -90,7 +88,6 @@ public class CookieImplementationTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(SELENESE)
   @Test
   public void testShouldBeAbleToAddCookie() {
     String key = generateUniqueKey();
@@ -208,6 +205,7 @@ public class CookieImplementationTest extends JUnit4TestBase {
   }
 
   @Test
+  //TODO: Fails because of secon hostname isn't tranformed from domain name to ipv4 adrres,
   public void testShouldNotGetCookieOnDifferentDomain() {
     String cookieName = "fish";
     driver.manage().addCookie(new Cookie.Builder(cookieName, "cod").build());
@@ -218,7 +216,7 @@ public class CookieImplementationTest extends JUnit4TestBase {
     assertCookieIsNotPresentWithName(cookieName);
   }
 
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, SELENESE},
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA},
         reason = "Untested browsers.")
   @Test
   public void testShouldBeAbleToAddToADomainWhichIsRelatedToTheCurrentDomain() {
@@ -382,6 +380,14 @@ public class CookieImplementationTest extends JUnit4TestBase {
     driver.manage().addCookie(cookie);
 
     assertCookieHasValue(key, value);
+  }
+
+  @Test
+  public void testDeleteNotExistedCookie() {
+    String key = generateUniqueKey();
+    assertCookieIsNotPresentWithName(key);
+
+    driver.manage().deleteCookieNamed(key);
   }
 
   private String generateUniqueKey() {

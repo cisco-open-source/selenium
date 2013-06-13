@@ -27,9 +27,6 @@ IESession::~IESession(void) {
 void IESession::Initialize(void* init_params) {
   LOG(TRACE) << "Entering IESession::Initialize";
 
-  unsigned int thread_id = 0;
-  HWND executor_window_handle = NULL;
-
   HANDLE mutex = ::CreateMutex(NULL, FALSE, MUTEX_NAME);
   if (mutex != NULL) {
     // Wait for up to the timeout (currently 30 seconds) for other sessions
@@ -44,38 +41,69 @@ void IESession::Initialize(void* init_params) {
                 << "instances may hang or behave unpredictably";
     } else if (mutex_wait_status == WAIT_OBJECT_0) {
       LOG(DEBUG) << "Mutex acquired for session initalization";
+    } else if (mutex_wait_status == WAIT_FAILED) {
+      LOGERR(WARN) << "Mutex acquire waiting is failed";
     }
   } else {
-    LOG(WARN) << "Could not create session initialization mutex. Multiple " 
-              << "instances will behave unpredictably.";
+    LOGERR(WARN) << "Could not create session initialization mutex. Multiple " 
+                 << "instances will behave unpredictably. ";
   }
 
+  SessionParameters* params = reinterpret_cast<SessionParameters*>(init_params);
+  int port = params->port;
+  std::string ie_switches = params->ie_switches;
+  bool force_createprocess_api = params->force_createprocess_api;
+
+  IECommandExecutorThreadContext thread_context;
+  thread_context.port = port;
+  thread_context.force_createprocess_api = force_createprocess_api;
+  thread_context.ie_switches = ie_switches;
+  thread_context.hwnd = NULL;
+
+  unsigned int thread_id = 0;
+
   HANDLE event_handle = ::CreateEvent(NULL, TRUE, FALSE, EVENT_NAME);
+  if (event_handle == NULL) {
+    LOGERR(DEBUG) << "Unable to create event " << EVENT_NAME;
+  }
   HANDLE thread_handle = reinterpret_cast<HANDLE>(_beginthreadex(NULL,
                                                                  0,
                                                                  &IECommandExecutor::ThreadProc,
-                                                                 reinterpret_cast<void*>(&executor_window_handle),
+                                                                 reinterpret_cast<void*>(&thread_context),
                                                                  0,
                                                                  &thread_id));
   if (event_handle != NULL) {
-    ::WaitForSingleObject(event_handle, INFINITE);
+    DWORD thread_wait_status = ::WaitForSingleObject(event_handle, THREAD_WAIT_TIMEOUT);
+    if (thread_wait_status != WAIT_OBJECT_0) {
+      LOGERR(WARN) << "Unable to wait until created thread notification: '" << thread_wait_status << "'.";
+    }
     ::CloseHandle(event_handle);
   }
 
   if (thread_handle != NULL) {
     ::CloseHandle(thread_handle);
+  } else {
+    LOG(DEBUG) << "Unable to create thread for command executor";
   }
 
-  int* int_param = reinterpret_cast<int*>(init_params);
-  int port = *int_param;
-  ::SendMessage(executor_window_handle,
-                WD_INIT,
-                static_cast<WPARAM>(port),
-                NULL);
+  std::string session_id = "";
+  if (thread_context.hwnd != NULL) {
+    LOG(TRACE) << "Created thread for command executor returns HWND: '" << thread_context.hwnd << "'";
 
-  vector<TCHAR> window_text_buffer(37);
-  ::GetWindowText(executor_window_handle, &window_text_buffer[0], 37);
-  std::string session_id = CW2A(&window_text_buffer[0], CP_UTF8);
+    // Send INIT to window with port as WPARAM
+    // It is already deprecated
+    ::SendMessage(thread_context.hwnd,
+                  WD_INIT,
+                  static_cast<WPARAM>(port),
+                  NULL);
+
+    vector<wchar_t> window_text_buffer(37);
+    ::GetWindowText(thread_context.hwnd, &window_text_buffer[0], 37);
+    session_id = StringUtilities::ToString(&window_text_buffer[0]);
+    LOG(TRACE) << "Session id is retrived from command executor window: '" << session_id << "'";
+  } else {
+    LOG(DEBUG) << "Created thread does not return HWND of created session";
+  }
 
   if (mutex != NULL) {
     LOG(DEBUG) << "Releasing session initialization mutex";
@@ -83,7 +111,7 @@ void IESession::Initialize(void* init_params) {
     ::CloseHandle(mutex);
   }
 
-  this->executor_window_handle_ = executor_window_handle;
+  this->executor_window_handle_ = thread_context.hwnd;
   this->set_session_id(session_id);
 }
 
@@ -94,19 +122,35 @@ void IESession::ShutDown(void) {
   stopPersistentEventFiring();
 
   // Don't terminate the thread until the browsers have all been deallocated.
-  int is_quitting = static_cast<int>(::SendMessage(this->executor_window_handle_,
-                                                   WD_GET_QUIT_STATUS,
-                                                   NULL,
-                                                   NULL));
-  int retry_count = 50;
-  while (is_quitting > 0 && --retry_count > 0) {
-    ::Sleep(100);
-    is_quitting = static_cast<int>(::SendMessage(this->executor_window_handle_,
-                                                 WD_GET_QUIT_STATUS,
-                                                 NULL,
-                                                 NULL));
+  // Note: Loop count of 6, because the timeout is 5 seconds, giving us a nice,
+  // round 30 seconds.
+  int retry_count = 6;
+  bool has_quit = this->WaitForCommandExecutorExit(EXECUTOR_EXIT_WAIT_TIMEOUT);
+  while (!has_quit && retry_count > 0) {
+    // ASSUMPTION! If all browsers haven't been deallocated by the timeout
+    // specified, they're blocked from quitting by something. We'll assume
+    // that something is an alert blocking close, and ask the executor to
+    // attempt another close after closing the offending alert.
+    // N.B., this could probably be made more robust by modifying
+    // IECommandExecutor::OnGetQuitStatus(), but that would require some
+    // fairly complex synchronization code, to make sure a browser isn't
+    // deallocated while the "close the alert and close the browser again"
+    // code is still running, since the deallocation happens in response
+    // to the DWebBrowserEvents2::OnQuit event.
+    LOG(DEBUG) << "Not all browsers have been deallocated!";
+    ::PostMessage(this->executor_window_handle_,
+                  WD_HANDLE_UNEXPECTED_ALERTS,
+                  NULL,
+                  NULL);
+    has_quit = this->WaitForCommandExecutorExit(EXECUTOR_EXIT_WAIT_TIMEOUT);
+    retry_count--;
   }
 
+  if (has_quit) {
+    LOG(DEBUG) << "Executor shutdown successful!";
+  } else {
+    LOG(ERROR) << "Still running browsers after handling alerts! This is likely to lead to a crash.";
+  }
   DWORD process_id;
   DWORD thread_id = ::GetWindowThreadProcessId(this->executor_window_handle_,
                                                &process_id);
@@ -119,6 +163,23 @@ void IESession::ShutDown(void) {
     }
     ::CloseHandle(thread_handle);
   }
+}
+
+bool IESession::WaitForCommandExecutorExit(int timeout_in_milliseconds) {
+  LOG(TRACE) << "Entering IESession::WaitForCommandExecutorExit";
+  int is_quitting = static_cast<int>(::SendMessage(this->executor_window_handle_,
+                                                   WD_GET_QUIT_STATUS,
+                                                   NULL,
+                                                   NULL));
+  int retry_count = timeout_in_milliseconds / EXECUTOR_EXIT_WAIT_INTERVAL;
+  while (is_quitting > 0 && --retry_count > 0) {
+    ::Sleep(EXECUTOR_EXIT_WAIT_INTERVAL);
+    is_quitting = static_cast<int>(::SendMessage(this->executor_window_handle_,
+                                                 WD_GET_QUIT_STATUS,
+                                                 NULL,
+                                                 NULL));
+  }
+  return is_quitting == 0;
 }
 
 bool IESession::ExecuteCommand(const std::string& serialized_command,

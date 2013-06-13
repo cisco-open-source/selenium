@@ -47,7 +47,7 @@
  */
 
 goog.provide('webdriver.promise');
-goog.provide('webdriver.promise.Application');
+goog.provide('webdriver.promise.ControlFlow');
 goog.provide('webdriver.promise.Deferred');
 goog.provide('webdriver.promise.Promise');
 
@@ -77,8 +77,9 @@ webdriver.promise.Promise = function() {
 /**
  * Cancels the computation of this promise's value, rejecting the promise in the
  * process.
- * @param {*} reason The reason this promise is being cancelled. While typically
- *     an {@code Error}, any type is permissible.
+ * @param {*} reason The reason this promise is being cancelled. If not an
+ *     {@code Error}, one will be created using the value's string
+ *     representation.
  */
 webdriver.promise.Promise.prototype.cancel = function(reason) {
   throw new TypeError('Unimplemented function: "cancel"');
@@ -99,14 +100,13 @@ webdriver.promise.Promise.prototype.isPending = function() {
  *     successfully resolved. The function should expect a single argument: the
  *     promise's resolved value.
  * @param {Function=} opt_errback The function to call if this promise is
- *     rejected. The function should expect a single argument: the failure
- *     reason. While this argument is typically an {@code Error}, any type is
- *     permissible.
+ *     rejected. The function should expect a single argument: the rejection
+ *     reason.
  * @return {!webdriver.promise.Promise} A new promise which will be resolved
  *     with the result of the invoked callback.
  */
-webdriver.promise.Promise.prototype.then = function(opt_callback,
-                                                    opt_errback) {
+webdriver.promise.Promise.prototype.then = function(
+    opt_callback, opt_errback) {
   throw new TypeError('Unimplemented function: "then"');
 };
 
@@ -135,9 +135,8 @@ webdriver.promise.Promise.prototype.addCallback = function(callback, opt_self) {
  * Dojo Deferred API.
  *
  * @param {Function} errback The function to call if this promise is
- *     rejected. The function should expect a single argument: the failure
- *     reason. While this argument is typically an {@code Error}, any type is
- *     permissible.
+ *     rejected. The function should expect a single argument: the rejection
+ *     reason.
  * @param {!Object=} opt_self The object which |this| should refer to when the
  *     function is invoked.
  * @return {!webdriver.promise.Promise} A new promise which will be resolved
@@ -176,16 +175,15 @@ webdriver.promise.Promise.prototype.addBoth = function(callback, opt_self) {
  *     successfully resolved. The function should expect a single argument: the
  *     promise's resolved value.
  * @param {Function} errback The function to call if this promise is
- *     rejected. The function should expect a single argument: the failure
- *     reason. While this argument is typically an {@code Error}, any type is
- *     permissible.
+ *     rejected. The function should expect a single argument: the rejection
+ *     reason.
  * @param {!Object=} opt_self The object which |this| should refer to when the
  *     function is invoked.
  * @return {!webdriver.promise.Promise} A new promise which will be resolved
  *     with the result of the invoked callback.
  */
-webdriver.promise.Promise.prototype.addCallbacks = function(callback, errback,
-                                                            opt_self) {
+webdriver.promise.Promise.prototype.addCallbacks = function(
+    callback, errback, opt_self) {
   return this.then(goog.bind(callback, opt_self),
       goog.bind(errback, opt_self));
 };
@@ -199,9 +197,9 @@ webdriver.promise.Promise.prototype.addCallbacks = function(callback, errback,
  * registering callbacks, reserving the ability to resolve the deferred to the
  * producer.
  *
- * <p>If this Defererd is rejected and there are no listeners registered before
+ * <p>If this Deferred is rejected and there are no listeners registered before
  * the next turn of the event loop, the rejection will be passed to the
- * {@link webdriver.promise.Application} as an unhandled failure.
+ * {@link webdriver.promise.ControlFlow} as an unhandled failure.
  *
  * <p>If this Deferred is cancelled, the cancellation reason will be forward to
  * the Deferred's canceller function (if provided). The canceller may return a
@@ -209,16 +207,21 @@ webdriver.promise.Promise.prototype.addCallbacks = function(callback, errback,
  *
  * @param {Function=} opt_canceller Function to call when cancelling the
  *     computation of this instance's value.
+ * @param {webdriver.promise.ControlFlow=} opt_flow The control flow
+ *     this instance was created under. This should only be provided during
+ *     unit tests.
  * @constructor
  * @extends {webdriver.promise.Promise}
  */
-webdriver.promise.Deferred = function(opt_canceller) {
+webdriver.promise.Deferred = function(opt_canceller, opt_flow) {
   /* NOTE: This class's implementation diverges from the prototypical style
    * used in the rest of the atoms library. This was done intentionally to
    * protect the internal Deferred state from consumers, as outlined by
    *     http://wiki.commonjs.org/wiki/Promises
    */
   goog.base(this);
+
+  var flow = opt_flow || webdriver.promise.controlFlow();
 
   /**
    * The listeners registered with this Deferred. Each element in the list will
@@ -236,6 +239,13 @@ webdriver.promise.Deferred = function(opt_canceller) {
    * @type {boolean}
    */
   var handled = false;
+
+  /**
+   * Key for the timeout used to delay reproting an unhandled rejection to the
+   * parent {@link webdriver.promise.ControlFlow}.
+   * @type {?number}
+   */
+  var pendingRejectionKey = null;
 
   /**
    * This Deferred's current state.
@@ -275,15 +285,22 @@ webdriver.promise.Deferred = function(opt_canceller) {
     }
 
     if (!handled && state == webdriver.promise.Deferred.State_.REJECTED) {
-      var app = webdriver.promise.Application.getInstance();
-      app.pendingRejections_ += 1;
-      setTimeout(function() {
-        app.pendingRejections_ -= 1;
-        if (!handled) {
-          app.abortFrame_(value);
-        }
-      }, 0);
+      pendingRejectionKey = propagateError(value);
     }
+  }
+
+  /**
+   * Propagates an unhandled rejection to the parent ControlFlow in a
+   * future turn of the JavaScript event loop.
+   * @param {*} error The error value to report.
+   * @return {number} The key for the registered timeout.
+   */
+  function propagateError(error) {
+    flow.pendingRejections_ += 1;
+    return flow.timer.setTimeout(function() {
+      flow.pendingRejections_ -= 1;
+      flow.abortFrame_(error);
+    }, 0);
   }
 
   /**
@@ -295,15 +312,12 @@ webdriver.promise.Deferred = function(opt_canceller) {
     var func = state == webdriver.promise.Deferred.State_.RESOLVED ?
         listener.callback : listener.errback;
     if (func) {
-      var app = webdriver.promise.Application.getInstance();
-      var result = app.runInNewFrame_(goog.partial(func, value));
-      webdriver.promise.asap(result,
-          listener.deferred.resolve,
-          listener.deferred.reject);
+      flow.runInNewFrame_(goog.partial(func, value),
+          listener.fulfill, listener.reject);
     } else if (state == webdriver.promise.Deferred.State_.REJECTED) {
-      listener.deferred.reject(value);
+      listener.reject(value);
     } else {
-      listener.deferred.resolve(value);
+      listener.fulfill(value);
     }
   }
 
@@ -331,11 +345,17 @@ webdriver.promise.Deferred = function(opt_canceller) {
     // The moment a listener is registered, we consider this deferred to be
     // handled; the callback must handle any rejection errors.
     handled = true;
+    if (pendingRejectionKey) {
+      flow.pendingRejections_ -= 1;
+      flow.timer.clearTimeout(pendingRejectionKey);
+    }
 
+    var deferred = new webdriver.promise.Deferred(cancel, flow);
     var listener = {
       callback: opt_callback,
       errback: opt_errback,
-      deferred: new webdriver.promise.Deferred(cancel)
+      fulfill: deferred.fulfill,
+      reject: deferred.reject
     };
 
     if (state == webdriver.promise.Deferred.State_.PENDING) {
@@ -344,7 +364,7 @@ webdriver.promise.Deferred = function(opt_canceller) {
       notify(listener);
     }
 
-    return listener.deferred.promise;
+    return deferred.promise;
   }
 
   var self = this;
@@ -355,7 +375,7 @@ webdriver.promise.Deferred = function(opt_canceller) {
    * it before resolving.
    * @param {*=} opt_value The resolved value.
    */
-  function resolve(opt_value) {
+  function fulfill(opt_value) {
     if (webdriver.promise.isPromise(opt_value) && opt_value !== self) {
       if (opt_value instanceof webdriver.promise.Deferred) {
         opt_value.then(
@@ -364,7 +384,7 @@ webdriver.promise.Deferred = function(opt_canceller) {
                 webdriver.promise.Deferred.State_.REJECTED));
         return;
       }
-      webdriver.promise.asap(opt_value, resolve, reject);
+      webdriver.promise.asap(opt_value, fulfill, reject);
     } else {
       notifyAll(webdriver.promise.Deferred.State_.RESOLVED, opt_value);
     }
@@ -394,15 +414,15 @@ webdriver.promise.Deferred = function(opt_canceller) {
   /**
    * Cancels the computation of this promise's value and flags the promise as a
    * rejected value.
-   * @param {*} reason The reason for cancelling this promise.
+   * @param {*=} opt_reason The reason for cancelling this promise.
    */
-  function cancel(reason) {
+  function cancel(opt_reason) {
     if (!isPending()) {
       throw Error('This Deferred has already been resolved.');
     }
 
     if (opt_canceller) {
-      reason = opt_canceller(reason) || reason;
+      opt_reason = opt_canceller(opt_reason) || opt_reason;
     }
 
     // Only reject this promise if it is still pending after calling its
@@ -412,7 +432,7 @@ webdriver.promise.Deferred = function(opt_canceller) {
     // another. Once the cancellation request reaches the root deferred, the
     // subsequent rejection will trickle back down.
     if (isPending()) {
-      reject(reason);
+      reject(opt_reason);
     }
   }
 
@@ -420,14 +440,16 @@ webdriver.promise.Deferred = function(opt_canceller) {
   this.promise.then = this.then = then;
   this.promise.cancel = this.cancel = cancel;
   this.promise.isPending = this.isPending = isPending;
-  this.resolve = this.callback = resolve;
+  this.fulfill = fulfill;
+  /** @deprecated Use fulfill instead. This will be removed in 2.34.0 */
+  this.resolve = this.callback = fulfill;
   this.reject = this.errback = reject;
 
   // Export symbols necessary for the contract on this object to work in
   // compiled mode.
   goog.exportProperty(this, 'then', this.then);
   goog.exportProperty(this, 'cancel', cancel);
-  goog.exportProperty(this, 'resolve', resolve);
+  goog.exportProperty(this, 'fulfill', fulfill);
   goog.exportProperty(this, 'reject', reject);
   goog.exportProperty(this, 'isPending', isPending);
   goog.exportProperty(this, 'promise', this.promise);
@@ -442,7 +464,7 @@ goog.inherits(webdriver.promise.Deferred, webdriver.promise.Promise);
  * Type definition for a listener registered on a Deferred object.
  * @typedef {{callback:(Function|undefined),
  *            errback:(Function|undefined),
- *            deferred:!webdriver.promise.Deferred}}
+ *            fulfill: function(*), reject: function(*)}}
  * @private
  */
 webdriver.promise.Deferred.Listener_;
@@ -457,6 +479,23 @@ webdriver.promise.Deferred.State_ = {
   REJECTED: -1,
   PENDING: 0,
   RESOLVED: 1
+};
+
+
+/**
+ * Tests if a value is an Error-like object. This is more than an straight
+ * instanceof check since the value may originate from another context.
+ * @param {*} value The value to test.
+ * @return {boolean} Whether the value is an error.
+ * @private
+ */
+webdriver.promise.isError_ = function(value) {
+  return value instanceof Error ||
+      goog.isObject(value) &&
+      (Object.prototype.toString.call(value) === '[object Error]' ||
+       // A special test for goog.testing.JsUnitException.
+       value.isJsUnitException);
+
 };
 
 
@@ -482,12 +521,24 @@ webdriver.promise.isPromise = function(value) {
  * @return {!webdriver.promise.Promise} The promise.
  */
 webdriver.promise.delayed = function(ms) {
+  var timer = webdriver.promise.controlFlow().timer;
   var key;
   var deferred = new webdriver.promise.Deferred(function() {
-    clearTimeout(key);
+    timer.clearTimeout(key);
   });
-  key = setTimeout(deferred.resolve, ms);
+  key = timer.setTimeout(deferred.fulfill, ms);
   return deferred.promise;
+};
+
+
+/**
+ * Creates a new deferred object.
+ * @param {Function=} opt_canceller Function to call when cancelling the
+ *     computation of this instance's value.
+ * @return {!webdriver.promise.Deferred} The new deferred object.
+ */
+webdriver.promise.defer = function(opt_canceller) {
+  return new webdriver.promise.Deferred(opt_canceller);
 };
 
 
@@ -496,25 +547,35 @@ webdriver.promise.delayed = function(ms) {
  * @param {*=} opt_value The resolved value.
  * @return {!webdriver.promise.Promise} The resolved promise.
  */
-webdriver.promise.resolved = function(opt_value) {
+webdriver.promise.fulfilled = function(opt_value) {
   if (opt_value instanceof webdriver.promise.Promise) {
     return opt_value;
   }
   var deferred = new webdriver.promise.Deferred();
-  deferred.resolve(opt_value);
+  deferred.fulfill(opt_value);
   return deferred.promise;
 };
 
 
 /**
+ * Creates a promise that has been resolved with the given value.
+ * @param {*=} opt_value The fulfilled promises's value.
+ * @return {!webdriver.promise.Promise} A fulfilled promise.
+ * @deprecated Use webdriver.promise.fulfilled(). This will be removed in
+ *     Selenium 2.34.0.
+ */
+webdriver.promise.resolved = webdriver.promise.fulfilled;
+
+
+/**
  * Creates a promise that has been rejected with the given reason.
- * @param {*} reason The rejection reason; may be any value, but is usually an
+ * @param {*=} opt_reason The rejection reason; may be any value, but is usually an
  *     Error or a string.
  * @return {!webdriver.promise.Promise} The rejected promise.
  */
-webdriver.promise.rejected = function(reason) {
+webdriver.promise.rejected = function(opt_reason) {
   var deferred = new webdriver.promise.Deferred();
-  deferred.reject(reason);
+  deferred.reject(opt_reason);
   return deferred.promise;
 };
 
@@ -536,7 +597,7 @@ webdriver.promise.checkedNodeCall = function(fn) {
   try {
     fn(function(error, value) {
       if (deferred.isPending()) {
-        error ? deferred.reject(error) : deferred.resolve(value);
+        error ? deferred.reject(error) : deferred.fulfill(value);
       }
     });
   } catch (ex) {
@@ -567,7 +628,7 @@ webdriver.promise.when = function(value, opt_callback, opt_errback) {
   var deferred = new webdriver.promise.Deferred();
 
   webdriver.promise.asap(value,
-      goog.partial(maybeResolve, deferred.resolve),
+      goog.partial(maybeResolve, deferred.fulfill),
       goog.partial(maybeResolve, deferred.reject));
 
   return deferred.then(opt_callback, opt_errback);
@@ -593,10 +654,12 @@ webdriver.promise.when = function(value, opt_callback, opt_errback) {
 webdriver.promise.asap = function(value, callback, opt_errback) {
   if (webdriver.promise.isPromise(value)) {
     value.then(callback, opt_errback);
+
   // Maybe a Dojo-like deferred object?
   } else if (!!value && goog.isObject(value) &&
       goog.isFunction(value.addCallbacks)) {
     value.addCallbacks(callback, opt_errback);
+
   // A raw value, return a resolved promise.
   } else if (callback) {
     callback(value);
@@ -641,18 +704,8 @@ webdriver.promise.fullyResolved = function(value) {
 webdriver.promise.fullyResolveValue_ = function(value) {
   switch (goog.typeOf(value)) {
     case 'array':
-      // In IE, goog.array.forEach will not iterate properly over arrays
-      // containing undefined values because "index in array" returns
-      // false when array[index] === undefined. To get around this, we need
-      // to use our own forEach implementation.  Yay, IE.
-      value = (/** @type {!Array} */value);
-      return webdriver.promise.fullyResolveKeys_(value, value.length,
-          function(arr, f, opt_obj) {
-            var l = arr.length;
-            for (var i = 0; i < l; ++i) {
-              f.call(opt_obj, arr[i], i, arr);
-            }
-          });
+      return webdriver.promise.fullyResolveKeys_(
+          /** @type {!Array} */ (value));
 
     case 'object':
       if (webdriver.promise.isPromise(value)) {
@@ -661,47 +714,61 @@ webdriver.promise.fullyResolveValue_ = function(value) {
         // trust that it counts as a "fully resolved" value and return it.
         // Of course, since it's already a promise, we can just return it
         // to the user instead of wrapping it in another promise.
-        return (/** @type {!webdriver.promise.Promise} */value);
+        return /** @type {!webdriver.promise.Promise} */ (value);
       }
 
-      if (goog.isNumber(value.nodeType)) {
+      if (goog.isNumber(value.nodeType) &&
+          goog.isObject(value.ownerDocument) &&
+          goog.isNumber(value.ownerDocument.nodeType)) {
         // DOM node; return early to avoid infinite recursion. Should we
         // only support objects with a certain level of nesting?
-        return webdriver.promise.resolved(value);
+        return webdriver.promise.fulfilled(value);
       }
 
-      value = (/** @type {!Object} */value);
-      return webdriver.promise.fullyResolveKeys_(value,
-          goog.object.getKeys(value).length,
-          goog.object.forEach);
+      return webdriver.promise.fullyResolveKeys_(
+          /** @type {!Object} */ (value));
 
     default:  // boolean, function, null, number, string, undefined
-      return webdriver.promise.resolved(value);
+      return webdriver.promise.fulfilled(value);
   }
 };
 
 
 /**
- * @param {!Object} obj the object to resolve.
- * @param {number} numKeys The number of keys in the object.
- * @param {!Function} forEachKey The function to use for iterating over the keys
- *     in the object.
+ * @param {!(Array|Object)} obj the object to resolve.
  * @return {!webdriver.promise.Promise} A promise that will be resolved with the
  *     input object once all of its values have been fully resolved.
  * @private
  */
-webdriver.promise.fullyResolveKeys_ = function(obj, numKeys, forEachKey) {
+webdriver.promise.fullyResolveKeys_ = function(obj) {
+  var isArray = goog.isArray(obj);
+  var numKeys = isArray ? obj.length : goog.object.getCount(obj);
   if (!numKeys) {
-    return webdriver.promise.resolved(obj);
+    return webdriver.promise.fulfilled(obj);
   }
 
   var numResolved = 0;
   var deferred = new webdriver.promise.Deferred();
 
+  // In pre-IE9, goog.array.forEach will not iterate properly over arrays
+  // containing undefined values because "index in array" returns false
+  // when array[index] === undefined (even for x = [undefined, 1]). To get
+  // around this, we need to use our own forEach implementation.
+  // DO NOT REMOVE THIS UNTIL WE NO LONGER SUPPORT IE8. This cannot be
+  // reproduced in IE9 by changing the browser/document modes, it requires an
+  // actual pre-IE9 browser.  Yay, IE!
+  var forEachKey = !isArray ? goog.object.forEach : function(arr, fn) {
+    var n = arr.length;
+    for (var i = 0; i < n; ++i) {
+      fn.call(null, arr[i], i, arr);
+    }
+  };
+
   forEachKey(obj, function(partialValue, key) {
     var type = goog.typeOf(partialValue);
     if (type != 'array' && type != 'object') {
-      return maybeResolveValue();
+      maybeResolveValue();
+      return;
     }
 
     webdriver.promise.fullyResolved(partialValue).then(
@@ -716,21 +783,21 @@ webdriver.promise.fullyResolveKeys_ = function(obj, numKeys, forEachKey) {
             deferred.reject(err);
           }
         });
-
-    function maybeResolveValue() {
-      if (++numResolved == numKeys && deferred.isPending()) {
-        deferred.resolve(obj);
-      }
-    }
   });
 
   return deferred.promise;
+
+  function maybeResolveValue() {
+    if (++numResolved == numKeys && deferred.isPending()) {
+      deferred.fulfill(obj);
+    }
+  }
 };
 
 
 //////////////////////////////////////////////////////////////////////////////
 //
-//  webdriver.promise.Application
+//  webdriver.promise.ControlFlow
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -738,54 +805,98 @@ webdriver.promise.fullyResolveKeys_ = function(obj, numKeys, forEachKey) {
 
 /**
  * Handles the execution of scheduled tasks, each of which may be an
- * asynchronous operation. The application will ensure tasks are executed in the
- * ordered scheduled, starting each task only once those before it have
+ * asynchronous operation. The control flow will ensure tasks are executed in
+ * the ordered scheduled, starting each task only once those before it have
  * completed.
  *
- * <p>Each task scheduled with the application may return a
+ * <p>Each task scheduled within this flow may return a
  * {@link webdriver.promise.Promise} to indicate it is an asynchronous
- * operation. The Application will wait for such promises to be resolved before
+ * operation. The ControlFlow will wait for such promises to be resolved before
  * marking the task as completed.
  *
  * <p>Tasks and each callback registered on a {@link webdriver.promise.Deferred}
- * will be run in their own Application frame.  Any tasks scheduled within a
+ * will be run in their own ControlFlow frame.  Any tasks scheduled within a
  * frame will have priority over previously scheduled tasks. Furthermore, if
  * any of the tasks in the frame fails, the remainder of the tasks in that frame
  * will be discarded and the failure will be propagated to the user through the
  * callback/task's promised result.
  *
- * <p>Each time an application empties its task queue, it will fire an
- * {@link webdriver.promise.Application.EventType.IDLE} event. Conversely,
- * whenever the application terminates due to an unhandled error,
- * it will remove all remaining tasks in its queue and fire an
- * {@link webdriver.promise.Application.EventType.UNCAUGHT_EXCEPTION} event. If
- * there are no listeners registered with the application, the error will be
+ * <p>Each time a ControlFlow empties its task queue, it will fire an
+ * {@link webdriver.promise.ControlFlow.EventType.IDLE} event. Conversely,
+ * whenever the flow terminates due to an unhandled error, it will remove all
+ * remaining tasks in its queue and fire an
+ * {@link webdriver.promise.ControlFlow.EventType.UNCAUGHT_EXCEPTION} event. If
+ * there are no listeners registered with the flow, the error will be
  * rethrown to the global error handler.
  *
+ * @param {{clearInterval: function(number),
+ *          clearTimeout: function(number),
+ *          setInterval: function(!Function, number): number,
+ *          setTimeout: function(!Function, number): number}=} opt_timer
+ *     The timer object to use. Should only be set for testing.
  * @constructor
  * @extends {webdriver.EventEmitter}
  */
-webdriver.promise.Application = function() {
+webdriver.promise.ControlFlow = function(opt_timer) {
   webdriver.EventEmitter.call(this);
 
   /**
-   * A list of recently completed tasks. Each time a new task is started or a
-   * frame is completed, the previously recorded task is removed from this
-   * list.
-   * @type {!Array.<!webdriver.promise.Application.Task_>}
-   * @private
+   * The timer used by this instance.
+   * @type {{clearInterval: function(number),
+   *         clearTimeout: function(number),
+   *         setInterval: function(!Function, number): number,
+   *         setTimeout: function(!Function, number): number}}
+   */
+  this.timer = opt_timer || webdriver.promise.ControlFlow.defaultTimer;
+
+  /**
+   * A list of recent tasks. Each time a new task is started, or a frame is
+   * completed, the previously recorded task is removed from this list. If
+   * there are multiple tasks, task N+1 is considered a sub-task of task
+   * N.
+   * @private {!Array.<!webdriver.promise.Task_>}
    */
   this.history_ = [];
 };
-goog.inherits(webdriver.promise.Application, webdriver.EventEmitter);
-goog.addSingletonGetter(webdriver.promise.Application);
+goog.inherits(webdriver.promise.ControlFlow, webdriver.EventEmitter);
 
 
 /**
- * Events that may be emitted by an {@link webdriver.promise.Application}.
+ * The default timer object, which uses the global timer functions.
+ * @type {{clearInterval: function(number),
+ *         clearTimeout: function(number),
+ *         setInterval: function(!Function, number): number,
+ *         setTimeout: function(!Function, number): number}}
+ */
+webdriver.promise.ControlFlow.defaultTimer = (function() {
+  // The default timer functions may be defined as free variables for the
+  // current context, so do not reference them using "window" or
+  // "goog.global".  Also, we must invoke them in a closure, and not using
+  // bind(), so we do not get "TypeError: Illegal invocation" (WebKit) or
+  // "Invalid calling object" (IE) errors.
+  return {
+    clearInterval: wrap(clearInterval),
+    clearTimeout: wrap(clearTimeout),
+    setInterval: wrap(setInterval),
+    setTimeout: wrap(setTimeout)
+  };
+
+  function wrap(fn) {
+    return function() {
+      // Cannot use .call() or .apply() since we do not know which variable
+      // the function is bound to, and using the wrong one will generate
+      // an error.
+      return fn(arguments[0], arguments[1]);
+    };
+  }
+})();
+
+
+/**
+ * Events that may be emitted by an {@link webdriver.promise.ControlFlow}.
  * @enum {string}
  */
-webdriver.promise.Application.EventType = {
+webdriver.promise.ControlFlow.EventType = {
 
   /** Emitted when all tasks have been successfully executed. */
   IDLE: 'idle',
@@ -794,30 +905,29 @@ webdriver.promise.Application.EventType = {
   SCHEDULE_TASK: 'scheduleTask',
 
   /**
-   * Emitted whenever an application is aborting due to an unhandled promise
+   * Emitted whenever a control flow aborts due to an unhandled promise
    * rejection. This event will be emitted along with the offending rejection
-   * reason. Upon emitting this event, the application will empty its task queue
-   * and revert to its initial state.
+   * reason. Upon emitting this event, the control flow will empty its task
+   * queue and revert to its initial state.
    */
   UNCAUGHT_EXCEPTION: 'uncaughtException'
 };
 
 
 /**
- * How often, in milliseconds, the Application event loop should run.
+ * How often, in milliseconds, the event loop should run.
  * @type {number}
  * @const
  */
-webdriver.promise.Application.EVENT_LOOP_FREQUENCY = 10;
+webdriver.promise.ControlFlow.EVENT_LOOP_FREQUENCY = 10;
 
 
 /**
- * Tracks the active execution frame for this application. Lazily initialized
+ * Tracks the active execution frame for this instance. Lazily initialized
  * when the first task is scheduled.
- * @type {webdriver.promise.Application.Frame_}
- * @private
+ * @private {webdriver.promise.Frame_}
  */
-webdriver.promise.Application.prototype.activeFrame_ = null;
+webdriver.promise.ControlFlow.prototype.activeFrame_ = null;
 
 
 /**
@@ -826,41 +936,38 @@ webdriver.promise.Application.prototype.activeFrame_ = null;
  * a function to run in the context of a new frame, this pointer is used to
  * ensure tasks are scheduled within the newly created frame, even though it
  * won't be active yet.
- * @type {webdriver.promise.Application.Frame_}
- * @private
+ * @private {webdriver.promise.Frame_}
  * @see {#runInNewFrame_}
  */
-webdriver.promise.Application.prototype.schedulingFrame_ = null;
+webdriver.promise.ControlFlow.prototype.schedulingFrame_ = null;
 
 
 /**
- * Timeout ID set when the application is about to shutdown without any errors
- * being detected. Upon shutting down, the application will emit an
- * {@link webdriver.promise.Application.EventType.IDLE} event. Idle events
+ * Timeout ID set when the flow is about to shutdown without any errors
+ * being detected. Upon shutting down, the flow will emit an
+ * {@link webdriver.promise.ControlFlow.EventType.IDLE} event. Idle events
  * always follow a brief timeout in order to catch latent errors from the last
  * completed task. If this task had a callback registered, but no errback, and
  * the task fails, the unhandled failure would not be reported by the promise
  * system until the next turn of the event loop:
  *
  *   // Schedule 1 task that fails.
- *   var result = webriver.Application.getInstance().schedule('example',
+ *   var result = webriver.promise.controlFlow().schedule('example',
  *       function() { return webdriver.promise.rejected('failed'); });
  *   // Set a callback on the result. This delays reporting the unhandled
  *   // failure for 1 turn of the event loop.
  *   result.then(goog.nullFunction);
  *
- * @type {?number}
- * @private
+ * @private {?number}
  */
-webdriver.promise.Application.prototype.shutdownId_ = null;
+webdriver.promise.ControlFlow.prototype.shutdownId_ = null;
 
 
 /**
- * Interval ID for the application event loop.
- * @type {?number}
- * @private
+ * Interval ID for this instance's event loop.
+ * @private {?number}
  */
-webdriver.promise.Application.prototype.eventLoopId_ = null;
+webdriver.promise.ControlFlow.prototype.eventLoopId_ = null;
 
 
 /**
@@ -872,30 +979,28 @@ webdriver.promise.Application.prototype.eventLoopId_ = null;
  * the rejected promise at any point in same turn of the event loop that the
  * promise was rejected.
  *
- * <p>When this Application's own event loop triggers, it will not run if there
+ * <p>When this flow's own event loop triggers, it will not run if there
  * are any outstanding promise rejections. This allows unhandled promises to
  * be reported before a new task is started, ensuring the error is reported to
  * the current task queue.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
-webdriver.promise.Application.prototype.pendingRejections_ = 0;
+webdriver.promise.ControlFlow.prototype.pendingRejections_ = 0;
 
 
 /**
  * The number of aborted frames since the last time a task was executed or a
  * frame completed successfully.
- * @type {number}
- * @private
+ * @private {number}
  */
-webdriver.promise.Application.prototype.numAbortedFrames_ = 0;
+webdriver.promise.ControlFlow.prototype.numAbortedFrames_ = 0;
 
 
 /**
  * Resets this instance, clearing its queue and removing all event listeners.
  */
-webdriver.promise.Application.prototype.reset = function() {
+webdriver.promise.ControlFlow.prototype.reset = function() {
   this.activeFrame_ = null;
   this.clearHistory();
   this.removeAllListeners();
@@ -909,10 +1014,10 @@ webdriver.promise.Application.prototype.reset = function() {
  * includes the most recently completed task, as well as any parent tasks. In
  * the returned summary, the task at index N is considered a sub-task of the
  * task at index N+1.
- * @return {!Array.<string>} A summary of this application's recent task
+ * @return {!Array.<string>} A summary of this instance's recent task
  *     activity.
  */
-webdriver.promise.Application.prototype.getHistory = function() {
+webdriver.promise.ControlFlow.prototype.getHistory = function() {
   var pendingTasks = [];
   var currentFrame = this.activeFrame_;
   while (currentFrame) {
@@ -922,8 +1027,7 @@ webdriver.promise.Application.prototype.getHistory = function() {
     }
     // A frame's parent node will always be another frame.
     currentFrame =
-        (/** @type {webdriver.promise.Application.Frame_} */currentFrame.
-            getParent());
+        /** @type {webdriver.promise.Frame_} */ (currentFrame.getParent());
   }
 
   var fullHistory = goog.array.concat(this.history_, pendingTasks);
@@ -934,17 +1038,17 @@ webdriver.promise.Application.prototype.getHistory = function() {
 
 
 /** Clears this instance's task history. */
-webdriver.promise.Application.prototype.clearHistory = function() {
+webdriver.promise.ControlFlow.prototype.clearHistory = function() {
   this.history_ = [];
 };
 
 
 /**
- * Removes a completed task from this application's history record. If any
+ * Removes a completed task from this instance's history record. If any
  * tasks remain from aborted frames, those will be removed as well.
  * @private
  */
-webdriver.promise.Application.prototype.trimHistory_ = function() {
+webdriver.promise.ControlFlow.prototype.trimHistory_ = function() {
   if (this.numAbortedFrames_) {
     goog.array.splice(this.history_,
         this.history_.length - this.numAbortedFrames_,
@@ -957,41 +1061,46 @@ webdriver.promise.Application.prototype.trimHistory_ = function() {
 
 /**
  * Property used to track whether an error has been annotated by
- * {@link webdriver.promise.Application#annotateError}.
- * @type {string}
+ * {@link webdriver.promise.ControlFlow#annotateError}.
+ * @private {string}
  * @const
- * @private
  */
-webdriver.promise.Application.ANNOTATION_PROPERTY_ =
+webdriver.promise.ControlFlow.ANNOTATION_PROPERTY_ =
     'webdriver_promise_error_';
 
 
 /**
- * Appends a summary of this application's recent task history to the given
+ * Appends a summary of this instance's recent task history to the given
  * error's stack trace. This function will also ensure the error's stack trace
  * is in canonical form.
  * @param {!(Error|goog.testing.JsUnitException)} e The error to annotate.
  * @return {!(Error|goog.testing.JsUnitException)} The annotated error.
  */
-webdriver.promise.Application.prototype.annotateError = function(e) {
-  if (!!e[webdriver.promise.Application.ANNOTATION_PROPERTY_]) {
+webdriver.promise.ControlFlow.prototype.annotateError = function(e) {
+  if (!!e[webdriver.promise.ControlFlow.ANNOTATION_PROPERTY_]) {
     return e;
   }
 
-  e = webdriver.stacktrace.format(e);
-  e.stack += [
-    '\n==== async task ====\n',
-    this.getHistory().join('\n==== async task ====\n')
-  ].join('');
-  e[webdriver.promise.Application.ANNOTATION_PROPERTY_] = true;
+  var history = this.getHistory();
+  if (history.length) {
+    e = webdriver.stacktrace.format(e);
+
+    /** @type {!Error} */(e).stack = (e.stack || e.stackTrace || '') + [
+      '\n==== async task ====\n',
+      history.join('\n==== async task ====\n')
+    ].join('');
+
+    e[webdriver.promise.ControlFlow.ANNOTATION_PROPERTY_] = true;
+  }
+
   return e;
 };
 
 
 /**
- * @return {string} The scheduled tasks still pending with this application.
+ * @return {string} The scheduled tasks still pending with this instance.
  */
-webdriver.promise.Application.prototype.getSchedule = function() {
+webdriver.promise.ControlFlow.prototype.getSchedule = function() {
   return this.activeFrame_ ? this.activeFrame_.getRoot().toString() : '[]';
 };
 
@@ -1000,28 +1109,30 @@ webdriver.promise.Application.prototype.getSchedule = function() {
  * Schedules a task for execution. If there is nothing currently in the
  * queue, the task will be executed in the next turn of the event loop.
  *
- * @param {string} description A description of the task.
  * @param {!Function} fn The function to call to start the task. If the
- *     function returns a {@code webdriver.promise.Promise}, the application
+ *     function returns a {@link webdriver.promise.Promise}, this instance
  *     will wait for it to be resolved before starting the next task.
+ * @param {string=} opt_description A description of the task.
  * @return {!webdriver.promise.Promise} A promise that will be resolved with
  *     the result of the action.
  */
-webdriver.promise.Application.prototype.schedule = function(description, fn) {
+webdriver.promise.ControlFlow.prototype.execute = function(
+    fn, opt_description) {
   this.cancelShutdown_();
 
   if (!this.activeFrame_) {
-    this.activeFrame_ = new webdriver.promise.Application.Frame_();
+    this.activeFrame_ = new webdriver.promise.Frame_(this);
   }
 
   // Trim an extra frame off the generated stack trace for the call to this
   // function.
   var snapshot = new webdriver.stacktrace.Snapshot(1);
-  var task = new webdriver.promise.Application.Task_(fn, description, snapshot);
+  var task = new webdriver.promise.Task_(
+      this, fn, opt_description || '', snapshot);
   var scheduleIn = this.schedulingFrame_ || this.activeFrame_;
   scheduleIn.addChild(task);
 
-  this.emit(webdriver.promise.Application.EventType.SCHEDULE_TASK);
+  this.emit(webdriver.promise.ControlFlow.EventType.SCHEDULE_TASK);
 
   this.scheduleEventLoopStart_();
   return task.promise;
@@ -1032,16 +1143,16 @@ webdriver.promise.Application.prototype.schedule = function(description, fn) {
  * Inserts a {@code setTimeout} into the command queue. This is equivalent to
  * a thread sleep in a synchronous programming language.
  *
- * @param {string} description A description to accompany the timeout.
  * @param {number} ms The timeout delay, in milliseconds.
+ * @param {string=} opt_description A description to accompany the timeout.
  * @return {!webdriver.promise.Promise} A promise that will be resolved with
  *     the result of the action.
  */
-webdriver.promise.Application.prototype.scheduleTimeout = function(description,
-                                                                   ms) {
-  return this.schedule(description, function() {
+webdriver.promise.ControlFlow.prototype.timeout = function(
+    ms, opt_description) {
+  return this.execute(function() {
     return webdriver.promise.delayed(ms);
-  });
+  }, opt_description);
 };
 
 
@@ -1049,7 +1160,7 @@ webdriver.promise.Application.prototype.scheduleTimeout = function(description,
  * Schedules a task that shall wait for a condition to hold. Each condition
  * function may return any value, but it will always be evaluated as a boolean.
  *
- * <p>Condition functions may schedule sub-tasks with this application, however,
+ * <p>Condition functions may schedule sub-tasks with this instance, however,
  * their execution time will be factored into whether a wait has timed out.
  *
  * <p>In the event a condition returns a Promise, the polling loop will wait for
@@ -1060,7 +1171,6 @@ webdriver.promise.Application.prototype.scheduleTimeout = function(description,
  * <p>If the condition function throws, or returns a rejected promise, the
  * wait task will fail.
  *
- * @param {string} description A description of the wait.
  * @param {!Function} condition The condition function to poll.
  * @param {number} timeout How long to wait, in milliseconds, for the condition
  *     to hold before timing out.
@@ -1070,14 +1180,12 @@ webdriver.promise.Application.prototype.scheduleTimeout = function(description,
  *     condition has been satisified. The promise shall be rejected if the wait
  *     times out waiting for the condition.
  */
-webdriver.promise.Application.prototype.scheduleWait = function(description,
-                                                                condition,
-                                                                timeout,
-                                                                opt_message) {
+webdriver.promise.ControlFlow.prototype.wait = function(
+    condition, timeout, opt_message) {
   var sleep = Math.min(timeout, 100);
   var self = this;
 
-  return this.schedule(description, function() {
+  return this.execute(function() {
     var startTime = goog.now();
     var waitResult = new webdriver.promise.Deferred();
     var waitFrame = self.activeFrame_;
@@ -1086,32 +1194,46 @@ webdriver.promise.Application.prototype.scheduleWait = function(description,
     return waitResult.promise;
 
     function pollCondition() {
-      var result = self.runInNewFrame_(condition);
-      return webdriver.promise.when(result, function(value) {
+      self.runInNewFrame_(condition, function(value) {
         var elapsed = goog.now() - startTime;
         if (!!value) {
           waitFrame.isWaiting = false;
-          waitResult.resolve(value);
+          waitResult.fulfill(value);
         } else if (elapsed >= timeout) {
           waitResult.reject(new Error((opt_message ? opt_message + '\n' : '') +
               'Wait timed out after ' + elapsed + 'ms'));
         } else {
-          setTimeout(pollCondition, sleep);
+          self.timer.setTimeout(pollCondition, sleep);
         }
-      }, waitResult.reject);
+      }, waitResult.reject, true);
     }
+  }, opt_message);
+};
+
+
+/**
+ * Schedules a task that will wait for another promise to resolve.  The resolved
+ * promise's value will be returned as the task result.
+ * @param {!webdriver.promise.Promise} promise The promise to wait on.
+ * @return {!webdriver.promise.Promise} A promise that will resolve when the
+ *     task has completed.
+ */
+webdriver.promise.ControlFlow.prototype.await = function(promise) {
+  return this.execute(function() {
+    return promise;
   });
 };
 
 
 /**
- * Schedules the interval for this application's event loop, if necessary.
+ * Schedules the interval for this instance's event loop, if necessary.
  * @private
  */
-webdriver.promise.Application.prototype.scheduleEventLoopStart_ = function() {
+webdriver.promise.ControlFlow.prototype.scheduleEventLoopStart_ = function() {
   if (!this.eventLoopId_) {
-    this.eventLoopId_ = setInterval(goog.bind(this.runEventLoop_, this),
-        webdriver.promise.Application.EVENT_LOOP_FREQUENCY);
+    this.eventLoopId_ = this.timer.setInterval(
+        goog.bind(this.runEventLoop_, this),
+        webdriver.promise.ControlFlow.EVENT_LOOP_FREQUENCY);
   }
 };
 
@@ -1120,9 +1242,9 @@ webdriver.promise.Application.prototype.scheduleEventLoopStart_ = function() {
  * Cancels the event loop, if necessary.
  * @private
  */
-webdriver.promise.Application.prototype.cancelEventLoop_ = function() {
+webdriver.promise.ControlFlow.prototype.cancelEventLoop_ = function() {
   if (this.eventLoopId_) {
-    clearInterval(this.eventLoopId_);
+    this.timer.clearInterval(this.eventLoopId_);
     this.eventLoopId_ = null;
   }
 };
@@ -1131,11 +1253,11 @@ webdriver.promise.Application.prototype.cancelEventLoop_ = function() {
 /**
  * Executes the next task for the current frame. If the current frame has no
  * more tasks, the frame's result will be resolved, returning control to the
- * frame's creator. This will terminate the application if the completed
- * frame was at the top of the stack.
+ * frame's creator. This will terminate the flow if the completed frame was at
+ * the top of the stack.
  * @private
  */
-webdriver.promise.Application.prototype.runEventLoop_ = function() {
+webdriver.promise.ControlFlow.prototype.runEventLoop_ = function() {
   // If we get here and there are pending promise rejections, then those
   // promises are queued up to run as soon as this (JS) event loop terminates.
   // Short-circuit our loop to give those promises a chance to run. Otherwise,
@@ -1145,7 +1267,7 @@ webdriver.promise.Application.prototype.runEventLoop_ = function() {
     return;
   }
 
-  // If the app aborts due to an unhandled exception after we've scheduled
+  // If the flow aborts due to an unhandled exception after we've scheduled
   // another turn of the execution loop, we can end up in here with no tasks
   // left. This is OK, just quietly return.
   if (!this.activeFrame_) {
@@ -1170,24 +1292,29 @@ webdriver.promise.Application.prototype.runEventLoop_ = function() {
   }, this);
 
   this.trimHistory_();
-  var result = this.runInNewFrame_(task.execute, true);
   var self = this;
-  webdriver.promise.asap(result, function(result) {
+  this.runInNewFrame_(task.execute, function(result) {
     markTaskComplete();
-    task.resolve(result);
+    task.fulfill(result);
   }, function(error) {
     markTaskComplete();
-    task.reject(self.annotateError(error));
-  });
+
+    if (!webdriver.promise.isError_(error) &&
+        !webdriver.promise.isPromise(error)) {
+      error = Error(error);
+    }
+
+    task.reject(self.annotateError(/** @type {!Error} */ (error)));
+  }, true);
 };
 
 
 /**
- * @return {webdriver.promise.Application.Task_} The next task to execute, or
+ * @return {webdriver.promise.Task_} The next task to execute, or
  *     {@code null} if a frame was resolved.
  * @private
  */
-webdriver.promise.Application.prototype.getNextTask_ = function() {
+webdriver.promise.ControlFlow.prototype.getNextTask_ = function() {
   var firstChild = this.activeFrame_.getFirstChild();
   if (!firstChild) {
     if (!this.activeFrame_.isWaiting) {
@@ -1196,7 +1323,7 @@ webdriver.promise.Application.prototype.getNextTask_ = function() {
     return null;
   }
 
-  if (firstChild instanceof webdriver.promise.Application.Frame_) {
+  if (firstChild instanceof webdriver.promise.Frame_) {
     this.activeFrame_ = firstChild;
     return this.getNextTask_();
   }
@@ -1207,22 +1334,22 @@ webdriver.promise.Application.prototype.getNextTask_ = function() {
 
 
 /**
- * @param {!webdriver.promise.Application.Frame_} frame The frame to resolve.
+ * @param {!webdriver.promise.Frame_} frame The frame to resolve.
  * @private
  */
-webdriver.promise.Application.prototype.resolveFrame_ = function(frame) {
+webdriver.promise.ControlFlow.prototype.resolveFrame_ = function(frame) {
   if (this.activeFrame_ === frame) {
     // Frame parent is always another frame, but the compiler is not smart
     // enough to recognize this.
     this.activeFrame_ =
-        (/** @type {webdriver.promise.Application.Frame_} */frame.getParent());
+        (/** @type {webdriver.promise.Frame_} */frame.getParent());
   }
 
   if (frame.getParent()) {
     frame.getParent().removeChild(frame);
   }
   this.trimHistory_();
-  frame.resolve();
+  frame.fulfill();
 
   if (!this.activeFrame_) {
     this.commenceShutdown_();
@@ -1232,20 +1359,16 @@ webdriver.promise.Application.prototype.resolveFrame_ = function(frame) {
 
 /**
  * Aborts the current frame. The frame, and all of the tasks scheduled within it
- * will be discarded. If this application does not have an active frame, it will
+ * will be discarded. If this instance does not have an active frame, it will
  * immediately terminate all execution.
  * @param {*} error The reason the frame is being aborted; typically either
  *     an Error or string.
  * @private
  */
-webdriver.promise.Application.prototype.abortFrame_ = function(error) {
-  // Annotate the error value if it is Error-like.  We cannot use an instanceof
-  // check because in Node the value may come from a different context that
-  // this script so instanceof Error would fail.
-  if (goog.isObject(error) &&
-      goog.isString(error['message']) &&
-      goog.isString(error['stack'])) {
-    this.annotateError((/** @type {!Error} */error));
+webdriver.promise.ControlFlow.prototype.abortFrame_ = function(error) {
+  // Annotate the error value if it is Error-like.
+  if (webdriver.promise.isError_(error)) {
+    this.annotateError(/** @type {!Error} */ (error));
   }
   this.numAbortedFrames_++;
 
@@ -1256,7 +1379,7 @@ webdriver.promise.Application.prototype.abortFrame_ = function(error) {
 
   // Frame parent is always another frame, but the compiler is not smart
   // enough to recognize this.
-  var parent = (/** @type {webdriver.promise.Application.Frame_} */
+  var parent = (/** @type {webdriver.promise.Frame_} */
       this.activeFrame_.getParent());
   if (parent) {
     parent.removeChild(this.activeFrame_);
@@ -1276,22 +1399,19 @@ webdriver.promise.Application.prototype.abortFrame_ = function(error) {
  * the function have been completed. If the function's frame is aborted, the
  * returned promise will be rejected.
  *
- * <p>When executing a {@link webdriver.promise.Application.Task_}, this
- * application's active frame will be updated to the newly created frame to
- * permit tasks to schedule sub-tasks.
- *
  * @param {!Function} fn The function to execute.
- * @param {boolean=} opt_isTask Whether the function is a task's
- *     {@link webdriver.promise.Application.Task_#execute execute} function.
- * @return {*} The function's return value, or a promise that will be resolved
- *     once all tasks scheduled by the function have completed.
+ * @param {function(*)} callback The function to call with a successful result.
+ * @param {function(*)} errback The function to call if there is an error.
+ * @param {boolean=} opt_activate Whether the active frame should be updated to
+ *     the newly created frame so tasks are treated as sub-tasks.
  * @private
  */
-webdriver.promise.Application.prototype.runInNewFrame_ = function(fn,
-                                                                  opt_isTask) {
-  var newFrame = new webdriver.promise.Application.Frame_(),
+webdriver.promise.ControlFlow.prototype.runInNewFrame_ = function(
+    fn, callback, errback, opt_activate) {
+  var newFrame = new webdriver.promise.Frame_(this),
       self = this,
       oldFrame = this.activeFrame_;
+
   try {
     if (!this.activeFrame_) {
       this.activeFrame_ = newFrame;
@@ -1299,35 +1419,42 @@ webdriver.promise.Application.prototype.runInNewFrame_ = function(fn,
       this.activeFrame_.addChild(newFrame);
     }
 
-    if (opt_isTask) {
+    // Activate the new frame to force tasks to be treated as sub-tasks of
+    // the parent frame.
+    if (opt_activate) {
       this.activeFrame_ = newFrame;
     }
 
     try {
       this.schedulingFrame_ = newFrame;
+      webdriver.promise.pushFlow_(this);
       var result = fn();
     } finally {
+      webdriver.promise.popFlow_();
       this.schedulingFrame_ = null;
     }
     newFrame.lockFrame();
 
+    // If there was nothing scheduled in the new frame we can discard the
+    // frame and return immediately.
     if (!newFrame.children_.length) {
       removeNewFrame();
-      return result;
+      webdriver.promise.asap(result, callback, errback);
+      return;
     }
 
-    return newFrame.then(function() {
-      return result;
+    newFrame.then(function() {
+      webdriver.promise.asap(result, callback, errback);
     }, function(e) {
       if (result instanceof webdriver.promise.Promise && result.isPending()) {
         result.cancel(e);
-        return result;
+        e = result;
       }
-      throw e;
+      errback(e);
     });
   } catch (ex) {
     removeNewFrame();
-    return webdriver.promise.rejected(ex);
+    errback(ex);
   }
 
   function removeNewFrame() {
@@ -1341,28 +1468,27 @@ webdriver.promise.Application.prototype.runInNewFrame_ = function(fn,
 
 
 /**
- * Commences the shutdown sequence for this application. The application will
- * wait for 1 turn of the event loop before emitting the
- * {@link webdriver.promise.Application.EventType.IDLE} event to signal
+ * Commences the shutdown sequence for this instance. After one turn of the
+ * event loop, this object will emit the
+ * {@link webdriver.promise.ControlFlow.EventType.IDLE} event to signal
  * listeners that it has completed. During this wait, if another task is
- * scheduled, the shutdown will be aborted and the application will continue
- * to operate.
+ * scheduled, the shutdown will be aborted.
  * @private
  */
-webdriver.promise.Application.prototype.commenceShutdown_ = function() {
+webdriver.promise.ControlFlow.prototype.commenceShutdown_ = function() {
   if (!this.shutdownId_) {
     // Go ahead and stop the event loop now.  If we're in here, then there are
     // no more frames with tasks to execute. If we waited to cancel the event
     // loop in our timeout below, the event loop could trigger *before* the
     // timeout, generating an error from there being no frames.
-    // If #schedule is called before the timeout below fires, it will cancel
+    // If #execute is called before the timeout below fires, it will cancel
     // the timeout and restart the event loop.
     this.cancelEventLoop_();
 
     var self = this;
-    self.shutdownId_ = setTimeout(function() {
+    self.shutdownId_ = self.timer.setTimeout(function() {
       self.shutdownId_ = null;
-      self.emit(webdriver.promise.Application.EventType.IDLE);
+      self.emit(webdriver.promise.ControlFlow.EventType.IDLE);
     }, 0);
   }
 };
@@ -1372,36 +1498,36 @@ webdriver.promise.Application.prototype.commenceShutdown_ = function() {
  * Cancels the shutdown sequence if it is currently scheduled.
  * @private
  */
-webdriver.promise.Application.prototype.cancelShutdown_ = function() {
+webdriver.promise.ControlFlow.prototype.cancelShutdown_ = function() {
   if (this.shutdownId_) {
-    clearTimeout(this.shutdownId_);
+    this.timer.clearTimeout(this.shutdownId_);
     this.shutdownId_ = null;
   }
 };
 
 
 /**
- * Aborts this application, abandoning all remaining tasks. If there are
+ * Aborts this flow, abandoning all remaining tasks. If there are
  * listeners registered, an {@code UNCAUGHT_EXCEPTION} will be emitted with the
  * offending {@code error}, otherwise, the {@code error} will be rethrown to the
  * global error handler.
- * @param {*} error Object describing the error that caused the application to
+ * @param {*} error Object describing the error that caused the flow to
  *     abort; usually either an Error or string value.
  * @private
  */
-webdriver.promise.Application.prototype.abortNow_ = function(error) {
+webdriver.promise.ControlFlow.prototype.abortNow_ = function(error) {
   this.activeFrame_ = null;
   this.cancelShutdown_();
   this.cancelEventLoop_();
 
   var listeners = this.listeners(
-      webdriver.promise.Application.EventType.UNCAUGHT_EXCEPTION);
+      webdriver.promise.ControlFlow.EventType.UNCAUGHT_EXCEPTION);
   if (!listeners.length) {
-    setTimeout(function() {
+    this.timer.setTimeout(function() {
       throw error;
     }, 0);
   } else {
-    this.emit(webdriver.promise.Application.EventType.UNCAUGHT_EXCEPTION,
+    this.emit(webdriver.promise.ControlFlow.EventType.UNCAUGHT_EXCEPTION,
         error);
   }
 };
@@ -1409,43 +1535,44 @@ webdriver.promise.Application.prototype.abortNow_ = function(error) {
 
 
 /**
- * A single node in an {@link webdriver.promise.Application}'s task tree.
+ * A single node in an {@link webdriver.promise.ControlFlow}'s task tree.
+ * @param {!webdriver.promise.ControlFlow} flow The flow this instance belongs
+ *     to.
  * @constructor
  * @extends {webdriver.promise.Deferred}
  * @private
  */
-webdriver.promise.Application.Node_ = function() {
-  webdriver.promise.Deferred.call(this);
+webdriver.promise.Node_ = function(flow) {
+  webdriver.promise.Deferred.call(this, null, flow);
 };
-goog.inherits(webdriver.promise.Application.Node_, webdriver.promise.Deferred);
+goog.inherits(webdriver.promise.Node_, webdriver.promise.Deferred);
 
 
 /**
  * This node's parent.
- * @type {webdriver.promise.Application.Node_}
- * @private
+ * @private {webdriver.promise.Node_}
  */
-webdriver.promise.Application.Node_.prototype.parent_ = null;
+webdriver.promise.Node_.prototype.parent_ = null;
 
 
-/** @return {webdriver.promise.Application.Node_} This node's parent. */
-webdriver.promise.Application.Node_.prototype.getParent = function() {
+/** @return {webdriver.promise.Node_} This node's parent. */
+webdriver.promise.Node_.prototype.getParent = function() {
   return this.parent_;
 };
 
 
 /**
- * @param {webdriver.promise.Application.Node_} parent This node's new parent.
+ * @param {webdriver.promise.Node_} parent This node's new parent.
  */
-webdriver.promise.Application.Node_.prototype.setParent = function(parent) {
+webdriver.promise.Node_.prototype.setParent = function(parent) {
   this.parent_ = parent;
 };
 
 
 /**
- * @return {!webdriver.promise.Application.Node_} The root of this node's tree.
+ * @return {!webdriver.promise.Node_} The root of this node's tree.
  */
-webdriver.promise.Application.Node_.prototype.getRoot = function() {
+webdriver.promise.Node_.prototype.getRoot = function() {
   var root = this;
   while (root.parent_) {
     root = root.parent_;
@@ -1456,38 +1583,36 @@ webdriver.promise.Application.Node_.prototype.getRoot = function() {
 
 
 /**
- * An execution frame within a {@link webdriver.promise.Application}.  Each
+ * An execution frame within a {@link webdriver.promise.ControlFlow}.  Each
  * frame represents the execution context for either a
- * {@link webdriver.promise.Application.Task_} or a callback on a
+ * {@link webdriver.promise.Task_} or a callback on a
  * {@link webdriver.promise.Deferred}.
  *
  * <p>Each frame may contain sub-frames.  If child N is a sub-frame, then the
  * items queued within it are given priority over child N+1.
  *
+ * @param {!webdriver.promise.ControlFlow} flow The flow this instance belongs
+ *     to.
  * @constructor
- * @extends {webdriver.promise.Application.Node_}
+ * @extends {webdriver.promise.Node_}
  * @private
  */
-webdriver.promise.Application.Frame_ = function() {
-  webdriver.promise.Application.Node_.call(this);
+webdriver.promise.Frame_ = function(flow) {
+  webdriver.promise.Node_.call(this, flow);
 
   /**
-   * @type {!Array.<!(webdriver.promise.Application.Frame_|
-   *                  webdriver.promise.Application.Task_)>}
-   * @private
+   * @private {!Array.<!(webdriver.promise.Frame_|webdriver.promise.Task_)>}
    */
   this.children_ = [];
 };
-goog.inherits(webdriver.promise.Application.Frame_,
-    webdriver.promise.Application.Node_);
+goog.inherits(webdriver.promise.Frame_, webdriver.promise.Node_);
 
 
 /**
  * The task currently being executed within this frame.
- * @type {webdriver.promise.Application.Task_}
- * @private
+ * @private {webdriver.promise.Task_}
  */
-webdriver.promise.Application.Frame_.prototype.pendingTask_ = null;
+webdriver.promise.Frame_.prototype.pendingTask_ = null;
 
 
 /**
@@ -1499,17 +1624,16 @@ webdriver.promise.Application.Frame_.prototype.pendingTask_ = null;
  * tasks scheduled within it should have priority over previously scheduled
  * tasks:
  * <code><pre>
- *   var app = webdriver.promise.Application.getInstance();
- *   app.schedule('start here', goog.nullFunction).then(function() {
- *     app.schedule('this should execute 2nd', goog.nullFunction);
+ *   var flow = webdriver.promise.controlFlow();
+ *   flow.execute('start here', goog.nullFunction).then(function() {
+ *     flow.execute('this should execute 2nd', goog.nullFunction);
  *   });
- *   app.schedule('this should execute last', goog.nullFunction);
+ *   flow.execute('this should execute last', goog.nullFunction);
  * </pre></code>
  *
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
-webdriver.promise.Application.Frame_.prototype.isActive_ = false;
+webdriver.promise.Frame_.prototype.isActive_ = false;
 
 
 /**
@@ -1520,52 +1644,50 @@ webdriver.promise.Application.Frame_.prototype.isActive_ = false;
  * added represent callbacks on a {@link webdriver.promise.Deferred}, whose
  * tasks must be given priority over previously scheduled tasks.
  *
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
-webdriver.promise.Application.Frame_.prototype.isLocked_ = false;
+webdriver.promise.Frame_.prototype.isLocked_ = false;
 
 
 /**
  * A reference to the last node inserted in this frame.
- * @type {webdriver.promise.Application.Node_}
- * @private
+ * @private {webdriver.promise.Node_}
  */
-webdriver.promise.Application.Frame_.prototype.lastInsertedChild_ = null;
+webdriver.promise.Frame_.prototype.lastInsertedChild_ = null;
 
 
 /**
- * @return {webdriver.promise.Application.Task_} The task currently executing
+ * @return {webdriver.promise.Task_} The task currently executing
  *     within this frame, if any.
  */
-webdriver.promise.Application.Frame_.prototype.getPendingTask = function() {
+webdriver.promise.Frame_.prototype.getPendingTask = function() {
   return this.pendingTask_;
 };
 
 
 /**
- * @param {webdriver.promise.Application.Task_} task The task currently
+ * @param {webdriver.promise.Task_} task The task currently
  *     executing within this frame, if any.
  */
-webdriver.promise.Application.Frame_.prototype.setPendingTask = function(task) {
+webdriver.promise.Frame_.prototype.setPendingTask = function(task) {
   this.pendingTask_ = task;
 };
 
 
 /** Locks this frame. */
-webdriver.promise.Application.Frame_.prototype.lockFrame = function() {
+webdriver.promise.Frame_.prototype.lockFrame = function() {
   this.isLocked_ = true;
 };
 
 
 /**
  * Adds a new node to this frame.
- * @param {!(webdriver.promise.Application.Frame_|
- *           webdriver.promise.Application.Task_)} node The node to insert.
+ * @param {!(webdriver.promise.Frame_|webdriver.promise.Task_)} node
+ *     The node to insert.
  */
-webdriver.promise.Application.Frame_.prototype.addChild = function(node) {
+webdriver.promise.Frame_.prototype.addChild = function(node) {
   if (this.lastInsertedChild_ &&
-      this.lastInsertedChild_ instanceof webdriver.promise.Application.Frame_ &&
+      this.lastInsertedChild_ instanceof webdriver.promise.Frame_ &&
       !this.lastInsertedChild_.isLocked_) {
     this.lastInsertedChild_.addChild(node);
     return;
@@ -1573,10 +1695,10 @@ webdriver.promise.Application.Frame_.prototype.addChild = function(node) {
 
   node.setParent(this);
 
-  if (this.isActive_ && node instanceof webdriver.promise.Application.Frame_) {
+  if (this.isActive_ && node instanceof webdriver.promise.Frame_) {
     var index = 0;
     if (this.lastInsertedChild_ instanceof
-        webdriver.promise.Application.Frame_) {
+        webdriver.promise.Frame_) {
       index = goog.array.indexOf(this.children_, this.lastInsertedChild_) + 1;
     }
     goog.array.insertAt(this.children_, node, index);
@@ -1590,21 +1712,22 @@ webdriver.promise.Application.Frame_.prototype.addChild = function(node) {
 
 
 /**
- * @return {(webdriver.promise.Application.Frame_|
- *           webdriver.promise.Application.Task_)} This frame's fist child.
+ * @return {(webdriver.promise.Frame_|webdriver.promise.Task_)} This frame's
+ *     fist child.
  */
-webdriver.promise.Application.Frame_.prototype.getFirstChild = function() {
+webdriver.promise.Frame_.prototype.getFirstChild = function() {
   this.isActive_ = true;
+  this.lastInsertedChild_ = null;
   return this.children_[0];
 };
 
 
 /**
  * Removes a child from this frame.
- * @param {!(webdriver.promise.Application.Frame_|
- *           webdriver.promise.Application.Task_)} child The child to remove.
+ * @param {!(webdriver.promise.Frame_|webdriver.promise.Task_)} child
+ *     The child to remove.
  */
-webdriver.promise.Application.Frame_.prototype.removeChild = function(child) {
+webdriver.promise.Frame_.prototype.removeChild = function(child) {
   var index = goog.array.indexOf(this.children_, child);
   child.setParent(null);
   goog.array.removeAt(this.children_, index);
@@ -1615,29 +1738,31 @@ webdriver.promise.Application.Frame_.prototype.removeChild = function(child) {
 
 
 /** @override */
-webdriver.promise.Application.Frame_.prototype.toString = function() {
+webdriver.promise.Frame_.prototype.toString = function() {
   return '[' + goog.array.map(this.children_, function(child) {
     return child.toString();
-  }).join(',') + ']';
+  }).join(', ') + ']';
 };
 
 
 
 /**
- * A task to be executed by a {@link webdriver.promise.Application}.
+ * A task to be executed by a {@link webdriver.promise.ControlFlow}.
  *
+ * @param {!webdriver.promise.ControlFlow} flow The flow this instances belongs
+ *     to.
  * @param {!Function} fn The function to call when the task executes. If it
- *     returns a {@code webdriver.promise.Promise}, the application will wait
+ *     returns a {@code webdriver.promise.Promise}, the flow will wait
  *     for it to be resolved before starting the next task.
  * @param {string} description A description of the task for debugging.
  * @param {!webdriver.stacktrace.Snapshot} snapshot A snapshot of the stack
  *     when this task was scheduled.
  * @constructor
- * @extends {webdriver.promise.Application.Node_}
+ * @extends {webdriver.promise.Node_}
  * @private
  */
-webdriver.promise.Application.Task_ = function(fn, description, snapshot) {
-  webdriver.promise.Application.Node_.call(this);
+webdriver.promise.Task_ = function(flow, fn, description, snapshot) {
+  webdriver.promise.Node_.call(this, flow);
 
   /**
    * Executes this task.
@@ -1645,34 +1770,103 @@ webdriver.promise.Application.Task_ = function(fn, description, snapshot) {
    */
   this.execute = fn;
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.description_ = description;
 
-  /**
-   * @type {!webdriver.stacktrace.Snapshot}
-   * @private
-   */
+  /** @private {!webdriver.stacktrace.Snapshot} */
   this.snapshot_ = snapshot;
 };
-goog.inherits(webdriver.promise.Application.Task_,
-    webdriver.promise.Application.Node_);
+goog.inherits(webdriver.promise.Task_, webdriver.promise.Node_);
 
 
 /** @return {string} This task's description. */
-webdriver.promise.Application.Task_.prototype.getDescription = function() {
+webdriver.promise.Task_.prototype.getDescription = function() {
   return this.description_;
 };
 
 
 /** @override */
-webdriver.promise.Application.Task_.prototype.toString = function() {
+webdriver.promise.Task_.prototype.toString = function() {
   var stack = this.snapshot_.getStacktrace();
   var ret = this.description_;
   if (stack) {
-    ret += '\n' + stack;
+    if (this.description_) {
+      ret += '\n';
+    }
+    ret += stack;
   }
   return ret;
+};
+
+
+/**
+ * The default flow to use if no others are active.
+ * @private {!webdriver.promise.ControlFlow}
+ */
+webdriver.promise.defaultFlow_ = new webdriver.promise.ControlFlow();
+
+
+/**
+ * A stack of active control flows, with the top of the stack used to schedule
+ * commands. When there are multiple flows on the stack, the flow at index N
+ * represents a callback triggered within a task owned by the flow at index
+ * N-1.
+ * @private {!Array.<!webdriver.promise.ControlFlow>}
+ */
+webdriver.promise.activeFlows_ = [];
+
+
+/**
+ * Changes the default flow to use when no others are active.
+ * @param {!webdriver.promise.ControlFlow} flow The new default flow.
+ * @throws {Error} If the default flow is not currently active.
+ */
+webdriver.promise.setDefaultFlow = function(flow) {
+  if (webdriver.promise.activeFlows_.length) {
+    throw Error('You may only change the default flow while it is active');
+  }
+  webdriver.promise.defaultFlow_ = flow;
+};
+
+
+/**
+ * @return {!webdriver.promise.ControlFlow} The currently active control flow.
+ */
+webdriver.promise.controlFlow = function() {
+  return /** @type {!webdriver.promise.ControlFlow} */ (
+      goog.array.peek(webdriver.promise.activeFlows_) ||
+      webdriver.promise.defaultFlow_);
+};
+
+
+/**
+ * @param {!webdriver.promise.ControlFlow} flow The new flow.
+ * @private
+ */
+webdriver.promise.pushFlow_ = function(flow) {
+  webdriver.promise.activeFlows_.push(flow);
+};
+
+
+/** @private */
+webdriver.promise.popFlow_ = function() {
+  webdriver.promise.activeFlows_.pop();
+};
+
+
+/**
+ * Creates a new control flow. The provided callback will be invoked as the
+ * first task within the new flow, with the flow as its sole argument. Returns
+ * a promise that resolves to the callback result.
+ * @param {function(!webdriver.promise.ControlFlow)} callback The entry point
+ *     to the newly created flow.
+ * @return {!webdriver.promise.Promise} A promise that resolves to the callback
+ *     result.
+ */
+webdriver.promise.createFlow = function(callback) {
+  var flow = new webdriver.promise.ControlFlow(
+      webdriver.promise.defaultFlow_.timer);
+  return flow.execute(function() {
+    return callback(flow);
+  });
 };

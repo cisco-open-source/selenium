@@ -32,6 +32,7 @@ goog.require('webdriver.CommandName');
 goog.require('webdriver.Key');
 goog.require('webdriver.Locator');
 goog.require('webdriver.Session');
+goog.require('webdriver.logging');
 goog.require('webdriver.promise');
 
 
@@ -65,23 +66,20 @@ goog.require('webdriver.promise');
  *     known session or a promise that will be resolved to a session.
  * @param {!webdriver.CommandExecutor} executor The executor to use when
  *     sending commands to the browser.
+ * @param {webdriver.promise.ControlFlow=} opt_flow The flow to
+ *     schedule commands through. Defaults to the active flow object.
  * @constructor
  */
-webdriver.WebDriver = function(session, executor) {
+webdriver.WebDriver = function(session, executor, opt_flow) {
 
-  /**
-   * The browser session this driver is controlling.
-   * @type {!(webdriver.Session|webdriver.promise.Promise)}
-   * @private
-   */
+  /** @private {!(webdriver.Session|webdriver.promise.Promise)} */
   this.session_ = session;
 
-  /**
-   * Object used to execute individual commands.
-   * @type {!webdriver.CommandExecutor}
-   * @private
-   */
+  /** @private {!webdriver.CommandExecutor} */
   this.executor_ = executor;
+
+  /** @private {!webdriver.promise.ControlFlow} */
+  this.flow_ = opt_flow || webdriver.promise.controlFlow();
 };
 
 
@@ -130,14 +128,13 @@ webdriver.WebDriver.createSession = function(executor, desiredCapabilities) {
  */
 webdriver.WebDriver.acquireSession_ = function(executor, command, description) {
   var fn = goog.bind(executor.execute, executor, command);
-  var session = webdriver.promise.Application.getInstance().schedule(
-      description, function() {
-        return webdriver.promise.checkedNodeCall(fn).then(function(response) {
-          bot.response.checkResponse(response);
-          return new webdriver.Session(response['sessionId'],
-              response['value']);
-        });
-      });
+  var session = webdriver.promise.controlFlow().execute(function() {
+    return webdriver.promise.checkedNodeCall(fn).then(function(response) {
+      bot.response.checkResponse(response);
+      return new webdriver.Session(response['sessionId'],
+          response['value']);
+    });
+  }, description);
   return new webdriver.WebDriver(session, executor);
 };
 
@@ -172,7 +169,7 @@ webdriver.WebDriver.toWireValue_ = function(obj) {
         return webdriver.promise.fullyResolved(obj.toWireValue());
       }
       if (goog.isFunction(obj.toJSON)) {
-        return webdriver.promise.resolved(obj.toJSON());
+        return webdriver.promise.fulfilled(obj.toJSON());
       }
       if (goog.isNumber(obj.nodeType) && goog.isString(obj.nodeName)) {
         throw Error([
@@ -183,11 +180,11 @@ webdriver.WebDriver.toWireValue_ = function(obj) {
           goog.object.map((/** @type {!Object} */obj),
               webdriver.WebDriver.toWireValue_));
     case 'function':
-      return webdriver.promise.resolved('' + obj);
+      return webdriver.promise.fulfilled('' + obj);
     case 'undefined':
-      return webdriver.promise.resolved(null);
+      return webdriver.promise.fulfilled(null);
     default:
-      return webdriver.promise.resolved(obj);
+      return webdriver.promise.fulfilled(obj);
   }
 };
 
@@ -223,6 +220,15 @@ webdriver.WebDriver.fromWireValue_ = function(driver, value) {
 
 
 /**
+ * @return {!webdriver.promise.ControlFlow} The control flow used by this
+ *     instance.
+ */
+webdriver.WebDriver.prototype.controlFlow = function() {
+  return this.flow_;
+};
+
+
+/**
  * Schedules a {@code webdriver.Command} to be executed by this driver's
  * {@code webdriver.CommandExecutor}.
  * @param {!webdriver.Command} command The command to schedule.
@@ -236,8 +242,8 @@ webdriver.WebDriver.prototype.schedule = function(command, description) {
   checkHasNotQuit();
   command.setParameter('sessionId', this.session_);
 
-  var app = webdriver.promise.Application.getInstance();
-  return app.schedule(description, function() {
+  var flow = this.flow_;
+  return flow.execute(function() {
     // A call to WebDriver.quit() may have been scheduled in the same event
     // loop as this |command|, which would prevent us from detecting that the
     // driver has quit above.  Therefore, we need to make another quick check.
@@ -251,7 +257,7 @@ webdriver.WebDriver.prototype.schedule = function(command, description) {
           return webdriver.promise.checkedNodeCall(
               goog.bind(self.executor_.execute, self.executor_, command));
         });
-  }).then(function(response) {
+  }, description).then(function(response) {
     try {
       bot.response.checkResponse(response);
     } catch (ex) {
@@ -489,13 +495,12 @@ webdriver.WebDriver.prototype.executeAsyncScript = function(script, var_args) {
  */
 webdriver.WebDriver.prototype.call = function(fn, opt_scope, var_args) {
   var args = goog.array.slice(arguments, 2);
-  var app = webdriver.promise.Application.getInstance();
-  return app.schedule('WebDriver.call(' + (fn.name || 'function') + ')',
-      function() {
-        return webdriver.promise.fullyResolved(args).then(function(args) {
-          return fn.apply(opt_scope, args);
-        });
-      });
+  var flow = this.flow_;
+  return flow.execute(function() {
+    return webdriver.promise.fullyResolved(args).then(function(args) {
+      return fn.apply(opt_scope, args);
+    });
+  }, 'WebDriver.call(' + (fn.name || 'function') + ')');
 };
 
 
@@ -511,11 +516,7 @@ webdriver.WebDriver.prototype.call = function(fn, opt_scope, var_args) {
  *     wait condition has been satisfied.
  */
 webdriver.WebDriver.prototype.wait = function(fn, timeout, opt_message) {
-  var fnName = fn.name || '<anonymous function>';
-  var suffix = opt_message ? ' (' + opt_message + ')' : '';
-  return webdriver.promise.Application.getInstance().scheduleWait(
-      'WebDriver.wait(' + fnName + ')' + suffix,
-      fn, timeout, opt_message);
+  return this.flow_.wait(fn, timeout, opt_message);
 };
 
 
@@ -526,8 +527,7 @@ webdriver.WebDriver.prototype.wait = function(fn, timeout, opt_message) {
  *     sleep has finished.
  */
 webdriver.WebDriver.prototype.sleep = function(ms) {
-  return webdriver.promise.Application.getInstance().
-      scheduleTimeout('WebDriver.sleep(' + ms + ')', ms);
+  return this.flow_.timeout(ms, 'WebDriver.sleep(' + ms + ')');
 };
 
 
@@ -854,11 +854,7 @@ webdriver.WebDriver.prototype.switchTo = function() {
  */
 webdriver.WebDriver.Navigation = function(driver) {
 
-  /**
-   * The parent driver.
-   * @type {!webdriver.WebDriver}
-   * @private
-   */
+  /** @private {!webdriver.WebDriver} */
   this.driver_ = driver;
 };
 
@@ -921,11 +917,7 @@ webdriver.WebDriver.Navigation.prototype.refresh = function() {
  */
 webdriver.WebDriver.Options = function(driver) {
 
-  /**
-   * The parent driver.
-   * @type {!webdriver.WebDriver}
-   * @private
-   */
+  /** @private {!webdriver.WebDriver} */
   this.driver_ = driver;
 };
 
@@ -942,11 +934,8 @@ webdriver.WebDriver.Options = function(driver) {
  * @return {!webdriver.promise.Promise} A promise that will be resolved when the
  *     cookie has been added to the page.
  */
-webdriver.WebDriver.Options.prototype.addCookie = function(name, value,
-                                                           opt_path,
-                                                           opt_domain,
-                                                           opt_isSecure,
-                                                           opt_expiry) {
+webdriver.WebDriver.Options.prototype.addCookie = function(
+    name, value, opt_path, opt_domain, opt_isSecure, opt_expiry) {
   // We do not allow '=' or ';' in the name.
   if (/[;=]/.test(name)) {
     throw Error('Invalid cookie name "' + name + '"');
@@ -973,7 +962,7 @@ webdriver.WebDriver.Options.prototype.addCookie = function(name, value,
     }
     cookieString += ';expires=' + expiryDate.toUTCString();
     // Convert from milliseconds to seconds.
-    expiry = (/** @type {number} */opt_expiry) / 1000;
+    expiry = Math.floor(/** @type {number} */ (opt_expiry) / 1000);
   }
 
   return this.driver_.schedule(
@@ -997,7 +986,7 @@ webdriver.WebDriver.Options.prototype.addCookie = function(name, value,
  */
 webdriver.WebDriver.Options.prototype.deleteAllCookies = function() {
   return this.driver_.schedule(
-      new webdriver.Command(webdriver.CommandName.ADD_COOKIE),
+      new webdriver.Command(webdriver.CommandName.DELETE_ALL_COOKIES),
       'WebDriver.manage().deleteAllCookies()');
 };
 
@@ -1012,7 +1001,8 @@ webdriver.WebDriver.Options.prototype.deleteAllCookies = function() {
  */
 webdriver.WebDriver.Options.prototype.deleteCookie = function(name) {
   return this.driver_.schedule(
-      new webdriver.Command(webdriver.CommandName.DELETE_COOKIE),
+      new webdriver.Command(webdriver.CommandName.DELETE_COOKIE).
+          setParameter('name', name),
       'WebDriver.manage().deleteCookie(' + name + ')');
 };
 
@@ -1051,6 +1041,15 @@ webdriver.WebDriver.Options.prototype.getCookie = function(name) {
 
 
 /**
+ * @return {!webdriver.WebDriver.Logs} The interface for managing driver
+ *     logs.
+ */
+webdriver.WebDriver.Options.prototype.logs = function() {
+  return new webdriver.WebDriver.Logs(this.driver_);
+};
+
+
+/**
  * @return {!webdriver.WebDriver.Timeouts} The interface for managing driver
  *     timeouts.
  */
@@ -1076,11 +1075,7 @@ webdriver.WebDriver.Options.prototype.window = function() {
  */
 webdriver.WebDriver.Timeouts = function(driver) {
 
-  /**
-   * The parent driver.
-   * @type {!webdriver.WebDriver}
-   * @private
-   */
+  /** @private {!webdriver.WebDriver} */
   this.driver_ = driver;
 };
 
@@ -1131,6 +1126,22 @@ webdriver.WebDriver.Timeouts.prototype.setScriptTimeout = function(ms) {
 };
 
 
+/**
+ * Sets the amount of time to wait for a page load to complete before returning
+ * an error.  If the timeout is negative, page loads may be indefinite.
+ * @param {number} ms The amount of time to wait, in milliseconds.
+ * @return {!webdriver.promise.Promise} A promise that will be resolved when
+ *     the timeout has been set.
+ */
+webdriver.WebDriver.Timeouts.prototype.pageLoadTimeout = function(ms) {
+  return this.driver_.schedule(
+      new webdriver.Command(webdriver.CommandName.SET_TIMEOUT).
+          setParameter('type', 'page load').
+          setParameter('ms', ms),
+      'WebDriver.manage().timeouts().pageLoadTimeout(' + ms + ')');
+};
+
+
 
 /**
  * An interface for managing the current window.
@@ -1139,10 +1150,7 @@ webdriver.WebDriver.Timeouts.prototype.setScriptTimeout = function(ms) {
  */
 webdriver.WebDriver.Window = function(driver) {
 
-  /**
-   * @type {!webdriver.WebDriver}
-   * @private
-   */
+  /** @private {!webdriver.WebDriver} */
   this.driver_ = driver;
 };
 
@@ -1224,6 +1232,61 @@ webdriver.WebDriver.Window.prototype.maximize = function() {
 };
 
 
+/**
+ * Interface for managing WebDriver log records.
+ * @param {!webdriver.WebDriver} driver The parent driver.
+ * @constructor
+ */
+webdriver.WebDriver.Logs = function(driver) {
+
+  /** @private {!webdriver.WebDriver} */
+  this.driver_ = driver;
+};
+
+
+/**
+ * Fetches available log entries for the given type.
+ *
+ * <p/>Note that log buffers are reset after each call, meaning that
+ * available log entries correspond to those entries not yet returned for a
+ * given log type. In practice, this means that this call will return the
+ * available log entries since the last call, or from the start of the
+ * session.
+ *
+ * @param {!webdriver.logging.Type} type The desired log type.
+ * @return {!webdriver.promise.Promise.<!Array.<!webdriver.logging.Entry>>} A
+ *   promise that will resolve to a list of log entries for the specified
+ *   type.
+ */
+webdriver.WebDriver.Logs.prototype.get = function(type) {
+  return this.driver_.schedule(
+      new webdriver.Command(webdriver.CommandName.GET_LOG).
+          setParameter('type', type),
+      'WebDriver.manage().logs().get(' + type + ')').
+      then(function(entries) {
+        return goog.array.map(entries, function(entry) {
+          if (!(entry instanceof webdriver.logging.Entry)) {
+            return new webdriver.logging.Entry(
+                entry['level'], entry['message'], entry['timestamp']);
+          }
+          return entry;
+        });
+      });
+};
+
+
+/**
+ * Retrieves the log types available to this driver.
+ * @return {!webdriver.promise.Promise.<!Array.<!webdriver.logging.Type>>} A
+ *     promise that will resolve to a list of available log types.
+ */
+webdriver.WebDriver.Logs.prototype.getAvailableLogTypes = function() {
+  return this.driver_.schedule(
+      new webdriver.Command(webdriver.CommandName.GET_AVAILABLE_LOG_TYPES),
+      'WebDriver.manage().logs().getAvailableLogTypes()');
+};
+
+
 
 /**
  * An interface for changing the focus of the driver to another frame or window.
@@ -1232,11 +1295,7 @@ webdriver.WebDriver.Window.prototype.maximize = function() {
  */
 webdriver.WebDriver.TargetLocator = function(driver) {
 
-  /**
-   * The parent driver.
-   * @type {!webdriver.WebDriver}
-   * @private
-   */
+  /** @private {!webdriver.WebDriver} */
   this.driver_ = driver;
 };
 
@@ -1391,28 +1450,26 @@ webdriver.Key.chord = function(var_args) {
  * @extends {webdriver.promise.Deferred}
  */
 webdriver.WebElement = function(driver, id) {
-  webdriver.promise.Deferred.call(this);
+  webdriver.promise.Deferred.call(this, null, driver.controlFlow());
 
   /**
    * The parent WebDriver instance for this element.
-   * @type {!webdriver.WebDriver}
-   * @private
+   * @private {!webdriver.WebDriver}
    */
   this.driver_ = driver;
 
   // This class is responsible for resolving itself; delete the resolve and
   // reject methods so they may not be accessed by consumers of this class.
-  var resolve = goog.partial(this.resolve, this);
+  var fulfill = goog.partial(this.fulfill, this);
   var reject = this.reject;
   delete this.promise;
-  delete this.resolve;
+  delete this.fulfill;
   delete this.reject;
 
   /**
    * A promise that resolves to the JSON representation of this WebElement's
    * ID, as defined by the WebDriver wire protocol.
-   * @type {!webdriver.promise.Promise}
-   * @private
+   * @private {!webdriver.promise.Promise}
    * @see http://code.google.com/p/selenium/wiki/JsonWireProtocol
    */
   this.id_ = webdriver.promise.when(id, function(id) {
@@ -1429,7 +1486,7 @@ webdriver.WebElement = function(driver, id) {
 
   // This WebElement should not be resolved until its ID has been
   // fully resolved.
-  this.id_.then(resolve, reject);
+  this.id_.then(fulfill, reject);
 };
 goog.inherits(webdriver.WebElement, webdriver.promise.Deferred);
 
@@ -1452,7 +1509,7 @@ webdriver.WebElement.ELEMENT_KEY = 'ELEMENT';
  */
 webdriver.WebElement.equals = function(a, b) {
   if (a == b) {
-    return webdriver.promise.resolved(true);
+    return webdriver.promise.fulfilled(true);
   }
   return webdriver.promise.fullyResolved([a.id_, b.id_]).then(function(ids) {
     // If the two element's have the same ID, they should be considered
@@ -1888,30 +1945,24 @@ webdriver.WebElement.prototype.getInnerHtml = function() {
  * @extends {webdriver.promise.Deferred}
  */
 webdriver.Alert = function(driver, text) {
-  goog.base(this);
+  goog.base(this, null, driver.controlFlow());
 
-  /**
-   * @type {!webdriver.WebDriver}
-   * @private
-   */
+  /** @private {!webdriver.WebDriver} */
   this.driver_ = driver;
 
   // This class is responsible for resolving itself; delete the resolve and
   // reject methods so they may not be accessed by consumers of this class.
-  var resolve = goog.partial(this.resolve, this);
+  var fulfill = goog.partial(this.fulfill, this);
   var reject = this.reject;
   delete this.promise;
-  delete this.resolve;
+  delete this.fulfill;
   delete this.reject;
 
-  /**
-   * @type {!webdriver.promise.Promise}
-   * @private
-   */
+  /** @private {!webdriver.promise.Promise} */
   this.text_ = webdriver.promise.when(text);
 
   // Make sure this instance is resolved when its displayed text is.
-  this.text_.then(resolve, reject);
+  this.text_.then(fulfill, reject);
 };
 goog.inherits(webdriver.Alert, webdriver.promise.Deferred);
 
@@ -1979,10 +2030,7 @@ webdriver.Alert.prototype.sendKeys = function(text) {
 webdriver.UnhandledAlertError = function(message, alert) {
   goog.base(this, bot.ErrorCode.MODAL_DIALOG_OPENED, message);
 
-  /**
-   * @type {!webdriver.Alert}
-   * @private
-   */
+  /** @private {!webdriver.Alert} */
   this.alert_ = alert;
 };
 goog.inherits(webdriver.UnhandledAlertError, bot.Error);

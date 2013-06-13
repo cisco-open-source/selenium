@@ -6,8 +6,8 @@ java_library(
         "Logs.java",
     ],
     deps = [
-        "//third_party/java/json",
         "//java/client/src/org/openqa/selenium:beta",
+        "//third_party/java/json",
     ])
 
 java_library(

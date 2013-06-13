@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * Implements {@link org.openqa.selenium.internal.Lock} via an implementation that uses a well-known
@@ -32,6 +33,8 @@ import java.net.Socket;
 public class SocketLock implements Lock {
   public static final int DEFAULT_PORT = 7055;
   private static final long DELAY_BETWEEN_SOCKET_CHECKS = 2000;
+
+  private static Object syncObject = new Object();
 
   private static final InetSocketAddress localhost = new InetSocketAddress("localhost",
       DEFAULT_PORT - 1);
@@ -72,28 +75,30 @@ public class SocketLock implements Lock {
    * @inheritDoc
    */
   public void lock(long timeoutInMillis) throws WebDriverException {
+    synchronized (syncObject) {
+      // Calculate the 'exit time' for our wait loop.
+      long maxWait = System.currentTimeMillis() + timeoutInMillis;
 
-    // Calculate the 'exit time' for our wait loop.
-    long maxWait = System.currentTimeMillis() + timeoutInMillis;
+      // Attempt to acquire the lock until something goes wrong or we run out of time.
+      do {
+        try {
+          if (isLockFree(address)) {
+            return;
+          }
+          // Randomness or retry! Something from my past (Paul H) :
+          // http://www.wattystuff.net/amateur/packet/whatispacket.htm (search for random in page)
+          Thread.sleep((long) (DELAY_BETWEEN_SOCKET_CHECKS * Math.random()));
+        } catch (InterruptedException e) {
+          throw new WebDriverException(e);
+        } catch (IOException e) {
+          throw new WebDriverException(e);
+        }
+      } while (System.currentTimeMillis() < maxWait);
 
-    // Attempt to acquire the lock until something goes wrong or we run out of time.
-    do {
-      try {
-        if (isLockFree(address))
-          return;
-        // Randomness or retry! Something from my past (Paul H) :
-        // http://www.wattystuff.net/amateur/packet/whatispacket.htm (search for random in page)
-        Thread.sleep((long) (DELAY_BETWEEN_SOCKET_CHECKS * Math.random()));
-      } catch (InterruptedException e) {
-        throw new WebDriverException(e);
-      } catch (IOException e) {
-        throw new WebDriverException(e);
-      }
-    } while (System.currentTimeMillis() < maxWait);
-
-    throw new WebDriverException(
-        String.format("Unable to bind to locking port %d within %d ms", address.getPort(),
-            timeoutInMillis));
+      throw new WebDriverException(
+          String.format("Unable to bind to locking port %d within %d ms", address.getPort(),
+                        timeoutInMillis));
+    }
   }
 
   /**
@@ -119,6 +124,8 @@ public class SocketLock implements Lock {
       lockSocket.bind(address);
       return true;
     } catch (BindException e) {
+      return false;
+    } catch (SocketException e) {
       return false;
     }
   }

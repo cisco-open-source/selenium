@@ -127,13 +127,17 @@ bot.action.focusOnElement = function(element) {
  *                           bot.Keyboard.Key.SHIFT, 'cd']);
  *
  * @param {!Element} element The element receiving the event.
- * @param {(string|!bot.Keyboard.Key|!Array.<(string|!bot.Keyboard.Key)>)}
- *    values Value or values to type on the element.
+ * @param {(string|!bot.Keyboard.Key|
+ *          !Array.<(string|!bot.Keyboard.Key)>)} values Value or values to
+ *     type on the element.
  * @param {bot.Keyboard=} opt_keyboard Keyboard to use; if not provided,
- *    constructs one.
+ *     constructs one.
+ * @param {boolean=} opt_persistModifiers Whether modifier keys should remain
+ *     pressed when this function ends.
  * @throws {bot.Error} If the element cannot be interacted with.
  */
-bot.action.type = function(element, values, opt_keyboard) {
+bot.action.type = function(
+    element, values, opt_keyboard, opt_persistModifiers) {
   bot.action.checkShown_(element);
   bot.action.checkInteractable_(element);
   var keyboard = opt_keyboard || new bot.Keyboard();
@@ -165,18 +169,40 @@ bot.action.type = function(element, values, opt_keyboard) {
     }
   }
 
+  // mobile safari (iPhone / iPad). one cannot 'type' in a date field
+  // chrome implements this, but desktop Safari doesn't, what's webkit again?
+  if ((!(goog.userAgent.product.SAFARI && !goog.userAgent.MOBILE)) &&
+      goog.userAgent.WEBKIT && element.type == 'date') {
+    var val = goog.isArray(values)? values = values.join("") : values;
+    var datePattern = /\d{4}-\d{2}-\d{2}/;
+    if (val.match(datePattern)) {
+      // The following events get fired on iOS first
+      if (goog.userAgent.MOBILE && goog.userAgent.product.SAFARI) {
+        bot.events.fire(element, bot.events.EventType.TOUCHSTART);
+        bot.events.fire(element, bot.events.EventType.TOUCHEND);
+      }
+      bot.events.fire(element, bot.events.EventType.FOCUS);
+      element.value = val.match(datePattern)[0];
+      bot.events.fire(element, bot.events.EventType.CHANGE);
+      bot.events.fire(element, bot.events.EventType.BLUR);
+      return;
+    }
+  }
+
   if (goog.isArray(values)) {
     goog.array.forEach(values, typeValue);
   } else {
     typeValue(values);
   }
 
-  // Release all the modifier keys.
-  goog.array.forEach(bot.Keyboard.MODIFIERS, function(key) {
-    if (keyboard.isPressed(key)) {
-      keyboard.releaseKey(key);
-    }
-  });
+  if (!opt_persistModifiers) {
+    // Release all the modifier keys.
+    goog.array.forEach(bot.Keyboard.MODIFIERS, function(key) {
+      if (keyboard.isPressed(key)) {
+        keyboard.releaseKey(key);
+      }
+    });
+  }
 };
 
 
@@ -192,7 +218,7 @@ bot.action.type = function(element, values, opt_keyboard) {
 bot.action.submit = function(element) {
   var form = bot.action.LegacyDevice_.findAncestorForm(element);
   if (!form) {
-    throw new bot.Error(bot.ErrorCode.INVALID_ELEMENT_STATE,
+    throw new bot.Error(bot.ErrorCode.NO_SUCH_ELEMENT,
                         'Element was not in a form, so could not submit.');
   }
   bot.action.LegacyDevice_.submitForm(element, form);
@@ -608,8 +634,12 @@ bot.action.LegacyDevice_.findAncestorForm = function(element) {
  * @return {boolean} Whether the element is in view after scrolling.
  */
 bot.action.scrollIntoView = function(element, opt_coords) {
-  if (!bot.dom.isScrolledIntoView(element, opt_coords)) {
-    element.scrollIntoView();
+  if (!bot.dom.isScrolledIntoView(element, opt_coords) && !bot.dom.isInParentOverflow(element, opt_coords)) {
+    // Some elements may not have a scrollIntoView function - for example,
+    // elements under an SVG element. Call those only if they exist.
+    if (typeof element.scrollIntoView == 'function') {
+      element.scrollIntoView();
+    }
     // In Opera 10, scrollIntoView only scrolls the element into the viewport of
     // its immediate parent window, so we explicitly scroll the ancestor frames
     // into view of their respective windows. Note that scrolling the top frame

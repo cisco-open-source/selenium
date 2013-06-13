@@ -36,6 +36,7 @@ require 'rake-tasks/iphone'
 require 'rake-tasks/selenium'
 require 'rake-tasks/se-ide'
 require 'rake-tasks/ie_code_generator'
+require 'rake-tasks/ci'
 
 require 'rake-tasks/gecko_sdks'
 
@@ -47,7 +48,7 @@ $DEBUG = true
 verbose($DEBUG)
 
 def version
-  "2.29.0"
+  "2.33.0"
 end
 ide_version = "1.10.0"
 
@@ -168,13 +169,14 @@ task :test_remote => [
   :test_remote_server
 ]
 task :test_qtwebkit => [
-  '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run',
-  '//java/client/test/org/openqa/selenium/remote:common-tests:run',
-  '//java/client/test/org/openqa/selenium/remote:client-tests:run',
-  '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
+  '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run'
 ]
 task :test_wd_native => [  '//java/client/test/org/openqa/selenium/qtwebkit/nativetests:nativetests:run' ]
+#  '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
+  #'//java/client/test/org/openqa/selenium/remote:common-tests:run',
+  #'//java/client/test/org/openqa/selenium/remote:client-tests:run',
 task :test_safari => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
+task :test_phantomjs => [ "//java/client/test/org/openqa/selenium/phantomjs:test:run" ]
 task :test_support => [
   "//java/client/test/org/openqa/selenium/lift:test:run",
   "//java/client/test/org/openqa/selenium/support:SmallTests:run",
@@ -186,12 +188,8 @@ task :android_client => ['//java/client/src/org/openqa/selenium/android']
 task :android_server => ['//android:android-server']
 
 # TODO(simon): test-core should go first, but it's changing the least for now.
-task :test_selenium => [ :'test-rc', :'test-v1-emulation', :'test-selenium-backed-webdriver', :'test-core']
+task :test_selenium => [ :'test-rc', :'test-v1-emulation', :'test-core']
 
-task :'test-selenium-backed-webdriver' => [
-  '//javascript/selenium-atoms:test:run',
-  '//java/client/test/org/openqa/selenium/v1:selenium-backed-webdriver-test:run'
-]
 task :'test-v1-emulation' => [ '//java/client/test/com/thoughtworks/selenium:firefox-emulation-test:run' ]
 task :'test-rc' => ['//java/client/test/org/openqa/selenium:RcBrowserLauncherTests:run',
                     '//java/server/test/org/openqa/selenium/server:RcServerUnitTests:run',
@@ -281,6 +279,7 @@ task :clean do
   rm_rf 'android/libs/'
   rm_rf 'android/client/bin/'
   rm_rf 'java/client/build/'
+  rm_rf 'dist/'
   Android::Clean.new()
 end
 
@@ -419,16 +418,52 @@ GeckoSDKs.new do |sdks|
            '5c0a467a581778bda72a6a3daea2f8f0'
 
   sdks.add 'third_party/gecko-18/linux',
-           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/18.0/sdk/xulrunner-18.0.en-US.linux-i686.sdk.tar.bz2',
-           '951523ecb15bc94034dacaed62d5f693'
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/18.0.2/sdk/xulrunner-18.0.2.en-US.linux-i686.sdk.tar.bz2',
+           'd8a67c4c841a26b3af3dcb98e06bef18'
 
   sdks.add 'third_party/gecko-18/linux64',
-           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/18.0/sdk/xulrunner-18.0.en-US.linux-x86_64.sdk.tar.bz2',
-           'd237409022e2f4fb208236541160c31f'
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/18.0.2/sdk/xulrunner-18.0.2.en-US.linux-x86_64.sdk.tar.bz2',
+           '655ed52cff27a8afacee180eceaa2f3d'
 
   sdks.add 'third_party/gecko-18/win32',
-           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/18.0/sdk/xulrunner-18.0.en-US.win32.sdk.zip',
-           '1525d3ef5d7a576694cff31f7f60bea8'
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/18.0.2/sdk/xulrunner-18.0.2.en-US.win32.sdk.zip',
+           'ce4965e2660052c6a06ad50a10b3f97d'
+
+  sdks.add 'third_party/gecko-19/linux',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/19.0/sdk/xulrunner-19.0.en-US.linux-i686.sdk.tar.bz2',
+           '9e7decd8866eb7b66afe6ed1a0e8d941'
+
+  sdks.add 'third_party/gecko-19/linux64',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/19.0/sdk/xulrunner-19.0.en-US.linux-x86_64.sdk.tar.bz2',
+           'fb27bc9cbf9109469f0247c1ba1812e5'
+
+  sdks.add 'third_party/gecko-19/win32',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/19.0/sdk/xulrunner-19.0.en-US.win32.sdk.zip',
+           '44e7c7f9dda4dc08a294d66c504361be'
+
+  sdks.add 'third_party/gecko-20/linux',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/20.0/sdk/xulrunner-20.0.en-US.linux-i686.sdk.tar.bz2',
+           '5da7a8870d35f6b8535ed8d24f5c09ba'
+
+  sdks.add 'third_party/gecko-20/linux64',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/20.0/sdk/xulrunner-20.0.en-US.linux-x86_64.sdk.tar.bz2',
+           'b2659dfd81011e77ae7dcabb2dbed4e6'
+
+  sdks.add 'third_party/gecko-20/win32',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/20.0/sdk/xulrunner-20.0.en-US.win32.sdk.zip',
+           'c1808d3dcf55ba3cdbb774cbf5148071'
+
+  sdks.add 'third_party/gecko-21/linux',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/21.0/sdk/xulrunner-21.0.en-US.linux-i686.sdk.tar.bz2',
+           'ae88daa3a2d9a94f634ee69604e31fba'
+
+  sdks.add 'third_party/gecko-21/linux64',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/21.0/sdk/xulrunner-21.0.en-US.linux-x86_64.sdk.tar.bz2',
+           '76bdfe044fd62a1085bb49df035b6a93'
+
+  sdks.add 'third_party/gecko-21/win32',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/21.0/sdk/xulrunner-21.0.en-US.win32.sdk.zip',
+           '246304f40c6b970b7a0c53305452630d'
 end
 
 task :'selenium-server_zip' do
@@ -505,7 +540,7 @@ end
 task :py_release => :py_prep_for_install_release do
     sh "grep -v test setup.py > setup_release.py; mv setup_release.py setup.py"
     sh "python setup.py sdist upload"
-    sh "svn revert setup.py"
+    sh "git checkout setup.py"
 end
 
 
@@ -678,8 +713,19 @@ namespace :safari do
     "//java/client/src/org/openqa/selenium/safari"
   ]
 
-  desc "Run the SafariDriver's java test suite"
-  task :test => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
+  desc "Run JavaScript tests for Safari"
+  task :testjs => [
+      "//javascript/atoms:test_safari:run",
+      "//javascript/safari-driver:test:run",
+      "//javascript/selenium-atoms:test_safari:run",
+      "//javascript/webdriver:test_safari:run"
+  ]
+
+  desc "Run all SafariDriver tests"
+  task :test => [
+      "safari:testjs",
+      "//java/client/test/org/openqa/selenium/safari:test:run"
+  ]
 
   desc "Re-install the SafariDriver extension; OSX only"
   task :reinstall => [ :extension ] do |t|

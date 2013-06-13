@@ -26,7 +26,6 @@ import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 import org.junit.Test;
@@ -87,7 +86,6 @@ public class I18nTest extends JUnit4TestBase {
     assertEquals(tmunot, input.getAttribute("value"));
   }
 
-  @Ignore(value = {SELENESE})
   @Test
   public void testShouldBeAbleToReturnTheTextInAPage() {
     String url = GlobalTestEnvironment.get()
@@ -101,7 +99,7 @@ public class I18nTest extends JUnit4TestBase {
   }
 
   @NeedsFreshDriver
-  @Ignore(value = {IE, SELENESE, CHROME, HTMLUNIT, FIREFOX, OPERA, ANDROID, IPHONE, QTWEBKIT},
+  @Ignore(value = {IE, CHROME, HTMLUNIT, FIREFOX, OPERA, ANDROID, IPHONE, QTWEBKIT},
       reason = "Not implemented on anything other than"
           + "Firefox/Linux at the moment.")
   @Test
@@ -163,7 +161,7 @@ public class I18nTest extends JUnit4TestBase {
         + " It was:" + elementValue, elementValue.equals(tokyo));
   }
 
-  @Ignore(value = {IE, SELENESE, CHROME, HTMLUNIT, OPERA, ANDROID, IPHONE},
+  @Ignore(value = {IE, CHROME, HTMLUNIT, OPERA, ANDROID, IPHONE},
       reason = "Not implemented on anything other than"
           + "Firefox/Linux at the moment.")
   @Test

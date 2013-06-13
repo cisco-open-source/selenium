@@ -25,7 +25,7 @@ import org.openqa.selenium.testing.JavascriptEnabled;
 import java.util.concurrent.Callable;
 
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -39,7 +39,8 @@ import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
+import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 
 public class VisibilityTest extends JUnit4TestBase {
 
@@ -104,7 +105,6 @@ public class VisibilityTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(SELENESE)
   @Test
   public void testShouldNotBeAbleToClickOnAnElementThatIsNotDisplayed() {
     driver.get(pages.javascriptPage);
@@ -119,7 +119,6 @@ public class VisibilityTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(SELENESE)
   @Test
   public void testShouldNotBeAbleToTypeAnElementThatIsNotDisplayed() {
     driver.get(pages.javascriptPage);
@@ -136,7 +135,7 @@ public class VisibilityTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({IE, SELENESE})
+  @Ignore({IE})
   @Test
   public void testZeroSizedDivIsShownIfDescendantHasSize() {
     driver.get(pages.javascriptPage);
@@ -167,8 +166,93 @@ public class VisibilityTest extends JUnit4TestBase {
     assertTrue(element.isDisplayed());
   }
 
+  @Ignore({IE, CHROME, HTMLUNIT, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI})
   @Test
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, SELENESE, OPERA, OPERA_MOBILE})
+  public void testElementHiddenByOverflowXIsNotVisible() {
+    String[] pages = new String[]{
+        "overflow/x_hidden_y_hidden.html",
+        "overflow/x_hidden_y_scroll.html",
+        "overflow/x_hidden_y_auto.html",
+    };
+    for (String page: pages) {
+      driver.get(appServer.whereIs(page));
+      WebElement right = driver.findElement(By.id("right"));
+      assertFalse(page, right.isDisplayed());
+      WebElement bottomRight = driver.findElement(By.id("bottom-right"));
+      assertFalse(page, bottomRight.isDisplayed());
+    }
+  }
+
+  @Ignore({CHROME, HTMLUNIT, OPERA, OPERA_MOBILE, PHANTOMJS})
+  @Test
+  public void testElementHiddenByOverflowYIsNotVisible() {
+    String[] pages = new String[]{
+        "overflow/x_hidden_y_hidden.html",
+        "overflow/x_scroll_y_hidden.html",
+        "overflow/x_auto_y_hidden.html",
+    };
+    for (String page: pages) {
+      driver.get(appServer.whereIs(page));
+      WebElement bottom = driver.findElement(By.id("bottom"));
+      assertFalse(page, bottom.isDisplayed());
+      WebElement bottomRight = driver.findElement(By.id("bottom-right"));
+      assertFalse(page, bottomRight.isDisplayed());
+    }
+  }
+
+  @Ignore({IE})
+  @Test
+  public void testElementScrollableByOverflowXIsVisible() {
+    String[] pages = new String[]{
+        "overflow/x_scroll_y_hidden.html",
+        "overflow/x_scroll_y_scroll.html",
+        "overflow/x_scroll_y_auto.html",
+        "overflow/x_auto_y_hidden.html",
+        "overflow/x_auto_y_scroll.html",
+        "overflow/x_auto_y_auto.html",
+    };
+    for (String page: pages) {
+      driver.get(appServer.whereIs(page));
+      WebElement right = driver.findElement(By.id("right"));
+      assertTrue(page, right.isDisplayed());
+    }
+  }
+
+  @Ignore({IE, SAFARI})
+  @Test
+  public void testElementScrollableByOverflowYIsVisible() {
+    String[] pages = new String[]{
+        "overflow/x_hidden_y_scroll.html",
+        "overflow/x_scroll_y_scroll.html",
+        "overflow/x_auto_y_scroll.html",
+        "overflow/x_hidden_y_auto.html",
+        "overflow/x_scroll_y_auto.html",
+        "overflow/x_auto_y_auto.html",
+    };
+    for (String page: pages) {
+      driver.get(appServer.whereIs(page));
+      WebElement bottom = driver.findElement(By.id("bottom"));
+      assertTrue(page, bottom.isDisplayed());
+    }
+  }
+
+  @Test
+  public void testElementScrollableByOverflowXAndYIsVisible() {
+    String[] pages = new String[]{
+        "overflow/x_scroll_y_scroll.html",
+        "overflow/x_scroll_y_auto.html",
+        "overflow/x_auto_y_scroll.html",
+        "overflow/x_auto_y_auto.html",
+    };
+    for (String page: pages) {
+      driver.get(appServer.whereIs(page));
+      WebElement bottomRight = driver.findElement(By.id("bottom-right"));
+      assertTrue(page, bottomRight.isDisplayed());
+    }
+  }
+
+  @Test
+  @Ignore({ANDROID, IPHONE, OPERA, OPERA_MOBILE})
   public void tooSmallAWindowWithOverflowHiddenIsNotAProblem() {
     WebDriver.Window window = driver.manage().window();
     Dimension originalSize = window.getSize();

@@ -40,9 +40,8 @@ public @interface Ignore {
     OPERA_MOBILE,
     PHANTOMJS,
     REMOTE,
-    QTWEBKIT,
     SAFARI,
-    SELENESE
+    QTWEBKIT,
   }
 
   Driver[] value() default {Driver.ALL};

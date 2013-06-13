@@ -54,22 +54,6 @@ console.info = function(msg, var_args) {};
 console.debug = function(msg, var_args) {};
 
 
-/** @type {!Object} */
-var JSON = {};
-
-/**
- * @param {string} value
- * @return {!Object}
- */
-JSON.parse = function(value) {};
-
-/**
- * @param {*} value
- * @return {string}
- */
-JSON.stringify = function(value) {};
-
-
 /**
  * @constructor
  * @extends {SafariEvent}
@@ -165,10 +149,10 @@ SafariBrowserWindow.prototype.close = function() {};
 SafariBrowserWindow.prototype.insertTab = function(tab, index) {};
 
 /**
- * @param {string} visibility
- * @param {number} index
+ * @param {string=} opt_visibility
+ * @param {number=} opt_index
  */
-SafariBrowserWindow.prototype.openTab = function(visibility, index) {};
+SafariBrowserWindow.prototype.openTab = function(opt_visibility, opt_index) {};
 
 
 /**
@@ -179,6 +163,19 @@ function SafariCloseEvent() {}
 
 /** @override */
 SafariCloseEvent.prototype.type = 'close';
+
+
+/**
+ * @constructor
+ * @extends {SafariEvent}
+ */
+function SafariCommandEvent() {}
+
+/** @override */
+SafariCommandEvent.prototype.type = 'command';
+
+/** @type {string} */
+SafariCommandEvent.prototype.command = '';
 
 
 /** @constructor */
@@ -285,7 +282,37 @@ SafariEventTarget.prototype.removeEventListener = function(type, listener,
 
 /** @constructor */
 function SafariExtension() {}
-// TODO: finish documenting the SafariExtension type.
+
+/** @type {!Array.<!SafariExtensionBar>} */
+SafariExtension.prototype.bars;
+
+/** @type {string} */
+SafariExtension.prototype.baseURI;
+
+
+/**
+ * @constructor
+ * @extends {SafariEventTarget}
+ */
+function SafariExtensionBar() {}
+
+/** @type {boolean} */
+SafariExtensionBar.prototype.visible;
+
+/** @type {!SafariBrowserWindow} */
+SafariExtensionBar.prototype.browserWindow;
+
+/** @type {!Window} */
+SafariExtensionBar.prototype.contentWindow;
+
+/** @type {string} */
+SafariExtensionBar.prototype.identifier;
+
+/** @type {string} */
+SafariExtensionBar.prototype.label;
+
+SafariExtensionBar.prototype.hide = function() {};
+SafariExtensionBar.prototype.show = function() {};
 
 
 /** @constructor */

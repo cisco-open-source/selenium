@@ -28,7 +28,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,9 +53,9 @@ import org.openqa.grid.web.servlet.handler.RequestType;
 import org.openqa.grid.web.servlet.handler.SeleniumBasedRequest;
 import org.openqa.grid.web.servlet.handler.SeleniumBasedResponse;
 import org.openqa.grid.web.servlet.handler.WebDriverRequest;
+import org.openqa.selenium.io.IOUtils;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 
 /**
  * Represent a running test for the hub/registry. A test session is created when a TestSlot becomes
@@ -331,6 +330,9 @@ public class TestSession {
     }
     String end = path.substring(pathSpec.length());
     String ok = remoteURL + end;
+    if (request.getQueryString() != null) {
+      ok += "?" + request.getQueryString();
+    }
     String uri = new URL(remoteURL, ok).toExternalForm();
 
     InputStream body = null;
@@ -381,11 +383,7 @@ public class TestSession {
     } catch (IOException e) {
       throw new ClientGoneException(e);
     } finally {
-      try {
-        out.close();
-      } catch (IOException e) {
-        log.log(Level.SEVERE, "Problem closing response's output stream.", e);
-      }
+      IOUtils.closeQuietly(out);
     }
   }
 
@@ -393,7 +391,7 @@ public class TestSession {
     try {
       return ByteStreams.toByteArray(in);
     } finally {
-      Closeables.closeQuietly(in);
+      in.close();
     }
   }
 

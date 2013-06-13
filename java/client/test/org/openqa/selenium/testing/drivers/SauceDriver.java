@@ -22,6 +22,7 @@ import java.net.URL;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -37,7 +38,10 @@ public class SauceDriver extends RemoteWebDriver {
   private static final String SAUCE_USERNAME_ENV_NAME = "SAUCE_USERNAME";
   private static final String DESIRED_BROWSER_VERSION_ENV_NAME = "SAUCE_BROWSER_VERSION";
   private static final String SAUCE_DISABLE_VIDEO_ENV_NAME = "SAUCE_DISABLE_VIDEO";
-  
+  private static final String SAUCE_BUILD_ENV_NAME = "SAUCE_BUILD_NUMBER";
+  private static final String SAUCE_NATIVE_ENV_NAME = "native_events";
+  private static final String SAUCE_REQUIRE_FOCUS_ENV_NAME = "REQUIRE_FOCUS";
+
   private static final String USE_SAUCE_ENV_NAME = "USE_SAUCE";
 
   // Should be one of the values listed for Platform, e.g. xp, win7, android, ...
@@ -67,7 +71,7 @@ public class SauceDriver extends RemoteWebDriver {
   private static String getSeleniumVersion() {
     return getNonNullEnv(SELENIUM_VERSION_ENV_NAME);
   }
-  
+
   private static String getNonNullEnv(String propertyName) {
     String value = System.getenv(propertyName);
     Preconditions.checkNotNull(value);
@@ -95,15 +99,22 @@ public class SauceDriver extends RemoteWebDriver {
     mungedCapabilities.setCapability("selenium-version", seleniumVersion);
     mungedCapabilities.setCapability("idle-timeout", 180);
     mungedCapabilities.setCapability("disable-popup-handler", true);
+    mungedCapabilities.setCapability("public", "public");
     mungedCapabilities.setCapability("record-video", shouldRecordVideo());
-    
-    mungedCapabilities.setCapability("prevent-requeue", true);
-    
+    mungedCapabilities.setCapability("build", System.getenv(SAUCE_BUILD_ENV_NAME));
+
+    String nativeEvents = System.getenv(SAUCE_NATIVE_ENV_NAME);
+    if (nativeEvents != null) {
+        String[] tags = {nativeEvents};
+        mungedCapabilities.setCapability("tags", tags);
+    }
+    mungedCapabilities.setCapability("prevent-requeue", false);
+
     if (!Strings.isNullOrEmpty(browserVersion)) {
       mungedCapabilities.setVersion(browserVersion);
     }
     mungedCapabilities.setPlatform(platform);
-    
+
     String jobName = System.getenv(SAUCE_JOB_NAME_ENV_NAME);
     if (jobName != null) {
       mungedCapabilities.setCapability("name", jobName);
@@ -112,10 +123,17 @@ public class SauceDriver extends RemoteWebDriver {
     if (DesiredCapabilities.internetExplorer().getBrowserName().equals(desiredCapabilities.getBrowserName())) {
       String ieDriverVersion = System.getenv(SELENIUM_IEDRIVER_ENV_NAME);
       if (ieDriverVersion != null) {
-        mungedCapabilities.setCapability("iedriver-version", System.getenv(SELENIUM_IEDRIVER_ENV_NAME));
+        mungedCapabilities.setCapability("iedriver-version", ieDriverVersion);
       }
+      mungedCapabilities.setCapability(InternetExplorerDriver.REQUIRE_WINDOW_FOCUS, true);
     }
-    mungedCapabilities.setCapability("public", true);
+
+    String requireFocus = System.getenv(SAUCE_REQUIRE_FOCUS_ENV_NAME);
+    if (requireFocus != null) {
+        mungedCapabilities.setCapability(InternetExplorerDriver.REQUIRE_WINDOW_FOCUS,
+            Boolean.parseBoolean(requireFocus));
+    }
+
     return mungedCapabilities;
   }
 

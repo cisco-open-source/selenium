@@ -27,7 +27,6 @@ goog.require('goog.object');
 goog.require('goog.string');
 
 
-
 /**
  * Represents the logging preferences as sent across the wire.
  *
@@ -210,8 +209,7 @@ fxdriver.logging.configure = function(logging_prefs, enable_profiler) {
 
 /**
  * Component initialization guard.
- * @private
- * @type {!boolean}
+ * @private {!boolean}
  */
 fxdriver.logging.initialized_ = false;
 
@@ -221,7 +219,6 @@ fxdriver.logging.initialized_ = false;
  * @private
  */
 fxdriver.logging.initialize_ = function() {
-
   if (fxdriver.logging.initialized_) {
     return;
   }
@@ -240,6 +237,7 @@ fxdriver.logging.initialize_ = function() {
   fxdriver.logging.addConsoleToFileLogger_();
 };
 
+
 /**
  * Adds a log handler to the logger that records entries to Firefox's error
  * console to a temporary file using the log entry format of the wire protocol.
@@ -253,9 +251,11 @@ fxdriver.logging.addConsoleToFileLogger_ = function() {
 
   // fetch already existing console entries
   var file = fxdriver.logging.getLogFile_(fxdriver.logging.LogType.BROWSER);
-  var existingEntries = {};
-  consoleService.getMessageArray(existingEntries, {});
-  goog.array.forEach(existingEntries.value, function(consoleEntry) {
+
+  var array = {};
+  var existingEntries = consoleService.getMessageArray(array, {}) || array.value || [];
+
+  goog.array.forEach(existingEntries, function(consoleEntry) {
     file.append(formatter.formatConsoleEntry(consoleEntry));
   });
 
@@ -694,8 +694,7 @@ fxdriver.logging.setConsoleListenerToRegistered_ = function() {
  *
  * TODO: Find a better solution that doesn't use a preference.
  *
- * @private
- * @type {string}
+ * @private {string}
  */
 fxdriver.logging.prefNameInitialized_ = 'webdriver.log.init';
 

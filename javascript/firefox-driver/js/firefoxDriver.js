@@ -313,14 +313,16 @@ function injectAndExecuteScript(respond, parameters, isAsync, timer) {
   var runScript = function() {
     // Since Firefox 15 we have to populate __exposedProps__ 
     // when passing objects from chrome to content due to security reasons
-    for (var i = 0; i < converted.length; i++) {
-      if (goog.typeOf(converted[i]) === "object") {
-        var keys = Object.keys(converted[i]);
-        for (var key in keys) {
-          if (converted[i].__exposedProps__ == undefined) {
-            converted[i].__exposedProps__ = {};
+    if (bot.userAgent.isProductVersion(4)) {
+      for (var i = 0; i < converted.length; i++) {
+        if (goog.typeOf(converted[i]) === "object") {
+          var keys = Object.keys(converted[i]);
+          for (var key in keys) {
+            if (converted[i].__exposedProps__ == undefined) {
+              converted[i].__exposedProps__ = {};
+            }
+            converted[i].__exposedProps__[keys[key]] = "rw";
           }
-          converted[i].__exposedProps__[keys[key]] = "rw";
         }
       }
     }
@@ -359,17 +361,18 @@ function injectAndExecuteScript(respond, parameters, isAsync, timer) {
   // Attach the listener to the DOM
   var addListener = function() {
     if (!doc.getUserData('webdriver-evaluate-attached')) {
-      var element = doc.createElement('script');
+      var parentNode = Utils.getMainDocumentElement(doc);
+      var element = Utils.isSVG(doc) ? doc.createElementNS("http://www.w3.org/2000/svg", "script") : doc.createElement('script');
       element.setAttribute('type', 'text/javascript');
-      element.innerHTML = FirefoxDriver.listenerScript;
-      doc.body.appendChild(element);
-      element.parentNode.removeChild(element);
+      element.textContent = FirefoxDriver.listenerScript;
+      parentNode.appendChild(element);
+      parentNode.removeChild(element);
     }
     timer.runWhenTrue(checkScriptLoaded, runScript, 10000, scriptLoadTimeOut);
   };
 
   var checkDocBodyLoaded = function() {
-    return !!doc.body;
+    return !!Utils.getMainDocumentElement(doc);
   };
 
   timer.runWhenTrue(checkDocBodyLoaded, addListener, 10000, docBodyLoadTimeOut);
@@ -652,23 +655,25 @@ FirefoxDriver.prototype.switchToFrame = function(respond, parameters) {
 
     element = fxdriver.moz.unwrapFor4(element);
 
-    if (/^i?frame$/i.test(element.tagName)) {
-      // Each session maintains a weak reference to the window it is currently
-      // focused on. If we set this reference using the |contentWindow|
-      // property, we may prematurely lose our window reference. This does not
-      // appear to happen if we cross reference the frame's |contentWindow|
-      // with the current window's |frames| nsIDOMWindowCollection.
-      newWindow = goog.array.find(currentWindow.frames, function(frame) {
-        return frame == element.contentWindow;
-      });
-    } else {
+    if (!/^i?frame$/i.test(element.tagName)) {
       throw new WebDriverError(bot.ErrorCode.NO_SUCH_FRAME,
           'Element is not a frame element: ' + element.tagName);
     }
+
+    newWindow = element.contentWindow;
   }
 
   if (newWindow) {
-    respond.session.setWindow(newWindow);
+    if (newWindow.frameElement) {
+      // Each session maintains a weak link to the window it is currently
+      // focused on. Setting the window through the contentWindow may cause the
+      // window to be prematurely de-referenced. In order to solve that, we set
+      // frame element and not the window (if there is one).
+      respond.session.setWindow(newWindow);
+      respond.session.setFrame(newWindow.frameElement);
+    } else {
+      respond.session.setWindow(newWindow);
+    }
     respond.send();
   } else {
     throw new WebDriverError(bot.ErrorCode.NO_SUCH_FRAME,
@@ -1367,7 +1372,7 @@ FirefoxDriver.prototype.sendKeysToActiveElement = function(respond, parameters) 
 
   var currentlyActiveElement = Utils.getActiveElement(respond.session.getDocument());
 
-  if (bot.dom.isEditable(currentlyActiveElement)) {
+  if (bot.dom.isEditable(currentlyActiveElement) && currentlyActiveElement.value !== undefined) {
       goog.dom.selection.setCursorPosition(
           currentlyActiveElement, currentlyActiveElement.value.length);
   }

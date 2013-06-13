@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
@@ -38,7 +39,6 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 @Ignore(value = {ANDROID, HTMLUNIT}, reason = "Android: Race condition when click returns, "
@@ -82,7 +82,6 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(CHROME)
   public void testShouldBeAbleToClickOnAnElementHiddenByOverflow() {
     driver.get(appServer.whereIs("scroll.html"));
 
@@ -92,7 +91,28 @@ public class ClickScrollingTest extends JUnit4TestBase {
     assertEquals("line8", driver.findElement(By.id("clicked")).getText());
   }
 
-  @Ignore({CHROME, OPERA, SELENESE})
+  @JavascriptEnabled
+  @Ignore(value = {CHROME, IPHONE, QTWEBKIT}, reason = "Chrome: failed, iPhone: untested")
+  @Test
+  public void testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow() {
+    driver.get(appServer.whereIs("scrolling_tests/page_with_double_overflow_auto.html"));
+
+    driver.findElement(By.id("link")).click();
+    waitFor(WaitingConditions.pageTitleToBe(driver, "Clicked Successfully!"));
+  }
+
+  @JavascriptEnabled
+  @Ignore(value = {IE, IPHONE, SAFARI}, reason = "IE, Safari: failed, iPhone: untested")
+  @Test
+  public void testShouldBeAbleToClickOnAnElementHiddenByYOverflow() {
+    driver.get(appServer.whereIs("scrolling_tests/page_with_y_overflow_auto.html"));
+
+    driver.findElement(By.id("link")).click();
+    waitFor(WaitingConditions.pageTitleToBe(driver, "Clicked Successfully!"));
+  }
+
+  @JavascriptEnabled
+  @Ignore({OPERA})
   @Test
   public void testShouldNotScrollOverflowElementsWhichAreVisible() {
     driver.get(appServer.whereIs("scroll2.html"));
@@ -104,7 +124,8 @@ public class ClickScrollingTest extends JUnit4TestBase {
     assertEquals("Should not have scrolled", 0, yOffset);
   }
 
-  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, SELENESE, QTWEBKIT},
+  @JavascriptEnabled
+  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, QTWEBKIT},
       reason = "Safari: button1 is scrolled to the bottom edge of the view, " +
           "so additonal scrolling is still required for button2")
   @Test
@@ -132,7 +153,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {OPERA, IPHONE, SAFARI, SELENESE},
+  @Ignore(value = {OPERA, IPHONE, SAFARI},
           reason = "Opera: fails, others: not tested")
   public void testShouldBeAbleToClickElementInAFrameThatIsOutOfView() {
     try {
@@ -147,7 +168,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
   
   @Test
-  @Ignore(value = {OPERA, IPHONE, SAFARI, SELENESE},
+  @Ignore(value = {OPERA, IPHONE, SAFARI},
           reason = "Opera: fails, others: not tested")
   public void testShouldBeAbleToClickElementThatIsOutOfViewInAFrame() {
     try {
@@ -175,7 +196,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
   
   @Test
-  @Ignore(value = {OPERA, IPHONE, SAFARI, SELENESE},
+  @Ignore(value = {OPERA, IPHONE, SAFARI},
           reason = "Opera: fails, others: not tested")
   public void testShouldBeAbleToClickElementThatIsOutOfViewInAFrameThatIsOutOfView() {
     try {
@@ -190,7 +211,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
   
   @Test
-  @Ignore(value = {OPERA, IPHONE, SAFARI, SELENESE},
+  @Ignore(value = {OPERA, IPHONE, SAFARI},
           reason = "Opera: fails, others: not tested")
   public void testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame() {
     try {
@@ -206,7 +227,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
   
   @Test
-  @Ignore(value = {OPERA, IPHONE, SAFARI, SELENESE},
+  @Ignore(value = {OPERA, IPHONE, SAFARI},
           reason = "Opera: fails, others: not tested")
   public void testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView() {
     try {
@@ -220,9 +241,10 @@ public class ClickScrollingTest extends JUnit4TestBase {
       driver.switchTo().defaultContent();
     }
   }
-  
+
+  @JavascriptEnabled
   @Test
-  public void testShouldNotScrollWhenGettinElementSize() {
+  public void testShouldNotScrollWhenGettingElementSize() {
     driver.get(appServer.whereIs("scroll3.html"));
     long scrollTop = getScrollTop();
     driver.findElement(By.id("button1")).getSize();

@@ -28,14 +28,13 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.SELENESE;
 
 import org.junit.Test;
 import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
-@Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, SAFARI, ANDROID, IPHONE, SELENESE},
+@Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, SAFARI, ANDROID, IPHONE},
         reason = "HtmlUnit: Getting coordinates requires rendering, "
                + "Opera: Not implemented, others: not tested")
 public class CoordinatesTest extends JUnit4TestBase {
@@ -43,48 +42,73 @@ public class CoordinatesTest extends JUnit4TestBase {
   @Test
   public void testShouldGetCoordinatesOfAnElementInViewPort() {
     driver.get(appServer.whereIs("coordinates_tests/simple_page.html"));
-    assertThat(getLocationOnScreen(By.id("box")), is(new Point(10, 10)));
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(10, 10)));
   }
 
   @Test
   @Ignore(IE)
   public void testShouldGetCoordinatesOfAnEmptyElement() {
     driver.get(appServer.whereIs("coordinates_tests/page_with_empty_element.html"));
-    assertThat(getLocationOnScreen(By.id("box")), is(new Point(10, 10)));
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(10, 10)));
   }
 
   @Test
   public void testShouldGetCoordinatesOfATransparentElement() {
     driver.get(appServer.whereIs("coordinates_tests/page_with_transparent_element.html"));
-    assertThat(getLocationOnScreen(By.id("box")), is(new Point(10, 10)));
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(10, 10)));
   }
 
   @Test
   @Ignore(IE)
   public void testShouldGetCoordinatesOfAHiddenElement() {
     driver.get(appServer.whereIs("coordinates_tests/page_with_hidden_element.html"));
-    assertThat(getLocationOnScreen(By.id("box")), is(new Point(10, 10)));
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(10, 10)));
   }
 
   @Test
   @Ignore(IE)
   public void testShouldGetCoordinatesOfAnInvisibleElement() {
     driver.get(appServer.whereIs("coordinates_tests/page_with_invisible_element.html"));
-    assertThat(getLocationOnScreen(By.id("box")), is(new Point(0, 0)));
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(0, 0)));
   }
 
   @Test
   public void testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort() {
     driver.get(appServer.whereIs("coordinates_tests/page_with_element_out_of_view.html"));
     int windowHeight = driver.manage().window().getSize().getHeight();
-    Point location = getLocationOnScreen(By.id("box"));
+    Point location = getLocationInViewPort(By.id("box"));
     assertThat(location.getX(), is(10));
     assertThat(location.getY(), greaterThanOrEqualTo(0));
     assertThat(location.getY(), lessThanOrEqualTo(windowHeight - 100));
   }
 
-  private Point getLocationOnScreen(By locator) {
+  @Test
+  public void testShouldGetCoordinatesOfAnElementInAFrame() {
+    driver.get(appServer.whereIs("coordinates_tests/element_in_frame.html"));
+    driver.switchTo().frame("ifr");
+    WebElement box = driver.findElement(By.id("box"));
+    assertThat(box.getLocation(), is(new Point(10, 10)));
+  }
+
+  @Test
+  @Ignore(value = {IE}, reason = "IE: ignores frame border")
+  public void testShouldGetCoordinatesInViewPortOfAnElementInAFrame() {
+    driver.get(appServer.whereIs("coordinates_tests/element_in_frame.html"));
+    driver.switchTo().frame("ifr");
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(25, 25)));
+  }
+
+  @Test
+  @Ignore(value = {IE}, reason = "IE: ignores frame border")
+  public void testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame() {
+    driver.get(appServer.whereIs("coordinates_tests/element_in_nested_frame.html"));
+    driver.switchTo().frame("ifr");
+    driver.switchTo().frame("ifr");
+    assertThat(getLocationInViewPort(By.id("box")), is(new Point(40, 40)));
+  }
+
+  private Point getLocationInViewPort(By locator) {
     WebElement element = driver.findElement(locator);
-    return ((Locatable) element).getCoordinates().getLocationOnScreen();
+    return ((Locatable) element).getCoordinates().inViewPort();
   }
 }
