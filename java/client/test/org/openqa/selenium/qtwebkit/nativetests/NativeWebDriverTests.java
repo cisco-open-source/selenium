@@ -7,6 +7,7 @@ import org.junit.runners.Suite;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.qtwebkit.nativetests.interactions.ActionsTest;
+import org.openqa.selenium.qtwebkit.nativetests.interactions.BasicMouseInterfaceTest;
 import org.openqa.selenium.qtwebkit.nativetests.interactions.IndividualKeyboardActionsTest;
 import org.openqa.selenium.qtwebkit.nativetests.interactions.IndividualMouseActionsTest;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -30,7 +31,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         XPathElementFindingTest.class,
         IndividualKeyboardActionsTest.class,
         IndividualMouseActionsTest.class,
-        StaleElementReferenceTest.class
+        StaleElementReferenceTest.class,
+        BasicMouseInterfaceTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
