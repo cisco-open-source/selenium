@@ -10,7 +10,7 @@ package org.openqa.selenium.testing.drivers;
 import com.google.common.base.Supplier;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
+import org.openqa.selenium.qtwebkit.QtWebKitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -40,21 +40,14 @@ public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
             return null;
         }
 
-        java.net.URL hostURL;
+        String remoteIpProperty = "RemoteIP";
+        String ip = System.getProperty(remoteIpProperty);
+        if (ip == null)
+            System.setProperty(remoteIpProperty, "http://localhost:9517");
 
-        try {
-            hostURL = new java.net.URL("http://localhost:9517");
-        } catch (java.net.MalformedURLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            return null;
-        }
+        RemoteWebDriver driver = new QtWebKitDriver(desiredCapabilities);
+		driver.setFileDetector(new LocalFileDetector());
 
-        /*RemoteWebDriver driver = new RemoteWebDriver(
-                hostURL, desiredCapabilities, requiredCapabilities);*/
-        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
-        RemoteWebDriver driver = new RemoteWebDriver(
-                executor, desiredCapabilities, requiredCapabilities);
-        driver.setFileDetector(new LocalFileDetector());
         return driver;
     }
 }
