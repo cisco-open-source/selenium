@@ -46,7 +46,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     @Before
     public void setUpWebDriver()
     {
-        driver.get("qtwidget://BasicMouseInterfaceTest");
+        driver.get("qtwidget://BasicMouseInterfaceTestWidget");
     }
 
   private Actions getBuilder(WebDriver driver) {
