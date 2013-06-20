@@ -18,11 +18,6 @@ package org.openqa.selenium.qtwebkit.nativetests.interactions;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-//import org.openqa.selenium.interactions.ActionsTest;
-//import org.openqa.selenium.interactions.BasicKeyboardInterfaceTest;
-//import org.openqa.selenium.interactions.BasicMouseInterfaceTest;
-//import org.openqa.selenium.interactions.IndividualKeyboardActionsTest;
-//import org.openqa.selenium.interactions.IndividualMouseActionsTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
