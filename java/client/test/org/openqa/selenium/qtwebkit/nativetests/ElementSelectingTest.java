@@ -37,7 +37,7 @@ public class ElementSelectingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("qtwidget://ElementSelectingTest");
+        driver.get("qtwidget://ElementSelectingTestWidget");
     }
 
   @Test

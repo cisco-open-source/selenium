@@ -31,7 +31,7 @@ public class TextHandlingTest extends JUnit4TestBase {
     @Before
     public void setUp() throws Exception
     {
-        driver.get("qtwidget://TextHandlingWidget");
+        driver.get("qtwidget://TextHandlingTestWidget");
     }
 
     @Test

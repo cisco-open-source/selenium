@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.nativetests;
+package org.openqa.selenium.qtwebkit.nativetests.interactions;
 
 import static org.junit.Assert.assertThat;
 

@@ -52,7 +52,7 @@ public class MiscTest extends JUnit4TestBase {
   @Test
   public void testShouldReturnTheSourceOfAPage() {
       //There is no particular reason to use ClickScrollingTest, we just need QWidget with elements
-    driver.get("qtwidget://ClickScrollingTest");
+    driver.get("qtwidget://ClickScrollingTestWidget");
 
     String source = driver.getPageSource().toLowerCase();
 
