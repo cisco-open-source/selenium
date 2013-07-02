@@ -96,7 +96,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
         ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
         for (int i=0; i<commands.size(); i++)
         {
-            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
         }
 
         if(description.toString().contains("org.openqa.selenium.html5"))
