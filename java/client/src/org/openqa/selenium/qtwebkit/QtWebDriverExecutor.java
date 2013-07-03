@@ -115,8 +115,8 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
                     {"DELETE", REMOVE_SESSION_STORAGE_ITEM, "/session/:sessionId/session_storage/key/:key"},
                     {"GET", GET_SESSION_STORAGE_SIZE, "/session/:sessionId/session_storage/size"},
                     {"POST", "getLog", "/session/:sessionId/log"},
-                    {"GET", "getLogTypes", "/session/:sessionId/log/types"},
-                    {"GET", "getAppCacheStatus", "/session/:sessionId/application_cache/status"},
+                    {"GET", GET_AVAILABLE_LOG_TYPES, "/session/:sessionId/log/types"},
+                    {"GET", GET_APP_CACHE_STATUS, "/session/:sessionId/application_cache/status"},
 
                     // not present in RFC
                     {"GET", GET_ALERT, "/session/:sessionId/alert"},
