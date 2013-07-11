@@ -18,26 +18,27 @@ limitations under the License.
 
 package org.openqa.selenium.qtwebkit;
 
+import org.openqa.selenium.*;
 import org.openqa.selenium.html5.*;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.remote.DriverCommand;
+import org.openqa.selenium.remote.RemoteTouchScreen;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
 
 
-public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage {
+public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
+    private TouchScreen touchScreen;
 
     public QtWebKitDriver(Capabilities capabilities) {
         super(QtWebKitDriverService.getCommandExecutor(), capabilities);
         localStorage = new RemoteLocalStorage(getExecuteMethod());
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
+        touchScreen = new RemoteTouchScreen(getExecuteMethod());
     }
 
 
@@ -56,6 +57,11 @@ public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, 
     @Override
     public SessionStorage getSessionStorage() {
         return sessionStorage;
+    }
+
+    @Override
+    public TouchScreen getTouch() {
+        return touchScreen;
     }
 }
 
