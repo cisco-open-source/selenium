@@ -18,11 +18,13 @@ package org.openqa.selenium.interactions.touch;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.junit.AfterClass;
 import org.openqa.selenium.interactions.touch.TouchDoubleTapTest;
 import org.openqa.selenium.interactions.touch.TouchFlickTest;
 import org.openqa.selenium.interactions.touch.TouchLongPressTest;
 import org.openqa.selenium.interactions.touch.TouchScrollTest;
 import org.openqa.selenium.interactions.touch.TouchSingleTapTest;
+import org.openqa.selenium.testing.JUnit4TestBase;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -33,4 +35,9 @@ import org.openqa.selenium.interactions.touch.TouchSingleTapTest;
     TouchSingleTapTest.class
 })
 public class TouchTests {
+    @AfterClass
+    public static void cleanUpDriver() {
+        JUnit4TestBase.removeDriver();
+    }
 }
+
