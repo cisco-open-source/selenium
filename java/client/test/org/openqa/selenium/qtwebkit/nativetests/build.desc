@@ -1,6 +1,7 @@
 java_test(name = "nativetests",
   sysproperties = [
-    { "selenium.browser" : "qtwebkit" },
+    { "selenium.browser" : "qtwebkit",
+      "webdriver.browserClass" : "QWidget" },
   ],
   srcs = ["*.java",
           "interactions/*.java",],
