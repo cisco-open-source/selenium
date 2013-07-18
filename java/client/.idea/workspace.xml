@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="38c2c42b-25d5-40c2-a60a-5be1be63f047" name="Default" comment="" />
+    <list default="true" id="75a3ab17-68cb-40fd-87da-719ca9292b6d" name="Default" comment="" />
     <ignored path="client.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -58,41 +58,83 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="JavascriptEnabledDriverTest.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/JavascriptEnabledDriverTest.java">
+      <file leaf-file-name="GetLogsTest.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/logging/GetLogsTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="302" column="28" selection-start="10347" selection-end="10347" vertical-scroll-proportion="0.0">
+            <state line="113" column="4" selection-start="4665" selection-end="4665" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="WindowSwitchingTest.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/WindowSwitchingTest.java">
+      <file leaf-file-name="QtWebDriverExecutor.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit/QtWebDriverExecutor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="161" column="88" selection-start="5571" selection-end="5645" vertical-scroll-proportion="-3.0">
+            <state line="105" column="48" selection-start="7436" selection-end="7436" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ChromeDriverTests.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/chrome/ChromeDriverTests.java">
+      <file leaf-file-name="DriverCommand.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/remote/DriverCommand.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="7" selection-start="827" selection-end="827" vertical-scroll-proportion="0.0">
+            <state line="103" column="29" selection-start="3597" selection-end="3617" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="StandardSeleniumTests.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="StandardSeleniumTests.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/StandardSeleniumTests.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="95" column="70" selection-start="3036" selection-end="3036" vertical-scroll-proportion="0.5212766">
-              <folding>
-                <element signature="e#0#3265#0" expanded="true" />
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state line="92" column="7" selection-start="3021" selection-end="3021" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="WindowTest.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/WindowTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="234" column="9" selection-start="7232" selection-end="7232" vertical-scroll-proportion="0.8631387">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="QtWebkitDriverTests.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/QtWebkitDriverTests.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="29" column="15" selection-start="873" selection-end="873" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RemoteWebDriver.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/remote/RemoteWebDriver.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="603" column="11" selection-start="20075" selection-end="20075" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ExecutingJavascriptTest.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/ExecutingJavascriptTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="358" column="46" selection-start="11395" selection-end="11395" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="QtWebKitDriver.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit/QtWebKitDriver.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="28" column="56" selection-start="1034" selection-end="1034" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -107,17 +149,29 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/test/org/openqa/selenium/PageLoadingTest.java.orig" />
-        <option value="$PROJECT_DIR$/test/org/openqa/selenium/PageLoadingTest.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/testing/drivers/WebDriverBuilder.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/NativeTests/ClickTest.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/NativeTests/NativeWebDriverTests.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/NativeTests/WindowTest.java" />
+        <option value="$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit/QtWebKitDriver.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/nativetests/ClickTest.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/nativetests/ClickScrollingTest.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/nativetests/NativeWebDriverTests.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/nativetests/WindowTest.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/logging/GetLogsTest.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/testing/JUnit4TestBase.java" />
+        <option value="$PROJECT_DIR$/src/org/openqa/selenium/remote/RemoteWebDriver.java" />
+        <option value="$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit/QtWebDriverExecutor.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/QtWebkitDriverTests.java" />
         <option value="$PROJECT_DIR$/test/org/openqa/selenium/StandardSeleniumTests.java" />
+        <option value="$PROJECT_DIR$/test/org/openqa/selenium/WindowTest.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-1" />
-    <option name="y" value="26" />
     <option name="width" value="1368" />
-    <option name="height" value="744" />
+    <option name="height" value="769" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -145,6 +199,30 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="PackagesPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="client" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Client" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -160,20 +238,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="client" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="client" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="client" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -181,10 +245,6 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="client" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
@@ -199,10 +259,6 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="client" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
@@ -224,40 +280,89 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="client" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="client" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="test" />
+              <option name="myItemId" value="src" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="selenium" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="chrome" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="last_directory_selection" value="$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="recentsLimit" value="5" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="MemberChooser.copyJavadoc" value="false" />
   </component>
-  <component name="RunManager">
+  <component name="RecentsManager">
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="org.openqa.selenium.qtwebkit" />
+    </key>
+  </component>
+  <component name="RunManager" selected="JUnit.QtWebkitDriverTests">
+    <configuration default="false" name="SeleniumTestEnvironment" type="Application" factoryName="Application" temporary="true">
+      <option name="MAIN_CLASS_NAME" value="org.openqa.selenium.v1.SeleniumTestEnvironment" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="client" />
+      <envs />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="QtWebkitDriverTests" type="JUnit" factoryName="JUnit" temporary="true">
+      <module name="client" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="org.openqa.selenium.qtwebkit" />
+      <option name="MAIN_CLASS_NAME" value="org.openqa.selenium.qtwebkit.QtWebkitDriverTests" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
       <module name="" />
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m" />
@@ -278,6 +383,24 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
@@ -306,24 +429,6 @@
       <envs />
       <properties />
       <listeners />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="true" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
@@ -375,42 +480,51 @@
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
-    <list size="0" />
+    <list size="2">
+      <item index="0" class="java.lang.String" itemvalue="Application.SeleniumTestEnvironment" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.QtWebkitDriverTests" />
+    </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
       <Port>5050</Port>
     </configuration>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="SliceManager">
+    <option name="analysisUIOptions">
+      <AnalysisUIOptions />
+    </option>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="38c2c42b-25d5-40c2-a60a-5be1be63f047" name="Default" comment="" />
-      <created>1364562092987</created>
-      <updated>1364562092987</updated>
+      <changelist id="75a3ab17-68cb-40fd-87da-719ca9292b6d" name="Default" comment="" />
+      <created>1364802776147</created>
+      <updated>1364802776147</updated>
     </task>
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="26" width="1368" height="744" extended-state="6" />
+    <frame x="-1" y="0" width="1368" height="769" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.122727275" sideWeight="0.7467533" order="6" side_tool="true" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24962063" sideWeight="0.67118645" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16969697" sideWeight="0.7467533" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32963374" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32881355" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25324675" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32954547" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -469,92 +583,96 @@
   <component name="XDebuggerManager">
     <breakpoint-manager />
   </component>
+  <component name="antWorkspaceConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/PageLoadingTest.java.orig">
+    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/testing/JUnit4TestBase.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="199" column="78" selection-start="7582" selection-end="7582" vertical-scroll-proportion="0.77837837" />
+        <state line="98" column="106" selection-start="3403" selection-end="3403" vertical-scroll-proportion="-0.05272408" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/CorrectEventFiringTest.java.orig">
+    <entry file="file://$PROJECT_DIR$/test/com/thoughtworks/selenium/InternalSelenseTestBase.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="218" column="66" selection-start="7113" selection-end="7113" vertical-scroll-proportion="-2.7486486" />
+        <state line="217" column="38" selection-start="7472" selection-end="7472" vertical-scroll-proportion="0.33179724" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/PageLoadingTest.java">
+    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/chrome/ChromeOptionsFunctionalTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="199" column="108" selection-start="7604" selection-end="7604" vertical-scroll-proportion="0.0" />
+        <state line="52" column="30" selection-start="1582" selection-end="1582" vertical-scroll-proportion="0.5391705" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/html5/Html5CapabilitiesTest.java">
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/JavascriptExecutor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="52" column="64" selection-start="2314" selection-end="2314" vertical-scroll-proportion="0.0" />
+        <state line="56" column="0" selection-start="2398" selection-end="2398" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/ElementFindingTest.java">
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/remote/CommandExecutor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="310" column="57" selection-start="9675" selection-end="9678" vertical-scroll-proportion="0.0">
+        <state line="20" column="17" selection-start="657" selection-end="657" vertical-scroll-proportion="0.16423358" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/logging/NeedsLocalLogs.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="17" selection-start="632" selection-end="632" vertical-scroll-proportion="0.10948905" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/remote/HttpCommandExecutor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="65" column="68" selection-start="2596" selection-end="2596" vertical-scroll-proportion="0.15817223" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/logging/GetLogsTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="113" column="4" selection-start="4665" selection-end="4665" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/remote/DriverCommand.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="103" column="29" selection-start="3597" selection-end="3617" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/remote/RemoteWebDriver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="603" column="11" selection-start="20075" selection-end="20075" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/ExecutingJavascriptTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="358" column="46" selection-start="11395" selection-end="11395" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit/QtWebKitDriver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="56" selection-start="1034" selection-end="1034" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/openqa/selenium/qtwebkit/QtWebDriverExecutor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="105" column="48" selection-start="7436" selection-end="7436" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/html5/Html5Tests.java">
+    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/qtwebkit/QtWebkitDriverTests.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="13" selection-start="979" selection-end="979" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/html5/AppCacheTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="82" selection-start="1543" selection-end="1543" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/TextPagesTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="32" selection-start="2201" selection-end="2216" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/MiscTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="27" selection-start="2008" selection-end="2008" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/ObjectStateAssumptionsTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="11" selection-start="2395" selection-end="2395" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/TextHandlingTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="306" column="62" selection-start="10587" selection-end="10587" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/JavascriptEnabledDriverTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="302" column="28" selection-start="10347" selection-end="10347" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/WindowSwitchingTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="161" column="88" selection-start="5571" selection-end="5645" vertical-scroll-proportion="-3.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/chrome/ChromeDriverTests.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="7" selection-start="827" selection-end="827" vertical-scroll-proportion="0.0">
+        <state line="29" column="15" selection-start="873" selection-end="873" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/StandardSeleniumTests.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="70" selection-start="3036" selection-end="3036" vertical-scroll-proportion="0.5212766">
-          <folding>
-            <element signature="e#0#3265#0" expanded="true" />
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="92" column="7" selection-start="3021" selection-end="3021" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/org/openqa/selenium/WindowTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="234" column="9" selection-start="7232" selection-end="7232" vertical-scroll-proportion="0.8631387">
+          <folding />
         </state>
       </provider>
     </entry>
