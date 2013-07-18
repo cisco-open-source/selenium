@@ -145,7 +145,10 @@ public abstract class JUnit4TestBase implements WrapsDriver {
         DesiredCapabilities caps = new DesiredCapabilities();
         WebDriverBuilder builder = new WebDriverBuilder();
 
-        caps.setCapability("browserClass", "QWidget");
+        String startClass = System.getProperty("webdriver.browserClass");
+        if (null != startClass) {
+            caps.setCapability("browserClass", startClass);
+        }
         builder.setDesiredCapabilities(caps);
         driver = builder.get();
       storedDriver.set(driver);
