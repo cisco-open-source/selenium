@@ -87,3 +87,5 @@ ipch/
 /phantomjsdriver.log
 .tags
 .ruby-version
+
+*.orig
