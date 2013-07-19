@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -84,9 +85,9 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     }
 
-    // TO DO:implement identification keys letters
-    // Issue MHA-659
     @Test
+    @Ignore(value = {Ignore.Driver.QTWEBKIT},
+            reason = "won't fix in near future(hard to resolve without regressions)")
     public void testSendingKeysWithShiftPressed() {
 
         WebElement inputElement = driver.findElement(By.id("enabledTextElement"));
