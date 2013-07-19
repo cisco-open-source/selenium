@@ -28,12 +28,24 @@ public class CoordinatesTest extends JUnit4TestBase {
 
     @Test
     public void testShouldGetCoordinatesOfAnZeroSizeElement() {
-        assertThat(getLocationOnScreen(By.id("zeroSizeLabel")), is(new Point(21, 21)));
+      Point elementLocation =  getLocationOnScreen(By.id("zeroSizeLabel"));
+      boolean isElementLocatedCorrectly = true;
+        if(elementLocation.x > 22 || elementLocation.x < 20)
+          isElementLocatedCorrectly = false;
+        else if(elementLocation.y > 22 || elementLocation.y < 20)
+          isElementLocatedCorrectly = false;
+        assertThat(isElementLocatedCorrectly, is(true));
     }
 
     @Test
     public void testShouldGetCoordinatesOfATransparentElement() {
-        assertThat(getLocationOnScreen(By.id("transparentLabel")), is(new Point(21, 24)));
+      Point elementLocation =  getLocationOnScreen(By.id("transparentLabel"));
+      boolean isElementLocatedCorrectly = true;
+      if(elementLocation.x > 22 || elementLocation.x < 20)
+        isElementLocatedCorrectly = false;
+      else if(elementLocation.y > 25 || elementLocation.y < 23)
+        isElementLocatedCorrectly = false;
+      assertThat(isElementLocatedCorrectly, is(true));
     }
 
     @Test
