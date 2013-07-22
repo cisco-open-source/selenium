@@ -87,7 +87,8 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     @Test
     @Ignore(value = {Ignore.Driver.QTWEBKIT},
-            reason = "won't fix in near future(hard to resolve without regressions)")
+            reason = "won't fix in near future(hard to resolve without regressions)",
+            issues = 721)
     public void testSendingKeysWithShiftPressed() {
 
         WebElement inputElement = driver.findElement(By.id("enabledTextElement"));
