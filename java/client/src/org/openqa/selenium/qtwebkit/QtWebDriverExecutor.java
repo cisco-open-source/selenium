@@ -10,13 +10,6 @@ import java.util.ArrayList;
 
 import static org.openqa.selenium.remote.DriverCommand.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: andrii
- * Date: 5/28/13
- * Time: 1:33 PM
- * To change this template use File | Settings | File Templates.
- */
 public class QtWebDriverExecutor extends HttpCommandExecutor {
 
     private static ArrayList<String> executedCommands = new ArrayList<String>();
