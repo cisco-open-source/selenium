@@ -1,10 +1,3 @@
-/**
- * Created with IntelliJ IDEA.
- * User: liberus
- * Date: 3/25/13
- * Time: 2:57 PM
- * To change this template use File | Settings | File Templates.
- */
 package org.openqa.selenium.testing.drivers;
 
 import com.google.common.base.Supplier;
