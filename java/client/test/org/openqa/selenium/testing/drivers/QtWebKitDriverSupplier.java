@@ -30,14 +30,10 @@ public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
 
     public WebDriver get() {
         if (desiredCapabilities == null ){
-            System.out.println("Wrong capability was set!");
-            Thread.dumpStack();
             return null;
         }
 
         if (!DesiredCapabilities.qtwebkit().getBrowserName().equals(desiredCapabilities.getBrowserName())) {
-            System.out.println("Wrong capability was set!");
-            Thread.dumpStack();
             return null;
         }
 
