@@ -41,6 +41,8 @@ import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 public class SessionHandlingTest {
 
   @Test
+  @Ignore(value = {QTWEBKIT},
+    reason = "QtWebkit: doesn't support multiple sessions")
   public void callingQuitMoreThanOnceOnASessionIsANoOp() {
     WebDriver driver = new WebDriverBuilder().get();
 
@@ -54,9 +56,9 @@ public class SessionHandlingTest {
     }
   }
 
-    //QtWebkit delete sessionId from session_manager so can't quit not existing session
   @Test
-  @Ignore(value = {CHROME, PHANTOMJS, QTWEBKIT})
+  @Ignore(value = {CHROME, PHANTOMJS, QTWEBKIT},
+        reason = "QtWebkit delete sessionId from session_manager so can't quit not existing session")
   public void callingQuitAfterClosingTheLastWindowIsANoOp() {
     WebDriver driver = new WebDriverBuilder().get();
 
@@ -71,20 +73,21 @@ public class SessionHandlingTest {
   }
 
   @Test(expected = SessionNotFoundException.class)
-  @Ignore(value = {OPERA}, reason = "Opera: throws Opera-specific exception")
+  @Ignore(value = {OPERA, QTWEBKIT}, reason = "Opera: throws Opera-specific exception,"
+                                              + "QtWebkit: doesn't support multiple sessions")
   public void callingAnyOperationAfterQuitShouldThrowAnException() {
     WebDriver driver = new WebDriverBuilder().get();
     driver.quit();
     driver.getCurrentUrl();
   }
 
-  // QtWebkit: throws generic WebDriverException,
   @Test(expected = SessionNotFoundException.class)
   @Ignore(value = {FIREFOX, CHROME, OPERA, PHANTOMJS, QTWEBKIT}, reason =
       "Chrome: throws generic WebDriverException,"
       + "Firefox: can perform an operation after closing the last window,"
       + "Opera: throws Opera-specific exception,"
-      + "PhantomJS: throws NoSuchWindowException")
+      + "PhantomJS: throws NoSuchWindowException,"
+      + "QtWebkit: throws generic WebDriverException")
   public void callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException() {
     WebDriver driver = new WebDriverBuilder().get();
     driver.close();
