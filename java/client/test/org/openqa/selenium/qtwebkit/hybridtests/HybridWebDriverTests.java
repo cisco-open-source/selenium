@@ -12,7 +12,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     CapabilitiesTest.class,
-    InternalWebViewTest.class
+    InternalWebViewTest.class,
+    WidgetAndWebViewTest.class
 })
 public class HybridWebDriverTests {
 
