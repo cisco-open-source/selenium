@@ -13,19 +13,25 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
-
+ */
 
 package org.openqa.selenium.qtwebkit;
 
-import org.openqa.selenium.*;
-import org.openqa.selenium.html5.*;
+import java.net.URL;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.HasTouchScreen;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TouchScreen;
+import org.openqa.selenium.html5.LocalStorage;
+import org.openqa.selenium.html5.SessionStorage;
+import org.openqa.selenium.html5.WebStorage;
+import org.openqa.selenium.remote.CommandExecutor;
 import org.openqa.selenium.remote.DriverCommand;
 import org.openqa.selenium.remote.RemoteTouchScreen;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
-
 
 
 public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen {
@@ -34,13 +40,28 @@ public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, 
     private RemoteSessionStorage sessionStorage;
     private TouchScreen touchScreen;
 
-    public QtWebKitDriver(Capabilities capabilities) {
-        super(QtWebKitDriverService.getCommandExecutor(), capabilities);
+    public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities, Capabilities requiredCapabilities) {
+        super(executor, desiredCapabilities, requiredCapabilities);
         localStorage = new RemoteLocalStorage(getExecuteMethod());
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
         touchScreen = new RemoteTouchScreen(getExecuteMethod());
     }
 
+    public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities) {
+	    this(executor, desiredCapabilities, null);
+    }
+
+    public QtWebKitDriver(Capabilities desiredCapabilities) {
+	    this((URL) null, desiredCapabilities);
+    }
+
+    public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities, Capabilities requiredCapabilities) {
+	    this(new QtWebDriverExecutor(remoteAddress), desiredCapabilities, requiredCapabilities);
+    }
+
+    public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities) {
+	    this(new QtWebDriverExecutor(remoteAddress), desiredCapabilities, null);
+    }
 
     public <X> X getScreenshotAs(OutputType<X> target) {
         // Get the screenshot as base64.
@@ -64,4 +85,3 @@ public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, 
         return touchScreen;
     }
 }
-

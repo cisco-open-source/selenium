@@ -75,6 +75,8 @@ public class Pages {
   public String xhtmlFormPage;
   public String xhtmlTestPage;
 
+  public String notExist;
+
   public Pages(AppServer appServer) {
     ajaxyPage = appServer.whereIs("ajaxy_page.html");
     alertsPage = appServer.whereIs("alerts.html");
@@ -131,5 +133,6 @@ public class Pages {
     uploadPage = appServer.whereIs("upload.html");
     veryLargeCanvas = appServer.whereIs("veryLargeCanvas.html");
     xhtmlTestPage = appServer.whereIs("xhtmlTest.html");
+    notExist = appServer.whereIs("temp.txt");
   }
 }

@@ -37,9 +37,9 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
     public void canStartWebDriverWithPos() {
         URL hostURL;
         Point point = new Point(80, 60);
-        String arg = "--window-position=" + point.getX() + "," + point.getY();
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        capabilities.setCapability("chrome.switches", Arrays.asList(arg));
+        String arg = "" + point.getX() + ", " + point.getY();
+        DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
+        capabilities.setCapability("windowposition", arg);
 
         try {
             hostURL = new URL("http://localhost:9517");
@@ -52,13 +52,16 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
                 executor, capabilities);
 
         driver.get(pages.colorPage);
+        WebDriver.Window window = driver.manage().window();
+        Point pnt = window.getPosition();
+        assertEquals(80, pnt.getX());
+        assertEquals(60, pnt.getY());
+
 
         waitFor(xEqual(driver, point));
         waitFor(yEqual(driver, point));
 
         sleep(2);
-
-
 
     }
 
@@ -67,10 +70,9 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
     public void canStartWebDriverWithSize() {
         URL hostURL;
         Dimension size = new Dimension(600, 600);
-        String arg = "--window-size=" + size.getWidth() + ", " + size.getHeight();
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        capabilities.setCapability("chrome.switches", Arrays.asList(arg));
-
+        String arg = "" + size.getWidth() + ", " + size.getHeight();
+        DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
+        capabilities.setCapability("windowsize", arg);
         try {
             hostURL = new URL("http://localhost:9517");
         } catch (MalformedURLException e) {
@@ -83,6 +85,10 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
 
         driver.get(pages.colorPage);
 
+        WebDriver.Window window = driver.manage().window();
+        Dimension sz = window.getSize();
+        assertEquals(600, sz.getHeight());
+        assertEquals(600, sz.getWidth());
         waitFor(windowHeightToEqual(driver, size));
         waitFor(windowWidthToEqual(driver, size));
 
@@ -92,12 +98,10 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
 
     @NeedsLocalEnvironment
     @Test
-    @Ignore({QTWEBKIT})
     public void canStartWebDriverMaximized() {
         URL hostURL;
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        capabilities.setCapability("chrome.switches", Arrays.asList("--start-maximized"));
-
+        DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
+        capabilities.setCapability("maximize", true);
         try {
             hostURL = new URL("http://localhost:9517");
         } catch (MalformedURLException e) {
