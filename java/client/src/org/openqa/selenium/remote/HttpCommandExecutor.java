@@ -245,7 +245,16 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         .put(GET_AVAILABLE_LOG_TYPES, get("/session/:sessionId/log/types"))
         .put(GET_SESSION_LOGS, post("/logs"))
 
-        .put(STATUS, get("/status"));
+        .put(STATUS, get("/status"))
+        .put(GET_PLAYER_STATE, get("/session/:sessionId/element/:id/-CISCO-player-element/state"))
+        .put(SET_PLAYER_STATE, post("/session/:sessionId/element/:id/-CISCO-player-element/state"))
+        .put(GET_PLAYER_VOLUME, get("/session/:sessionId/element/:id/-CISCO-player-element/volume"))
+        .put(SET_PLAYER_VOLUME,
+             post("/session/:sessionId/element/:id/-CISCO-player-element/volume"))
+        .put(GET_CURRENT_PLAYING_POSITION,
+             get("/session/:sessionId/element/:id/-CISCO-player-element/seek"))
+        .put(SET_CURRENT_PLAYING_POSITION,
+             post("/session/:sessionId/element/:id/-CISCO-player-element/seek"));
 
         nameToUrl = builder.build();
   }

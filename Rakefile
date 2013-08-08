@@ -172,9 +172,6 @@ task :test_qtwebkit => [
   '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run'
 ]
 task :test_wd_native => [  '//java/client/test/org/openqa/selenium/qtwebkit/nativetests:nativetests:run' ]
-#  '//java/server/test/org/openqa/selenium/remote/server:test_qtwebkit:run'
-  #'//java/client/test/org/openqa/selenium/remote:common-tests:run',
-  #'//java/client/test/org/openqa/selenium/remote:client-tests:run',
 task :test_wd_hybrid => [
   '//java/client/test/org/openqa/selenium/qtwebkit/hybridtests:hybridtests:run'
 ]

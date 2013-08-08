@@ -45,6 +45,7 @@ public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, 
         localStorage = new RemoteLocalStorage(getExecuteMethod());
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
         touchScreen = new RemoteTouchScreen(getExecuteMethod());
+      setElementConverter(new QtWebKitJsonToWebElementConverter(this));
     }
 
     public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities) {
