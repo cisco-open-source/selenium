@@ -18,11 +18,9 @@ limitations under the License.
 package org.openqa.selenium.qtwebkit;
 
 import java.net.URL;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.HasTouchScreen;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.TouchScreen;
+import com.google.common.collect.ImmutableMap;
+
+import org.openqa.selenium.*;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.SessionStorage;
 import org.openqa.selenium.html5.WebStorage;
@@ -34,7 +32,7 @@ import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
 
-public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen {
+public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
@@ -84,5 +82,16 @@ public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, 
     @Override
     public TouchScreen getTouch() {
         return touchScreen;
+    }
+
+    @Override
+    public void rotate(ScreenOrientation orientation) {
+        execute(DriverCommand.SET_SCREEN_ORIENTATION, ImmutableMap.of("orientation", orientation));
+    }
+
+    @Override
+    public ScreenOrientation getOrientation() {
+        return ScreenOrientation.valueOf(
+                (String) execute(DriverCommand.GET_SCREEN_ORIENTATION).getValue());
     }
 }
