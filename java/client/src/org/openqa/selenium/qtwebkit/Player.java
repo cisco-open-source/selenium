@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.CISCO_Player;
+package org.openqa.selenium.qtwebkit;
 
 import org.openqa.selenium.WebElement;
 

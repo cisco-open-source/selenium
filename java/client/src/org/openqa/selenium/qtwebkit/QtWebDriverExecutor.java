@@ -1,18 +1,37 @@
 package org.openqa.selenium.qtwebkit;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.openqa.selenium.remote.Command;
+import org.openqa.selenium.remote.CommandInfo;
 import org.openqa.selenium.remote.HttpCommandExecutor;
+import org.openqa.selenium.remote.HttpVerb;
 import org.openqa.selenium.remote.Response;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Map;
 
-import static org.openqa.selenium.remote.DriverCommand.*;
+import static org.openqa.selenium.qtwebkit.QtWebKitDriverCommand.*;
 
 public class QtWebDriverExecutor extends HttpCommandExecutor {
 
     private static ArrayList<String> executedCommands = new ArrayList<String>();
+    private static final Map<String, CommandInfo> additionalCommands;
+  static {
+    ImmutableMap.Builder<String, CommandInfo> builder = ImmutableMap.builder();
+      builder.put(GET_PLAYER_STATE,
+                  new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/state", HttpVerb.GET))
+      .put(SET_PLAYER_STATE, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/state", HttpVerb.POST))
+      .put(GET_PLAYER_VOLUME, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/volume", HttpVerb.GET))
+      .put(SET_PLAYER_VOLUME, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/volume", HttpVerb.POST))
+      .put(GET_CURRENT_PLAYING_POSITION,
+           new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.GET))
+      .put(SET_CURRENT_PLAYING_POSITION,
+           new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.POST));
+    additionalCommands = builder.build();
+  }
     private static Object[][] commands =
             {
                     {"GET", STATUS, "/status"},
@@ -114,12 +133,19 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
                     // not present in RFC
                     {"GET", GET_ALERT, "/session/:sessionId/alert"},
                     {"POST", SET_BROWSER_VISIBLE, "/session/:sessionId/visible"},
-                    {"GET", IS_BROWSER_VISIBLE, "/session/:sessionId/visible"}
+                    {"GET", IS_BROWSER_VISIBLE, "/session/:sessionId/visible"},
+                //CISO Player commands
+                    {"GET", GET_PLAYER_STATE, "/session/:sessionId/element/:id/-CISCO-player-element/state"},
+                    {"POST", SET_PLAYER_STATE, "/session/:sessionId/element/:id/-CISCO-player-element/state"},
+                    {"GET", GET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-CISCO-player-element/volume"},
+                    {"POST", SET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-CISCO-player-element/volume"},
+                    {"GET", GET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"},
+                    {"POST", SET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"}
             };
 
     public QtWebDriverExecutor(URL addressOfRemoteServer)
     {
-        super(addressOfRemoteServer);
+        super(additionalCommands, addressOfRemoteServer);
     }
 
     public Response execute(Command command) throws IOException {

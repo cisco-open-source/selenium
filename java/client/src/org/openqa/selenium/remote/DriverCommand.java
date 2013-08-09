@@ -162,11 +162,4 @@ public interface DriverCommand {
   String GET_LOG = "getLog";
   String GET_SESSION_LOGS = "getSessionLogs";
 
-  //CISCO Player API
-  String GET_PLAYER_STATE = "getPlayerState";
-  String SET_PLAYER_STATE = "setPlayerState";
-  String GET_PLAYER_VOLUME = "getPlayerVolume";
-  String SET_PLAYER_VOLUME = "setPlayerVolume";
-  String GET_CURRENT_PLAYING_POSITION = "getCurrentPlayingPosition";
-  String SET_CURRENT_PLAYING_POSITION = "setCurrentPlayingPosition";
 }
