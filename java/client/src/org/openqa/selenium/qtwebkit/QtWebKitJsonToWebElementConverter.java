@@ -30,9 +30,7 @@ public class QtWebKitJsonToWebElementConverter extends JsonToWebElementConverter
         element.setId(String.valueOf(resultAsMap.get("ELEMENT")));
         element.setFileDetector(driver.getFileDetector());
         String tagName =  element.getTagName();
-        System.out.println("###########!!!!Yeah!!! tagName!!! " + tagName);
         if(tagName.equals("video")){
-          System.out.println("###########!!!!Yeah!!! PlayerElement!!!");
           RemotePlayer player = newRemotePlayerElement();
           player.setId(String.valueOf(resultAsMap.get("ELEMENT")));
           player.setFileDetector(driver.getFileDetector());
