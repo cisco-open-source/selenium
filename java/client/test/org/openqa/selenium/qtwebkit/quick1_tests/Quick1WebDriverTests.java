@@ -32,7 +32,7 @@ import java.util.Map;
 //        FindingTest.class,
 //        CoordinatesTest.class,
 //        ClickScrollingTest.class,
-//        TakesScreenshotTest.class,
+        TakesScreenshotTest.class,
 //        ElementAttributeTest.class,
 //        ElementSelectingTest.class,
 //        TypingTest.class,
