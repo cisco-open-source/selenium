@@ -30,13 +30,15 @@ public class RemotePlayer extends RemoteWebElement implements Player {
   @Override
   public PlayerState getState() {
     Response response = execute(QtWebKitDriverCommand.GET_PLAYER_STATE, ImmutableMap.of("id", id));
-    Map<String, Object> parameters = (Map<String, Object>) response.getValue();
-    PlayerState state = PlayerState.values()[((Number)parameters.get("state")).intValue()];
+    PlayerState state = PlayerState.values()[((Long)response.getValue()).intValue()];
     return state;
   }
 
   @Override
-  public void setVolume(int level) {
+  public void setVolume(double level) throws IllegalArgumentException{
+    if(level > 1 || level < 0){
+      throw new IllegalArgumentException("Volume should be between 1 and 0");
+    }
     execute(QtWebKitDriverCommand.SET_PLAYER_VOLUME,
             ImmutableMap.of("id", id, "level", level));
   }
@@ -54,18 +56,27 @@ public class RemotePlayer extends RemoteWebElement implements Player {
   }
 
   @Override
-  public int getVolume() {
+  public double getVolume() {
     Response response = execute(QtWebKitDriverCommand.GET_PLAYER_VOLUME, ImmutableMap.of("id", id));
-    Map<String, Object> parameters = (Map<String, Object>) response.getValue();
-    int volume = ((Number)parameters.get("level")).intValue();
-    return volume;
+    return ((Number)response.getValue()).doubleValue();
   }
 
   @Override
   public double currentPlayingPosition() {
     Response response = execute(QtWebKitDriverCommand.GET_CURRENT_PLAYING_POSITION, ImmutableMap.of("id", id));
-    Map<String, Object> parameters = (Map<String, Object>) response.getValue();
-    double position = ((Number)parameters.get("position")).intValue();
-    return position;
+    return ((Number)response.getValue()).doubleValue();
+  }
+
+  @Override
+  public boolean isMuted(){
+    Response response = execute(QtWebKitDriverCommand.GET_PLAYER_MUTE,
+            ImmutableMap.of("id", id));
+    return (Boolean)response.getValue();
+  }
+
+  @Override
+  public void setMute(boolean mute){
+    execute(QtWebKitDriverCommand.SET_PLAYER_MUTE,
+            ImmutableMap.of("id", id, "mute", mute));
   }
 }
