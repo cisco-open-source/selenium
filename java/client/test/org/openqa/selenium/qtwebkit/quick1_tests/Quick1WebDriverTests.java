@@ -29,7 +29,7 @@ import java.util.Map;
 @Suite.SuiteClasses({
         WindowTest.class,
 //        ClickTest.class,
-//        FindingTest.class,
+        FindingTest.class,
         CoordinatesTest.class,
 //        ClickScrollingTest.class,
         TakesScreenshotTest.class,
