@@ -28,7 +28,7 @@ import java.util.Map;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         WindowTest.class,
-//        ClickTest.class,
+        ClickTest.class,
         FindingTest.class,
         CoordinatesTest.class,
 //        ClickScrollingTest.class,
