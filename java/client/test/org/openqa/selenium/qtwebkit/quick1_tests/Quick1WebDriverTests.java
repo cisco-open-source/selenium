@@ -33,7 +33,7 @@ import java.util.Map;
         CoordinatesTest.class,
 //        ClickScrollingTest.class,
         TakesScreenshotTest.class,
-//        ElementAttributeTest.class,
+        ElementAttributeTest.class,
 //        ElementSelectingTest.class,
 //        TypingTest.class,
 //        TextHandlingTest.class,
