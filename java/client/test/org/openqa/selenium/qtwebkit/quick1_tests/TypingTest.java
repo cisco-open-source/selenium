@@ -16,13 +16,13 @@ public class TypingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get("qtwidget://TypingTestWidget");
+        driver.get(appServer.whereIs("quick1/TypingTest.qml"));
     }
 
     @Test
     public void testQuoteMarks() {
 
-        WebElement  inputElement = driver.findElement(By.id("enabeledTextElement"));
+        WebElement  inputElement = driver.findElement(By.id("enabledTextElement"));
         inputElement.clear();
         inputElement.sendKeys("\"");
         assertThat(inputElement.getText(),  is("\""));
@@ -40,7 +40,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testAtCharacter() {
 
-        WebElement  inputElement = driver.findElement(By.id("enabeledTextElement"));
+        WebElement  inputElement = driver.findElement(By.id("enabledTextElement"));
         inputElement.clear();
         inputElement.sendKeys("@");
         assertThat(inputElement.getText(), is("@"));
@@ -58,7 +58,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testMixCharacter() {
 
-        WebElement  inputElement = driver.findElement(By.id("enabeledTextElement"));
+        WebElement  inputElement = driver.findElement(By.id("enabledTextElement"));
         inputElement.clear();
         inputElement.sendKeys("me@eXample.com");
         assertThat(inputElement.getText(),  is("me@eXample.com"));
@@ -77,7 +77,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testArrowNotPrintable() {
 
-        WebElement  inputElement = driver.findElement(By.id("enabeledTextElement"));
+        WebElement  inputElement = driver.findElement(By.id("enabledTextElement"));
         inputElement.clear();
         inputElement.sendKeys(Keys.ARROW_LEFT);
         assertThat(inputElement.getText(), is(""));
@@ -92,7 +92,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testMixArrowAndOtherKeys() {
 
-        WebElement  inputElement = driver.findElement(By.id("enabeledTextElement"));
+        WebElement  inputElement = driver.findElement(By.id("enabledTextElement"));
         inputElement.clear();
         inputElement.sendKeys("tet", Keys.ARROW_LEFT, "s");
         assertThat(inputElement.getText(), is("test"));
@@ -107,7 +107,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testNumericNonShiftKeys() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         String numericLineCharsNonShifted = "`1234567890-=[]\\;,.'/42";
@@ -120,7 +120,7 @@ public class TypingTest extends JUnit4TestBase {
     public void testNumericShiftKeys() {
 
         WebElement result = driver.findElement(By.id("result"));
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         String numericShiftsEtc = "~!@#$%^&*()_+{}:\"<>?|END~";
@@ -133,7 +133,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testLowerCaseAlphaKeys() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         String lowerAlphas = "abcdefghijklmnopqrstuvwxyz";
@@ -144,7 +144,7 @@ public class TypingTest extends JUnit4TestBase {
 
     @Test
     public void testUppercaseAlphaKeys() {
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         String upperAlphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -156,7 +156,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testAllPrintableKeys() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         String allPrintable =
@@ -170,7 +170,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testArrowKeysAndPageUpAndDown() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("a" + Keys.LEFT + "b" + Keys.RIGHT +
@@ -185,7 +185,7 @@ public class TypingTest extends JUnit4TestBase {
             return;
         }
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
 
         element.sendKeys("abc" + Keys.HOME + "0" + Keys.LEFT + Keys.RIGHT +
                          Keys.PAGE_UP + Keys.PAGE_DOWN + Keys.END + "1" + Keys.HOME +
@@ -196,7 +196,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testDeleteAndBackspaceKeys() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("abcdefghi");
@@ -211,7 +211,7 @@ public class TypingTest extends JUnit4TestBase {
 
     @Test
     public void testSpecialSpaceKeys() {
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("abcd" + Keys.SPACE + "fgh" + Keys.SPACE + "ij");
@@ -221,7 +221,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testSignsKeys() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("abcd" + Keys.MULTIPLY + Keys.SUBTRACT + Keys.ADD +
@@ -233,7 +233,7 @@ public class TypingTest extends JUnit4TestBase {
     @Test
     public void testFunctionKeys() {
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("FUNCTION" + Keys.F4 + "-KEYS" + Keys.F4);
@@ -243,7 +243,7 @@ public class TypingTest extends JUnit4TestBase {
 
     @Test
     public void testShiftSelectionDeletes() {
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("abcd efgh");
@@ -261,7 +261,7 @@ public class TypingTest extends JUnit4TestBase {
             return;
         }
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("!\"#$%&'()*+,-./0123456789:;<=>?@ ABCDEFG");
@@ -278,7 +278,7 @@ public class TypingTest extends JUnit4TestBase {
         if (Platform.getCurrent().is(Platform.MAC)) {
             return;
         }
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
         element.clear();
 
         element.sendKeys("done" + Keys.HOME);
@@ -309,7 +309,7 @@ public class TypingTest extends JUnit4TestBase {
             return;
         }
 
-        WebElement element = driver.findElement(By.id("enabeledTextElement"));
+        WebElement element = driver.findElement(By.id("enabledTextElement"));
 
         String paste = "!\"#$%&'()*+,-./0123456789:;<=>?@ ABCDEFG";
         element.sendKeys(paste);
@@ -356,7 +356,7 @@ public class TypingTest extends JUnit4TestBase {
             return;
         }
 
-        WebElement textElement = driver.findElement(By.id("enabeledTextElement"));
+        WebElement textElement = driver.findElement(By.id("enabledTextElement"));
 
         String paste = "!0123 ABCD";
         textElement.sendKeys(paste);
@@ -366,7 +366,7 @@ public class TypingTest extends JUnit4TestBase {
         textElement.sendKeys("" + Keys.SHIFT + Keys.END);
         textElement.sendKeys("" + Keys.CONTROL + "c");
 
-        WebElement textArea = driver.findElement(By.id("enabeledTextElement"));
+        WebElement textArea = driver.findElement(By.id("enabledTextElement"));
 
         textArea.sendKeys(Keys.CONTROL, "v");
         assertThat(textArea.getText(), is("!0123 ABCD"));
