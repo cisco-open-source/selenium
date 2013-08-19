@@ -34,15 +34,17 @@ import java.util.Map;
 //        ClickScrollingTest.class,
         TakesScreenshotTest.class,
         ElementAttributeTest.class,
-//        ElementSelectingTest.class,
 //        TypingTest.class,
 //        TextHandlingTest.class,
 //        FormHandlingTest.class,
-//        MiscTest.class,
+        MiscTest.class,
 //        XPathElementFindingTest.class,
 //        StaleElementReferenceTest.class,
 //        VisibilityTest.class,
 //        InteractionTests.class
+//        ExecutingJavascriptTest.class,
+// TODO: component test
+// TODO: execute javascript
 })
 public class Quick1WebDriverTests {
     @BeforeClass
