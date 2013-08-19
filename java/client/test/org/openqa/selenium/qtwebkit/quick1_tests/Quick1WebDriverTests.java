@@ -34,7 +34,7 @@ import java.util.Map;
 //        ClickScrollingTest.class,
         TakesScreenshotTest.class,
         ElementAttributeTest.class,
-//        TypingTest.class,
+        TypingTest.class,
 //        TextHandlingTest.class,
 //        FormHandlingTest.class,
         MiscTest.class,

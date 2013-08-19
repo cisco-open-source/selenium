@@ -104,7 +104,7 @@ Rectangle {
             width: parent.width
             height: 50
             border.color: "black"
-            TextInput {
+            TextEdit {
                 id: areaWithDefaultText
                 objectName: "areaWithDefaultText"
                 anchors.fill: parent
@@ -125,12 +125,6 @@ Rectangle {
             }
         }
 
-        MouseArea {
-            objectName: "mouseHotSpotArea2"
-            width: 40
-            height: 40
-            onClicked: { clickDisplay.text = "clicked area 2" }
-        }
     }
 }
 
