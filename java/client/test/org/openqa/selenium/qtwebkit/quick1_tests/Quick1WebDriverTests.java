@@ -30,7 +30,7 @@ import java.util.Map;
         WindowTest.class,
 //        ClickTest.class,
 //        FindingTest.class,
-//        CoordinatesTest.class,
+        CoordinatesTest.class,
 //        ClickScrollingTest.class,
         TakesScreenshotTest.class,
 //        ElementAttributeTest.class,
