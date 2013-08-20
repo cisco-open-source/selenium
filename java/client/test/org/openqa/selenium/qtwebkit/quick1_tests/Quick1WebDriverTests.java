@@ -38,7 +38,7 @@ import java.util.Map;
 //        TextHandlingTest.class,
 //        FormHandlingTest.class,
         MiscTest.class,
-//        XPathElementFindingTest.class,
+        XPathElementFindingTest.class,
         StaleElementReferenceTest.class,
 //        VisibilityTest.class,
 //        InteractionTests.class
