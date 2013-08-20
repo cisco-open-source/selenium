@@ -35,12 +35,12 @@ public class RemotePlayer extends RemoteWebElement implements Player {
   }
 
   @Override
-  public void setVolume(double level) throws IllegalArgumentException{
-    if(level > 1 || level < 0){
+  public void setVolume(double volume) throws IllegalArgumentException{
+    if(volume > 1 || volume < 0){
       throw new IllegalArgumentException("Volume should be between 1 and 0");
     }
     execute(QtWebKitDriverCommand.SET_PLAYER_VOLUME,
-            ImmutableMap.of("id", id, "level", level));
+            ImmutableMap.of("id", id, "volume", volume));
   }
 
   @Override

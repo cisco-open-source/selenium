@@ -14,7 +14,7 @@ public interface Player extends WebElement {
   void play();
   void pause();
   void stop();
-  void setVolume(double level);
+  void setVolume(double volume);
   void seek(double position);
   PlayerState getState();
   void setState(PlayerState state);
