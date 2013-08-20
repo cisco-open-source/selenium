@@ -89,16 +89,6 @@ Rectangle {
                 objectName: "buttonInScrollArea"
                 text: "Click here"
             }
-
-//            Rectangle {
-//                property alias text: captionText.text
-//                objectName: "buttonInScrollArea"
-//                anchors.fill: parent
-//                border.color: "black"
-//                color: "cyan"
-//                Text { id: captionText; text: "Click here"; anchors.fill: parent; verticalAlignment: Text.AlignVCenter; horizontalAlignment:  Text.AlignHCenter; }
-//            }
-
         }
     }
 }
