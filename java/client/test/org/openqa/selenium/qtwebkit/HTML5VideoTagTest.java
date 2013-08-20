@@ -16,7 +16,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
   @Before
   public void setUp() throws Exception {
     driver.get(pages.html5VideoTest);
-//    driver.get("http://www.quirksmode.org/html5/tests/video.html");
+    try {Thread.sleep(3000);} catch (InterruptedException ex){}
   }
 
   @Test

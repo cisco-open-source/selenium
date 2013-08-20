@@ -27,7 +27,8 @@ import java.util.logging.Logger;
         StandardSeleniumTests.class,
         TouchTests.class,
         QtWebDriverSwitchesTest.class,
-        HTML5VideoTagTest.class
+        HTML5VideoTagTest.class,
+        HTML5AudioTagTest.class
 })
 
 public class QtWebkitDriverTests {
