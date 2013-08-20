@@ -4,7 +4,8 @@ Rectangle {
     id: button
     color: "red"
     property alias text: caption.text
-    width: 96; height: 24; anchors.centerIn: parent
+    signal buttonClick()
+    width: 96; height: 24;
 
     Text {
         id: caption;
@@ -14,7 +15,8 @@ Rectangle {
     }
 
     MouseArea {
+        id: hotSpot
         anchors.fill: parent;
-        onClicked: console.log("clicked()")
+        onClicked: buttonClick()
     }
 }

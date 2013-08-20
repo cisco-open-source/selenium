@@ -40,7 +40,7 @@ import java.util.Map;
         MiscTest.class,
         XPathElementFindingTest.class,
         StaleElementReferenceTest.class,
-//        VisibilityTest.class,
+        VisibilityTest.class,
 //        InteractionTests.class
 //        ExecutingJavascriptTest.class,
 // TODO: component test
