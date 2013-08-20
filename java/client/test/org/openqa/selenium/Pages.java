@@ -74,6 +74,7 @@ public class Pages {
   public String veryLargeCanvas;
   public String xhtmlFormPage;
   public String xhtmlTestPage;
+  public String html5VideoTest;
 
   public String notExist;
 
@@ -134,5 +135,6 @@ public class Pages {
     veryLargeCanvas = appServer.whereIs("veryLargeCanvas.html");
     xhtmlTestPage = appServer.whereIs("xhtmlTest.html");
     notExist = appServer.whereIs("temp.txt");
+    html5VideoTest = appServer.whereIs("HTML5_Video_Test.html");
   }
 }

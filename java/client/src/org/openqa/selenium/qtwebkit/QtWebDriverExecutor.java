@@ -29,7 +29,10 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
       .put(GET_CURRENT_PLAYING_POSITION,
            new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.GET))
       .put(SET_CURRENT_PLAYING_POSITION,
-           new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.POST));
+           new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.POST))
+      .put(SET_PLAYER_MUTE, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/mute", HttpVerb.POST))
+      .put(GET_PLAYER_MUTE, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/mute", HttpVerb.GET));
+
     additionalCommands = builder.build();
   }
     private static Object[][] commands =
@@ -140,7 +143,9 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
                     {"GET", GET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-CISCO-player-element/volume"},
                     {"POST", SET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-CISCO-player-element/volume"},
                     {"GET", GET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"},
-                    {"POST", SET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"}
+                    {"POST", SET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"},
+                    {"GET", GET_PLAYER_MUTE, "/session/:sessionId/element/:id/-CISCO-player-element/mute"},
+                    {"POST", SET_PLAYER_MUTE, "/session/:sessionId/element/:id/-CISCO-player-element/mute"}
             };
 
     public QtWebDriverExecutor(URL addressOfRemoteServer)
