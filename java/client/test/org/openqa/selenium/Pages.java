@@ -75,6 +75,7 @@ public class Pages {
   public String xhtmlFormPage;
   public String xhtmlTestPage;
   public String html5VideoTest;
+  public String html5AudioTest;
 
   public String notExist;
 
@@ -136,5 +137,6 @@ public class Pages {
     xhtmlTestPage = appServer.whereIs("xhtmlTest.html");
     notExist = appServer.whereIs("temp.txt");
     html5VideoTest = appServer.whereIs("HTML5_Video_Test.html");
+    html5AudioTest = appServer.whereIs("HTML5_Audio_Test.html");
   }
 }
