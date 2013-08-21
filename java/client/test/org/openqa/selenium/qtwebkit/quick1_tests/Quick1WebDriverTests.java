@@ -41,9 +41,7 @@ import java.util.Map;
         StaleElementReferenceTest.class,
         VisibilityTest.class,
 //        InteractionTests.class
-//        ExecutingJavascriptTest.class,
-// TODO: component test
-// TODO: execute javascript
+        ExecutingJavascriptTest.class,
 })
 public class Quick1WebDriverTests {
     @BeforeClass
