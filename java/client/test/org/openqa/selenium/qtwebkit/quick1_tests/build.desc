@@ -14,7 +14,9 @@ java_test(name = "quick1_tests",
 
 java_library(name = "tests",
   srcs = [
+    "interactions/InteractionTests.java",
     "*Test.java",
+    "interactions/*.java",
   ],
   deps = [
     "//java/client/src/org/openqa/selenium/remote:common",

@@ -7,6 +7,7 @@ import org.junit.runners.Suite;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
+import org.openqa.selenium.qtwebkit.quick1_tests.interactions.InteractionTests;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.Document;
@@ -34,13 +35,12 @@ import java.util.Map;
         TakesScreenshotTest.class,
         ElementAttributeTest.class,
         TypingTest.class,
-//        TextHandlingTest.class,
         FormHandlingTest.class,
         MiscTest.class,
         XPathElementFindingTest.class,
         StaleElementReferenceTest.class,
         VisibilityTest.class,
-//        InteractionTests.class
+        InteractionTests.class,
         ExecutingJavascriptTest.class,
 })
 public class Quick1WebDriverTests {

@@ -56,9 +56,6 @@ public class WindowTest extends JUnit4TestBase {
     }
 
     @Test
-    @Ignore(value = { SAFARI, PHANTOMJS },
-            reason = "Safari: getPosition after setPosition doesn't match up exactly, " +
-                    "as expected - probably due to nuances in Mac OSX window manager.")
     public void testSetsThePositionOfTheCurrentWindow() throws InterruptedException {
         WebDriver.Window window = driver.manage().window();
         Point position = window.getPosition();
@@ -79,7 +76,6 @@ public class WindowTest extends JUnit4TestBase {
         }
     }
 
-    @Ignore(value = {CHROME, PHANTOMJS}, reason = "Not yet implemented.")
     @Test
     public void testCanMaximizeTheWindow() throws InterruptedException {
         if(SauceDriver.shouldUseSauce() && TestUtilities.getEffectivePlatform().is(Platform.LINUX)) {
