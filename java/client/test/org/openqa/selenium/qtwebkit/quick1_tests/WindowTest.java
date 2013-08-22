@@ -19,6 +19,7 @@ import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 
 public class WindowTest extends JUnit4TestBase {
@@ -77,6 +78,7 @@ public class WindowTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(QTWEBKIT)
     public void testCanMaximizeTheWindow() throws InterruptedException {
         if(SauceDriver.shouldUseSauce() && TestUtilities.getEffectivePlatform().is(Platform.LINUX)) {
             // This test requires a window manager on Linux, and Sauce currently doesn't have one.
