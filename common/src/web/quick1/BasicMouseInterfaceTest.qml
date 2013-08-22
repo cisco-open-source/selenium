@@ -7,6 +7,7 @@ Rectangle {
 
     Rectangle {
         property alias text: caption.text
+        property string lastButtonEvent: ""
         id: pureButton
         objectName: "pureButton"
         width: 100
@@ -32,6 +33,8 @@ Rectangle {
                     caption.text = "ContextClicked";
             }
             onDoubleClicked: caption.text = "DoubleClicked"
+            onPressed: pureButton.lastButtonEvent = "Pressed"
+            onReleased: pureButton.lastButtonEvent = "Released"
         }
     }
 

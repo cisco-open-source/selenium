@@ -62,6 +62,22 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
         performDragAndDropWithMouse();
     }
 
+    @Test
+    public void testButtonDownUp() {
+
+        WebElement targetElement = driver.findElement(By.id("pureButton"));
+
+        Action buttonDown = getBuilder(driver).clickAndHold(targetElement).build();
+
+        buttonDown.perform();
+
+        Action buttonUp = getBuilder(driver).release().build();
+
+        buttonUp.perform();
+
+        assertEquals("Released", targetElement.getAttribute("lastButtonEvent"));
+    }
+
     @JavascriptEnabled
     @Test
     public void testDoubleClick() {
