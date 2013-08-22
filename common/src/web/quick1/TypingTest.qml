@@ -44,6 +44,11 @@ Rectangle {
             onTextChanged: {
                 result.text = text;
             }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: parent.forceActiveFocus()
+            }
         }
 
         TextEdit {
@@ -52,6 +57,11 @@ Rectangle {
             width: parent.width
             height: parent.height - top - 40
             fillColor: "darkgrey"
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: parent.forceActiveFocus()
+            }
         }
     }
 }

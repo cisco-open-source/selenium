@@ -29,6 +29,7 @@ import java.util.Map;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         WindowTest.class,
+        ElementEqualityTest.class,
         ClickTest.class,
         FindingTest.class,
         CoordinatesTest.class,
