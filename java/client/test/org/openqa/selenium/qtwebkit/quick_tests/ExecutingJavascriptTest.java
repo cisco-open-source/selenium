@@ -14,35 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.testing.Ignore;
-import org.openqa.selenium.testing.InProject;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,13 +39,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 public class ExecutingJavascriptTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/JavascriptTest.qml"));
+        driver.get(pages.javascriptTest);
     }
 
     @JavascriptEnabled

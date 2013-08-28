@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.openqa.selenium.qtwebkit.quick1_tests.interactions;
+package org.openqa.selenium.qtwebkit.quick_tests.interactions;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

@@ -3,7 +3,7 @@ java_test(name = "quick1_tests",
     { "selenium.browser" : "qtwebkit",
       "webdriver.browserClass" : "QDeclarativeView" },
   ],
-  srcs = ["Quick1WebDriverTests.java"],
+  srcs = ["Quick1WebDriverTests.java", "Quick1TestContent.java"],
   deps = [
     ":tests",
     "//third_party/java/junit",

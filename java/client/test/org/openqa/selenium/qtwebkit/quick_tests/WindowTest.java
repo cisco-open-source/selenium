@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.testing.Ignore;
@@ -17,10 +17,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 
 public class WindowTest extends JUnit4TestBase {
 
@@ -29,7 +26,7 @@ public class WindowTest extends JUnit4TestBase {
     @Before
     public void setUp()
     {
-        driver.get(appServer.whereIs("quick1/WindowTest.qml"));
+        driver.get(pages.windowTest);
     }
 
     @Test

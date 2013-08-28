@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class FindingTest extends JUnit4TestBase {
 
     @Before
     public void createWebDriver() {
-        driver.get(appServer.whereIs("quick1/FindingTest.qml"));
+        driver.get(pages.findingTest);
     }
 
     @Test

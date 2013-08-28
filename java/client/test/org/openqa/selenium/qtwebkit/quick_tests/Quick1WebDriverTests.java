@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -7,7 +7,7 @@ import org.junit.runners.Suite;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
-import org.openqa.selenium.qtwebkit.quick1_tests.interactions.InteractionTests;
+import org.openqa.selenium.qtwebkit.quick_tests.interactions.InteractionTests;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.Document;
@@ -47,7 +47,8 @@ import java.util.Map;
 public class Quick1WebDriverTests {
     @BeforeClass
     public static void prepareCommonEnvironment() {
-        GlobalTestEnvironment.get(InProcessTestEnvironment.class);
+        InProcessTestEnvironment environment = GlobalTestEnvironment.get(InProcessTestEnvironment.class);
+        environment.setTestContent(new Quick1TestContent(environment.getAppServer()));
     }
 
     @AfterClass
@@ -56,7 +57,7 @@ public class Quick1WebDriverTests {
 
         try
         {
-            File outFile = new File("build/test_logs/" + org.openqa.selenium.qtwebkit.quick1_tests.Quick1WebDriverTests.class.getName() + "_CommandReport.xml");
+            File outFile = new File("build/test_logs/" + org.openqa.selenium.qtwebkit.quick_tests.Quick1WebDriverTests.class.getName() + "_CommandReport.xml");
             outFile.mkdirs();
             if (outFile.exists())
                 outFile.delete();

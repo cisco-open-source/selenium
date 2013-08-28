@@ -1,23 +1,20 @@
-package org.openqa.selenium.qtwebkit.quick1_tests.interactions;
+package org.openqa.selenium.qtwebkit.quick_tests.interactions;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.InvalidCoordinatesException;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.*;
 import static org.openqa.selenium.testing.Ignore.Driver.*;
-import static org.openqa.selenium.testing.TestUtilities.*;
 
 /**
  * Tests operations that involve mouse and keyboard.
@@ -27,7 +24,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     @Before
     public void setUpWebDriver()
     {
-        driver.get(appServer.whereIs("quick1/BasicMouseInterfaceTest.qml"));
+        driver.get(pages.basicMouseInterfaceTest);
     }
 
     private Actions getBuilder(WebDriver driver) {

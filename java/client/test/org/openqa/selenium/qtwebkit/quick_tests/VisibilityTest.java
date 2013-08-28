@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class VisibilityTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/VisibilityTest.qml"));
+        driver.get(pages.visibilityTest);
     }
 
     @Test
@@ -108,8 +108,7 @@ public class VisibilityTest extends JUnit4TestBase {
 
     @Test
     public void parentNodeVisibleWhenAllChildrenAreAbsolutelyPositionedAndOverflowIsHidden() {
-        String url = appServer.whereIs("quick1/TypingTest.qml");
-        driver.get(url);
+        driver.get(pages.typingTest);
 
         WebElement element = driver.findElement(By.id("result"));
         assertTrue(element.isDisplayed());
@@ -124,8 +123,7 @@ public class VisibilityTest extends JUnit4TestBase {
             // Short in the Y dimension
             window.setSize(new Dimension(1024, 500));
 
-            String url = appServer.whereIs("quick1/TypingTest.qml");
-            driver.get(url);
+            driver.get(pages.typingTest);
 
             WebElement element = driver.findElement(By.id("result"));
             assertTrue(element.isDisplayed());

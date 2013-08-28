@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,7 @@ public class FormHandlingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/FormHandlingTest.qml"));
+        driver.get(pages.formHandlingTest);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -17,7 +17,7 @@ public class ClickTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/ClickTest.qml"));
+        driver.get(pages.clickTest);
     }
 
     @Test

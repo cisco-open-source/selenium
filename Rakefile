@@ -173,7 +173,8 @@ task :test_qtwebkit => [
 ]
 task :test_wd_native => [  '//java/client/test/org/openqa/selenium/qtwebkit/nativetests:nativetests:run' ]
 task :test_wd_hybrid => [  '//java/client/test/org/openqa/selenium/qtwebkit/hybridtests:hybridtests:run' ]
-task :test_wd_quick1 => [  '//java/client/test/org/openqa/selenium/qtwebkit/quick1_tests:quick1_tests:run' ]
+task :test_wd_quick1 => [  '//java/client/test/org/openqa/selenium/qtwebkit/quick_tests:quick1_tests:run' ]
+task :test_wd_quick1 => [  '//java/client/test/org/openqa/selenium/qtwebkit/quick_tests:quick2_tests:run' ]
 task :test_safari => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
 task :test_phantomjs => [ "//java/client/test/org/openqa/selenium/phantomjs:test:run" ]
 task :test_support => [

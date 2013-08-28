@@ -27,11 +27,10 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.Pages;
+import org.openqa.selenium.environment.Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
-import org.openqa.selenium.environment.TestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -48,7 +47,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
 
   private static final Logger logger = Logger.getLogger(JUnit4TestBase.class.getName());
 
-  protected TestEnvironment environment;
+  protected InProcessTestEnvironment environment;
   protected AppServer appServer;
   protected Pages pages;
   private static ThreadLocal<WebDriver> storedDriver = new ThreadLocal<WebDriver>();
@@ -59,7 +58,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     environment = GlobalTestEnvironment.get(InProcessTestEnvironment.class);
     appServer = environment.getAppServer();
 
-    pages = new Pages(appServer);
+    pages = environment.getTestContent();
 
     String hostName = environment.getAppServer().getHostName();
     String alternateHostName = environment.getAppServer().getAlternateHostName();

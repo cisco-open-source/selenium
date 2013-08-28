@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests.interactions;
+package org.openqa.selenium.qtwebkit.quick_tests.interactions;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
@@ -17,7 +17,7 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/BasicKeyboardInterfaceTest.qml"));
+        driver.get(pages.basicKeyboardInterfaceTest);
     }
 
     @Test

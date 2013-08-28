@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class TypingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/TypingTest.qml"));
+        driver.get(pages.typingTest);
     }
 
     @Test

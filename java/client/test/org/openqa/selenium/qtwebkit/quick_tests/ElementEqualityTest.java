@@ -16,17 +16,14 @@ limitations under the License.
 */
 
 
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.internal.WrapsElement;
-import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.JavascriptEnabled;
 
 import java.util.List;
 
@@ -38,7 +35,7 @@ public class ElementEqualityTest extends JUnit4TestBase {
 
     @Before
     public void createWebDriver() {
-        driver.get(appServer.whereIs("quick1/FindingTest.qml"));
+        driver.get(pages.findingTest);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,13 +14,13 @@ public class StaleElementReferenceTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/StaleElementReferenceTest.qml"));
+        driver.get(pages.staleElementReferenceTest);
     }
 
     @Test
     public void testOldPage() {
         WebElement elem = driver.findElement(By.id("captionLabel"));
-        driver.get(appServer.whereIs("quick1/TypingTest.qml"));
+        driver.get(pages.typingTest);
         try {
             elem.click();
             fail();
@@ -32,7 +32,7 @@ public class StaleElementReferenceTest extends JUnit4TestBase {
     @Test
     public void testShouldNotCrashWhenCallingGetSizeOnAnObsoleteElement() {
         WebElement elem = driver.findElement(By.id("captionLabel"));
-        driver.get(appServer.whereIs("quick1/TypingTest.qml"));
+        driver.get(pages.typingTest);
         try {
             elem.getSize();
             fail();
@@ -44,7 +44,7 @@ public class StaleElementReferenceTest extends JUnit4TestBase {
     @Test
     public void testShouldNotCrashWhenQueryingTheAttributeTextOfAStaleElement() {
         WebElement elem = driver.findElement(By.xpath("//QDeclarativeText"));
-        driver.get(appServer.whereIs("quick1/TypingTest.qml"));
+        driver.get(pages.typingTest);
         try {
             elem.getText();
             fail();
