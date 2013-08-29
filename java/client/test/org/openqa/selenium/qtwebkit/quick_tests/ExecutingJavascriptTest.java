@@ -54,7 +54,7 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
             return;
         }
 
-        Object result = executeScript("return title;");
+        Object result = executeScript("var a = 'Javascript'+' Test Page'; return a;");
 
         assertTrue(result instanceof String);
         assertEquals("Javascript Test Page", result);
@@ -67,7 +67,7 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
             return;
         }
 
-        Object result = executeScript("return width;");
+        Object result = executeScript("var a = 2+2*2; return a;");
 
         assertTrue(result.getClass().getName(), result instanceof Long);
         assertTrue((Long) result > 1);
