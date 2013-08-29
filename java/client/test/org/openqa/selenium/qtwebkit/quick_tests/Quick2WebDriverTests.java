@@ -28,7 +28,7 @@ import java.util.Map;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-                        WindowTest.class,
+                        //WindowTest.class,
                         //ElementEqualityTest.class,
                         //ClickTest.class,
                         //FindingTest.class,
@@ -42,7 +42,7 @@ import java.util.Map;
                         //StaleElementReferenceTest.class,
                         //VisibilityTest.class,
                         //InteractionTests.class,
-                        //ExecutingJavascriptTest.class,
+                        ExecutingJavascriptTest.class,
                     })
 public class Quick2WebDriverTests {
     @BeforeClass
