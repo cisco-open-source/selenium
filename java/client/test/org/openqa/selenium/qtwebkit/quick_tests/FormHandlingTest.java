@@ -31,7 +31,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     @Test
     public void testClickingOnUnclickableElementsDoesNothing() {
 
-        WebElement element = driver.findElement(By.xpath("//QDeclarativeText"));
+        WebElement element = driver.findElement(By.xpath("//Text"));
         try {
             element.click();
         } catch (Exception e) {
@@ -71,7 +71,7 @@ public class FormHandlingTest extends JUnit4TestBase {
 
     @Test
     public void testShouldEnterDataIntoFormFields() {
-        WebElement element = driver.findElement(By.xpath("//QDeclarativeTextInput[@id='inputElement']" ));
+        WebElement element = driver.findElement(By.xpath("//TextInput[@id='inputElement']" ));
         String originalValue = element.getText();
         assertThat(originalValue, equalTo("Example text"));
 

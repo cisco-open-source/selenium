@@ -41,8 +41,8 @@ public class ElementEqualityTest extends JUnit4TestBase {
     @Test
     public void testSameElementLookedUpDifferentWaysShouldBeEqual() {
 
-        WebElement body = driver.findElement(By.tagName("QDeclarativeTextInput"));
-        WebElement xbody = driver.findElements(By.xpath("//QDeclarativeTextInput")).get(0);
+        WebElement body = driver.findElement(By.tagName("TextInput"));
+        WebElement xbody = driver.findElements(By.xpath("//TextInput")).get(0);
 
         assertEquals(body, xbody);
     }
@@ -50,7 +50,7 @@ public class ElementEqualityTest extends JUnit4TestBase {
     @Test
     public void testDifferentElementsShouldNotBeEqual() {
 
-        List<WebElement> ps = driver.findElements(By.tagName("QDeclarativeRectangle"));
+        List<WebElement> ps = driver.findElements(By.tagName("Rectangle"));
 
         assertFalse(ps.get(0).equals(ps.get(1)));
     }
@@ -60,8 +60,8 @@ public class ElementEqualityTest extends JUnit4TestBase {
     // wont fix. Two different ids can reference same element
     public void testSameElementLookedUpDifferentWaysUsingFindElementShouldHaveSameHashCode() {
 
-        WebElement body = driver.findElement(By.tagName("QDeclarativeTextInput"));
-        WebElement xbody = driver.findElement(By.xpath("//QDeclarativeTextInput"));
+        WebElement body = driver.findElement(By.tagName("TextInput"));
+        WebElement xbody = driver.findElement(By.xpath("//TextInput"));
 
         assertEquals(body.hashCode(), xbody.hashCode());
     }
@@ -71,8 +71,8 @@ public class ElementEqualityTest extends JUnit4TestBase {
     // wont fix. Two different ids can reference same element
     public void testSameElementLookedUpDifferentWaysUsingFindElementsShouldHaveSameHashCode() {
 
-        List<WebElement> body = driver.findElements(By.tagName("QDeclarativeTextInput"));
-        List<WebElement> xbody = driver.findElements(By.xpath("//QDeclarativeTextInput"));
+        List<WebElement> body = driver.findElements(By.tagName("TextInput"));
+        List<WebElement> xbody = driver.findElements(By.xpath("//TextInput"));
 
         assertEquals(body.get(0).hashCode(), xbody.get(0).hashCode());
     }

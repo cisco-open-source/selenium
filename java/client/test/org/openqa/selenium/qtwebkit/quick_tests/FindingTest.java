@@ -34,12 +34,12 @@ public class FindingTest extends JUnit4TestBase {
 
     @Test
     public void testCanFindControlByClassName() {
-        assertNotNull(driver.findElement(By.className("QDeclarativeTextInput")));
+        assertNotNull(driver.findElement(By.className("TextInput")));
     }
 
     @Test
     public void testCanFindHiddenControlByClassName() {
-        assertNotNull(driver.findElement(By.className("QDeclarativeMouseArea")));
+        assertNotNull(driver.findElement(By.className("MouseArea")));
     }
 
     @Test

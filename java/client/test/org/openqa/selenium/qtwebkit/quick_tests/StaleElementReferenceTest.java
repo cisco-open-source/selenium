@@ -43,7 +43,7 @@ public class StaleElementReferenceTest extends JUnit4TestBase {
 
     @Test
     public void testShouldNotCrashWhenQueryingTheAttributeTextOfAStaleElement() {
-        WebElement elem = driver.findElement(By.xpath("//QDeclarativeText"));
+        WebElement elem = driver.findElement(By.xpath("//Text"));
         driver.get(pages.typingTest);
         try {
             elem.getText();
