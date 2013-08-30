@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Test;
 import org.openqa.selenium.OutputType;
@@ -18,7 +18,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
             return;
         }
 
-        driver.get(appServer.whereIs("quick1/WindowTest.qml"));
+        driver.get(pages.windowTest);
 
         File tempFile = getScreenshot().getScreenshotAs(OutputType.FILE);
         assertTrue(tempFile.exists());
@@ -32,7 +32,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
             return;
         }
 
-        driver.get(appServer.whereIs("quick1/WindowTest.qml"));
+        driver.get(pages.windowTest);
 
         String screenshot = getScreenshot().getScreenshotAs(BASE64);
         assertTrue(screenshot.length() > 0);

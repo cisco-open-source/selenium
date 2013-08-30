@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class FindingTest extends JUnit4TestBase {
 
     @Before
     public void createWebDriver() {
-        driver.get(appServer.whereIs("quick1/FindingTest.qml"));
+        driver.get(pages.findingTest);
     }
 
     @Test
@@ -34,12 +34,12 @@ public class FindingTest extends JUnit4TestBase {
 
     @Test
     public void testCanFindControlByClassName() {
-        assertNotNull(driver.findElement(By.className("QDeclarativeTextInput")));
+        assertNotNull(driver.findElement(By.className("TextInput")));
     }
 
     @Test
     public void testCanFindHiddenControlByClassName() {
-        assertNotNull(driver.findElement(By.className("QDeclarativeMouseArea")));
+        assertNotNull(driver.findElement(By.className("MouseArea")));
     }
 
     @Test

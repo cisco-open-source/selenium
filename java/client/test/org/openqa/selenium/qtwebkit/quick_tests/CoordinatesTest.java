@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class CoordinatesTest extends JUnit4TestBase {
     @Before
     public void setUpWebDriver()
     {
-        driver.get(appServer.whereIs("quick1/CoordinatesTest.qml"));
+        driver.get(pages.coordinatesTest);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,12 +18,12 @@ public class XPathElementFindingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/XPathElementFindingTest.qml"));
+        driver.get(pages.xpathElementFindingTest);
     }
 
     @Test
     public void testShouldFindSingleElementByXPath() {
-        WebElement element = driver.findElement(By.xpath("//QDeclarativeText"));
+        WebElement element = driver.findElement(By.xpath("//Text"));
         assertThat(element.getText(), equalTo("This Is Caption"));
     }
 
@@ -31,7 +31,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
     public void testShouldThrowAnExceptionWhenThereNotFoundElement() {
 
         try {
-            WebElement element = driver.findElement(By.xpath("//QDeclarativeText[@id='Not here']"));
+            WebElement element = driver.findElement(By.xpath("//Text[@id='Not here']"));
             assertThat(element.getText(), equalTo(""));
             fail("Should not have succeeded");
         } catch (NoSuchElementException e) {
@@ -41,7 +41,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
 
     @Test
     public void testShouldFindSingleElementByXPathAndId() {
-        WebElement element = driver.findElement(By.xpath("//QDeclarativeTextEdit[@id='workingArea']"));
+        WebElement element = driver.findElement(By.xpath("//TextEdit[@id='workingArea']"));
         assertThat(element.getText(), equalTo("Example text"));
     }
 
@@ -66,7 +66,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
     @Test
     public void testShouldBeAbleToIdentifyElementsByClass() {
         try {
-            driver.findElement(By.xpath("//QDeclarativeRectangle"));
+            driver.findElement(By.xpath("//Rectangle"));
         } catch (NoSuchElementException e) {
             fail("Should be able to find element by class name");
         }
@@ -74,7 +74,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
 
     @Test
     public void testShouldFindElementsByXPath() {
-        List<WebElement> listElem = driver.findElements(By.xpath("//QDeclarativeTextInput"));
+        List<WebElement> listElem = driver.findElements(By.xpath("//TextInput"));
         assertThat(listElem.size(), equalTo(3));
     }
 

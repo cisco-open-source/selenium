@@ -1,4 +1,4 @@
-import QtQuick 1.0
+import QtQuick 2.0
 
 Rectangle {
     property string title
@@ -40,14 +40,10 @@ Rectangle {
             id: enabledTextElement
             objectName: "enabledTextElement"
             width: parent.width
-            fillColor: "darkgrey"
+            //fillColor: "darkgrey"
+            activeFocusOnPress: true
             onTextChanged: {
                 result.text = text;
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: parent.forceActiveFocus()
             }
         }
 
@@ -56,12 +52,9 @@ Rectangle {
             objectName: "workingArea"
             width: parent.width
             height: parent.height - top - 40
-            fillColor: "darkgrey"
+            activeFocusOnPress: true
+            //fillColor: "darkgrey"
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: parent.forceActiveFocus()
-            }
         }
     }
 }

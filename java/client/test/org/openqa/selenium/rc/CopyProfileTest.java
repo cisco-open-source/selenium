@@ -21,7 +21,7 @@ package org.openqa.selenium.rc;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.Pages;
+import org.openqa.selenium.environment.Pages;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.environment.GlobalTestEnvironment;

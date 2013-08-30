@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.testing.Ignore;
@@ -17,9 +17,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class WindowTest extends JUnit4TestBase {
 
@@ -28,7 +26,7 @@ public class WindowTest extends JUnit4TestBase {
     @Before
     public void setUp()
     {
-        driver.get(appServer.whereIs("quick1/WindowTest.qml"));
+        driver.get(pages.windowTest);
     }
 
     @Test
@@ -56,9 +54,6 @@ public class WindowTest extends JUnit4TestBase {
     }
 
     @Test
-    @Ignore(value = { SAFARI, PHANTOMJS },
-            reason = "Safari: getPosition after setPosition doesn't match up exactly, " +
-                    "as expected - probably due to nuances in Mac OSX window manager.")
     public void testSetsThePositionOfTheCurrentWindow() throws InterruptedException {
         WebDriver.Window window = driver.manage().window();
         Point position = window.getPosition();
@@ -79,8 +74,8 @@ public class WindowTest extends JUnit4TestBase {
         }
     }
 
-    @Ignore(value = {CHROME, PHANTOMJS}, reason = "Not yet implemented.")
     @Test
+    @Ignore(QTWEBKIT)
     public void testCanMaximizeTheWindow() throws InterruptedException {
         if(SauceDriver.shouldUseSauce() && TestUtilities.getEffectivePlatform().is(Platform.LINUX)) {
             // This test requires a window manager on Linux, and Sauce currently doesn't have one.

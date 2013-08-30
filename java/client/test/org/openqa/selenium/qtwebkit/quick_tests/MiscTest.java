@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Test;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -52,7 +52,7 @@ public class MiscTest extends JUnit4TestBase {
     @Test
     public void testShouldReturnTheSourceOfAPage() {
         //There is no particular reason to use ClickScrollingTest, we just need any UI with elements
-        driver.get(appServer.whereIs("quick1/ElementAttributeTest.qml"));
+        driver.get(pages.elementAttributeTest);
 
         String source = driver.getPageSource().toLowerCase();
 

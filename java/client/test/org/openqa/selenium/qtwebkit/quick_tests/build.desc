@@ -3,7 +3,7 @@ java_test(name = "quick1_tests",
     { "selenium.browser" : "qtwebkit",
       "webdriver.browserClass" : "QDeclarativeView" },
   ],
-  srcs = ["Quick1WebDriverTests.java"],
+  srcs = ["Quick1WebDriverTests.java", "Quick1TestContent.java"],
   deps = [
     ":tests",
     "//third_party/java/junit",
@@ -12,9 +12,26 @@ java_test(name = "quick1_tests",
     "//third_party/java/junit"
   ])
 
+java_test(name = "quick2_tests",
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit",
+      "webdriver.browserClass" : "QQuickView" },
+  ],
+  srcs = ["Quick2WebDriverTests.java", "Quick2TestContent.java"],
+  deps = [
+    ":tests",
+    "//third_party/java/junit",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//third_party/java/jmock",
+    "//third_party/java/junit"
+  ])
+
+
 java_library(name = "tests",
   srcs = [
+    "interactions/InteractionTests.java",
     "*Test.java",
+    "interactions/*.java",
   ],
   deps = [
     "//java/client/src/org/openqa/selenium/remote:common",

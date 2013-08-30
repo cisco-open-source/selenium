@@ -1,8 +1,11 @@
-package org.openqa.selenium.qtwebkit.quick1_tests;
+package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import org.openqa.selenium.By;
@@ -10,13 +13,14 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.Keys;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class TypingTest extends JUnit4TestBase {
 
     @Before
     public void setUp() throws Exception {
-        driver.get(appServer.whereIs("quick1/TypingTest.qml"));
+        driver.get(pages.typingTest);
     }
 
     @Test
@@ -228,6 +232,38 @@ public class TypingTest extends JUnit4TestBase {
                          Keys.DECIMAL + Keys.SEPARATOR +
                          Keys.ADD + Keys.SEMICOLON + Keys.EQUALS + Keys.DIVIDE + "abcd");
         assertThat(element.getText(), is("abcd*-+.,+;=/abcd"));
+    }
+
+    private Actions getBuilder(WebDriver driver) {
+        return new Actions(driver);
+    }
+
+    @Test
+    public void testSendingKeysToActiveElement() {
+
+        WebElement inputLine = driver.findElement(By.id("enabledTextElement"));
+        WebElement inputArea = driver.findElement(By.id("workingArea"));
+        inputLine.clear();
+        inputArea.clear();
+
+        assertThat(inputLine.getText(), is(""));
+        assertThat(inputArea.getText(), is(""));
+
+        inputLine.click();
+        assertEquals(inputLine, driver.switchTo().activeElement());
+
+        Action sendKeys = getBuilder(driver).sendKeys("abc def").build();
+        sendKeys.perform();
+
+        assertEquals(inputLine.getText(), "abc def");
+
+        inputArea.click();
+        assertEquals(inputArea, driver.switchTo().activeElement());
+
+        Action sendKeys2 = getBuilder(driver).sendKeys("asd fgh").build();
+        sendKeys2.perform();
+
+        assertEquals(inputArea.getText(), "asd fgh");
     }
 
     @Test

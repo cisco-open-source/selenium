@@ -22,46 +22,40 @@ Rectangle {
 
         Row {
             spacing: 10
-            width: parent.width
 
             Text {
-                text: "You changed:"
+                id: notClickableLabel
+                objectName: "notClickableLabel"
+                text: "Label not clickable"
                 color: "darkgrey"
             }
 
-            Text {
-                id: result
-                objectName: "result"
-                text: "default"
+            PushButton {
+                objectName: "changeLabelButton"
+                text: "Change Label"
+                onButtonClick: notClickableLabel.text = "Label changed"
             }
         }
 
         TextInput {
-            id: enabledTextElement
-            objectName: "enabledTextElement"
+            objectName: "inputElement"
+            width: parent.width
+            text: "Example text"
+            fillColor: "darkgrey"
+        }
+
+        TextInput {
+            objectName: "emptyInput"
             width: parent.width
             fillColor: "darkgrey"
-            onTextChanged: {
-                result.text = text;
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: parent.forceActiveFocus()
-            }
         }
 
         TextEdit {
-            id: workingArea
             objectName: "workingArea"
             width: parent.width
-            height: parent.height - top - 40
+            height: 100
+            text: "Example text"
             fillColor: "darkgrey"
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: parent.forceActiveFocus()
-            }
         }
     }
 }
