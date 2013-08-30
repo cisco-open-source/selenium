@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.0
 
 Rectangle {
     property string title
@@ -36,26 +37,35 @@ Rectangle {
             }
         }
 
-        TextInput {
-            id: enabledTextElement
-            objectName: "enabledTextElement"
+        Rectangle {
             width: parent.width
-            //fillColor: "darkgrey"
-            activeFocusOnPress: true
-            onTextChanged: {
-                result.text = text;
+            height: 20
+            border.color: "black"
+
+            TextInput {
+                id: enabledTextElement
+                objectName: "enabledTextElement"
+                anchors.fill: parent
+                onTextChanged: {
+                    result.text = text;
+                }
+                onFocusChanged: console.log("textInput focus:"+activeFocus)
             }
         }
 
-        TextEdit {
-            id: workingArea
-            objectName: "workingArea"
+        Rectangle {
             width: parent.width
-            height: parent.height - top - 40
-            activeFocusOnPress: true
-            //fillColor: "darkgrey"
+            height: 80
+            border.color: "black"
 
+            TextEdit {
+                id: workingArea
+                objectName: "workingArea"
+                anchors.fill: parent
+                onFocusChanged: console.log("textEdit focus:"+activeFocus)
+            }
         }
     }
+
 }
 
