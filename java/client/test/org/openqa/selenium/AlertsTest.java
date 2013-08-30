@@ -442,6 +442,9 @@ public class AlertsTest extends JUnit4TestBase {
 
   @NoDriverAfterTest
   @Test
+  @Ignore( value = {QTWEBKIT},
+           reason = "QtWebKit bug https://bugreports.qt-project.org/browse/QTBUG-33250",
+            issues = 746)
   public void testCanQuitWhenAnAlertIsPresent() {
     driver.get(pages.alertsPage);
     driver.findElement(By.id("alert")).click();

@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.remote.internal.JsonToWebElementConverter;
 
@@ -28,14 +29,17 @@ public class QtWebKitJsonToWebElementConverter extends JsonToWebElementConverter
         RemoteWebElement element = newRemoteWebElement();
         element.setId(String.valueOf(resultAsMap.get("ELEMENT")));
         element.setFileDetector(driver.getFileDetector());
-        String tagName =  element.getTagName();
-        if(tagName.equals("video") || tagName.equals("audio")){
-          RemotePlayer player = newRemotePlayerElement();
-          player.setId(String.valueOf(resultAsMap.get("ELEMENT")));
-          player.setFileDetector(driver.getFileDetector());
-          return player;
+
+        RemotePlayer player = newRemotePlayerElement();
+        player.setId(String.valueOf(resultAsMap.get("ELEMENT")));
+        player.setFileDetector(driver.getFileDetector());
+        try{
+            if(player.getState() != null){
+              return player;
+            }
+        } catch (WebDriverException e){
+            return element;
         }
-        return element;
       } else {
         return Maps.transformValues(resultAsMap, this);
       }
