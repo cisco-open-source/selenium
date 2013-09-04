@@ -54,7 +54,7 @@ public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
             throw new WebDriverException("The Node was run with wrong RemoteIP parameter!", e);
         }
 
-        RemoteWebDriver driver = new QtWebKitDriver(new QtWebDriverExecutor(url), desiredCapabilities);
+        RemoteWebDriver driver = new QtWebKitDriver(new QtWebDriverExecutor(url), desiredCapabilities, requiredCapabilities);
 		driver.setFileDetector(new LocalFileDetector());
 
         return driver;
