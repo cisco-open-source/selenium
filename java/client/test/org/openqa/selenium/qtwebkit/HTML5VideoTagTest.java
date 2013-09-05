@@ -1,6 +1,7 @@
 package org.openqa.selenium.qtwebkit;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -17,6 +18,11 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
   public void setUp() throws Exception {
     driver.get(pages.html5VideoTest);
     try {Thread.sleep(3000);} catch (InterruptedException ex){}
+  }
+
+  @AfterClass
+  public static void cleanUpDriver() {
+    JUnit4TestBase.removeDriver();
   }
 
   @Test

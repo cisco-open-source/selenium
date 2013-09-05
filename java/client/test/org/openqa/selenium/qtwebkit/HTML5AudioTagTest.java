@@ -1,5 +1,6 @@
 package org.openqa.selenium.qtwebkit;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -14,6 +15,11 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
   public void setUp() throws Exception {
     driver.get(pages.html5AudioTest);
     try {Thread.sleep(3000);} catch (InterruptedException ex){}
+  }
+
+  @AfterClass
+  public static void cleanUpDriver() {
+    JUnit4TestBase.removeDriver();
   }
 
   @Test
