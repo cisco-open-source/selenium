@@ -25,15 +25,26 @@ import org.openqa.selenium.testing.drivers.Browser;
 public class InProcessTestEnvironment implements TestEnvironment {
 
   private AppServer appServer;
+  private Pages pages;
 
   public InProcessTestEnvironment() {
     String servingHost = getServingHost();
     appServer = servingHost == null ? new Jetty7AppServer() : new Jetty7AppServer(servingHost);
     appServer.start();
+
+    pages = new Pages(appServer);
   }
 
   public AppServer getAppServer() {
     return appServer;
+  }
+
+  public Pages getTestContent() {
+    return pages;
+  }
+
+  public void setTestContent(Pages p) {
+      pages = p;
   }
 
   public void stop() {
