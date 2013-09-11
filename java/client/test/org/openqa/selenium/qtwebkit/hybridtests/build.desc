@@ -1,15 +1,14 @@
 java_test(name = "hybridtests",
   sysproperties = [
-    { "selenium.browser" : "qtwebkit",
-      "webdriver.browserClass" : "QWidget" },
+    { "selenium.browser" : "qtwebkit" },
   ],
 
   srcs = ["*.java",
   ],
 
   deps = [
-    "//third_party/java/junit",
     "//java/client/test/org/openqa/selenium/testing:junit_4",
-    "//third_party/java/jmock",
-    "//third_party/java/junit"
+    "//java/client/test/org/openqa/selenium/testing:proxy",
+    "//third_party/java/little_proxy",
+    "//third_party/java/netty",
   ])

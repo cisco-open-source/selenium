@@ -1,6 +1,5 @@
 package org.openqa.selenium.qtwebkit.hybridtests;
 
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -13,7 +12,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 @Suite.SuiteClasses({
     CapabilitiesTest.class,
     InternalWebViewTest.class,
-    WidgetAndWebViewTest.class
+    WidgetAndWebViewTest.class,
+    ProxySettingTest.class
 })
 public class HybridWebDriverTests {
 
