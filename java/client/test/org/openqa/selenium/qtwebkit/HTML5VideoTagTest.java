@@ -89,4 +89,44 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
     }
   }
 
+  @Test
+  public void testRemotePlayerVolume(){
+    WebElement element = driver.findElement(By.id("videoPlayer"));
+    if(element instanceof  RemotePlayer){
+      RemotePlayer player = (RemotePlayer)element;
+      player.setVolume(0.5);
+      assertEquals(0.5 ,player.getVolume(), 0);
+      assertEquals("0.5", player.getAttribute("volume"));
+
+      player.setVolume(0);
+      assertEquals(0 ,player.getVolume(), 0);
+      assertEquals("0", player.getAttribute("volume"));
+
+      player.setVolume(1.0);
+      assertEquals(1.0 ,player.getVolume(), 0);
+      assertEquals("1", player.getAttribute("volume"));
+    }
+  }
+
+  @Test
+  public void testRemotePlayerVolumeAndMute(){
+    WebElement element = driver.findElement(By.id("videoPlayer"));
+    if(element instanceof  RemotePlayer){
+      RemotePlayer player = (RemotePlayer)element;
+      player.setVolume(0.5);
+      player.setMute(true);
+      assertEquals("true", player.getAttribute("muted"));
+      assertEquals(true, player.isMuted());
+      assertEquals(0.5 ,player.getVolume(), 0);
+      assertEquals("0.5", player.getAttribute("volume"));
+
+      player.setVolume(0);
+      player.setMute(false);
+      assertEquals(null, player.getAttribute("muted"));
+      assertEquals(false, player.isMuted());
+      assertEquals(0 ,player.getVolume(), 0);
+      assertEquals("0", player.getAttribute("volume"));
+    }
+  }
+
 }
