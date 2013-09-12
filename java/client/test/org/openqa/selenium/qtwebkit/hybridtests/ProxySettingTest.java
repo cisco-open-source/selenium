@@ -105,6 +105,7 @@ public class ProxySettingTest extends JUnit4TestBase {
     Object context = null;
     SecurityManager sm = System.getSecurityManager();
     if (sm != null) {
+      System.out.println("************* SecurityManager --- "+sm.toString());
       try {
         context = sm.getSecurityContext();
         if (hostName!=null)   {
