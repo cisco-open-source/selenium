@@ -91,13 +91,30 @@ public class ProxySettingTest extends JUnit4TestBase {
 
   @Test
   public void tempTest() {
+    String hostName=null;
     try {
       InetAddress localAddress = InetAddress.getLocalHost();
-      System.out.println("*************   =  "+localAddress.toString());
+      System.out.println("************* getLocalHost() =  "+localAddress.toString());
       assertTrue("**** don't caught exception", true);
+      hostName = localAddress.getHostName();
+      System.out.println("************* getHostName() = "+hostName);
     } catch (UnknownHostException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
-  }
+
+    Object context = null;
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null) {
+      try {
+        context = sm.getSecurityContext();
+        if (hostName!=null)   {
+          sm.checkConnect(hostName, -1);
+          sm.checkAccept(hostName,8080);
+        }
+      } catch (Exception e) {e.printStackTrace();}
 
   }
+    System.out.println("******* context = "+context);
+
+  }
+}
