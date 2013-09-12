@@ -14,6 +14,9 @@ import org.openqa.selenium.testing.ProxyServer;
 import org.openqa.selenium.testing.TestUtilities;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
@@ -85,4 +88,16 @@ public class ProxySettingTest extends JUnit4TestBase {
     desiredProxyServer.destroy();
   }
 
-}
+
+  @Test
+  public void tempTest() {
+    try {
+      InetAddress localAddress = InetAddress.getLocalHost();
+      assertTrue("**** don't caught exception", true);
+    } catch (UnknownHostException e) {
+      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    }
+  }
+
+
+  }
