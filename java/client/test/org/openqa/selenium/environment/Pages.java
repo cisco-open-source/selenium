@@ -93,6 +93,7 @@ public class Pages {
   public String javascriptTest;
   public String basicKeyboardInterfaceTest;
   public String basicMouseInterfaceTest;
+  public String videoTest;
 
   public Pages(AppServer appServer) {
     ajaxyPage = appServer.whereIs("ajaxy_page.html");
