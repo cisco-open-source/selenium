@@ -111,6 +111,8 @@ public class ProxySettingTest extends JUnit4TestBase {
         if (hostName!=null)   {
           sm.checkConnect(hostName, -1);
           sm.checkAccept(hostName,8080);
+        } else {
+          sm.checkConnect("127.0.0.1", -1);
         }
       } catch (Exception e) {e.printStackTrace();}
 
