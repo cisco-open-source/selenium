@@ -62,7 +62,7 @@ public class RemotePlayer extends RemoteWebElement implements Player {
   }
 
   @Override
-  public double currentPlayingPosition() {
+  public double getCurrentPlayingPosition() {
     Response response = execute(QtWebKitDriverCommand.GET_CURRENT_PLAYING_POSITION, ImmutableMap.of("id", id));
     return ((Number)response.getValue()).doubleValue();
   }
