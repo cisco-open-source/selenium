@@ -16,11 +16,6 @@ public class VideoTest extends JUnit4TestBase {
   @Before
   public void setUp() throws Exception {
     driver.get("qtwidget://VideoTestWidget");
-//    try{
-//      Thread.sleep(15000);
-//    } catch (InterruptedException ex){}
-//    driver.findElement(By.id("videoSource")).sendKeys(appServer.whereIs("widgetsTestData/TestVideo.ogv"));
-//    driver.findElement(By.id("submitButton")).click();
   }
 
   @AfterClass

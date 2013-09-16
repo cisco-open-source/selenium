@@ -14,7 +14,6 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
   @Before
   public void setUp() throws Exception {
     driver.get(pages.html5AudioTest);
-    try {Thread.sleep(3000);} catch (InterruptedException ex){}
   }
 
   @AfterClass
