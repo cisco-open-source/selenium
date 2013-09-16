@@ -21,6 +21,8 @@ import java.net.URL;
 import com.google.common.collect.ImmutableMap;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.html5.AppCacheStatus;
+import org.openqa.selenium.html5.ApplicationCache;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.SessionStorage;
 import org.openqa.selenium.html5.WebStorage;
@@ -32,7 +34,8 @@ import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
 
-public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable {
+public class QtWebKitDriver extends RemoteWebDriver
+    implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
@@ -94,4 +97,10 @@ public class QtWebKitDriver extends RemoteWebDriver implements TakesScreenshot, 
         return ScreenOrientation.valueOf(
                 (String) execute(DriverCommand.GET_SCREEN_ORIENTATION).getValue());
     }
+
+  @Override
+  public AppCacheStatus getStatus() {
+    String status = (String) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
+    return AppCacheStatus.getEnum(status);
+  }
 }
