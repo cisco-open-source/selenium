@@ -1,6 +1,5 @@
 package org.openqa.selenium.qtwebkit;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +16,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
   @Before
   public void setUp() throws Exception {
     driver.get(pages.html5VideoTest);
-    try {Thread.sleep(3000);} catch (InterruptedException ex){}
+    try {Thread.sleep(500);} catch (InterruptedException ex){}
   }
 
   @AfterClass
@@ -47,7 +46,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
       player.setState(Player.PlayerState.stopped);
       state = player.getState();
       assertEquals("true", player.getAttribute("paused"));
-      assertEquals(0, player.currentPlayingPosition(), 0.01);
+      assertEquals(0, player.getCurrentPlayingPosition(), 0.01);
       assertEquals(Player.PlayerState.stopped, state);
       }
     }
@@ -82,10 +81,10 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
     WebElement element = driver.findElement(By.id("videoPlayer"));
     if(element instanceof RemotePlayer){
       RemotePlayer player = (RemotePlayer)element;
-      assertEquals(player.currentPlayingPosition(), 0, 0.1);
+      assertEquals(player.getCurrentPlayingPosition(), 0, 0.1);
 
       player.setState(Player.PlayerState.playing);
-      assertNotEquals(player.currentPlayingPosition(), 0);
+      assertNotEquals(player.getCurrentPlayingPosition(), 0);
     }
   }
 

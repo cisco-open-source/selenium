@@ -45,7 +45,7 @@ public class VideoTest extends JUnit4TestBase {
 
       player.setState(Player.PlayerState.stopped);
       state = player.getState();
-      assertEquals(0, player.currentPlayingPosition(), 0.02);
+      assertEquals(0, player.getCurrentPlayingPosition(), 0.02);
       assertEquals(Player.PlayerState.stopped, state);
     }
   }
@@ -69,10 +69,10 @@ public class VideoTest extends JUnit4TestBase {
     WebElement element = driver.findElement(By.id("videoPlayer"));
     if(element instanceof RemotePlayer){
       RemotePlayer player = (RemotePlayer)element;
-      assertEquals(player.currentPlayingPosition(), 0, 0.2);
+      assertEquals(player.getCurrentPlayingPosition(), 0, 0.2);
 
       player.setState(Player.PlayerState.playing);
-      assertNotEquals(player.currentPlayingPosition(), 0);
+      assertNotEquals(player.getCurrentPlayingPosition(), 0);
     }
   }
 
