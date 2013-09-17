@@ -1,10 +1,35 @@
-java_test(name = "hybridtests",
+java_test(name = "hybrid_tests_qt4",
   sysproperties = [
     { "selenium.browser" : "qtwebkit" },
   ],
 
-  srcs = ["*.java",
+  srcs = ["HybridWebDriverQt4Tests.java",
+    "CapabilitiesTest.java",
+    "InternalWebViewTest.java",
+    "WidgetAndWebViewTest.java",
+    "ProxySettingTest.java",
+    "WindowWithDeclarativeViewTest.java"
   ],
+
+  deps = [
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//java/client/test/org/openqa/selenium/testing:proxy",
+    "//third_party/java/little_proxy",
+    "//third_party/java/netty",
+  ])
+
+java_test(name = "hybrid_tests_qt5",
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit" },
+  ],
+
+  srcs = ["HybridWebDriverQt5Tests.java",
+    "CapabilitiesTest.java",
+    "InternalWebViewTest.java",
+    "WidgetAndWebViewTest.java",
+    "ProxySettingTest.java",
+    "WindowWithQuickViewTest.java"
+    ],
 
   deps = [
     "//java/client/test/org/openqa/selenium/testing:junit_4",

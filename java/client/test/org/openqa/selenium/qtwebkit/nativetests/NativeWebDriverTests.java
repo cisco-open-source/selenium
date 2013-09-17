@@ -48,7 +48,8 @@ import java.util.Map;
         XPathElementFindingTest.class,
         StaleElementReferenceTest.class,
         VisibilityTest.class,
-        InteractionTests.class
+        InteractionTests.class,
+        VideoTest.class
 })
 public class NativeWebDriverTests {
     @BeforeClass
