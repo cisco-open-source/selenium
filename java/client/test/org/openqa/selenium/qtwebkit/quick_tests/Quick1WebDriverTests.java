@@ -43,6 +43,7 @@ import java.util.Map;
         VisibilityTest.class,
         InteractionTests.class,
         ExecutingJavascriptTest.class,
+        EmbeddedWebViewTest.class,
 })
 public class Quick1WebDriverTests {
     @BeforeClass
