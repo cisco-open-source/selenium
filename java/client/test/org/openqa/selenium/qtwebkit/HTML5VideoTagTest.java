@@ -16,7 +16,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
   @Before
   public void setUp() throws Exception {
     driver.get(pages.html5VideoTest);
-    try {Thread.sleep(3000);} catch (InterruptedException ex){}
+    try {Thread.sleep(500);} catch (InterruptedException ex){}
   }
 
   @AfterClass
