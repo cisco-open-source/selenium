@@ -13,8 +13,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
     CapabilitiesTest.class,
     InternalWebViewTest.class,
     WidgetAndWebViewTest.class,
-    ProxySettingTest.class,
-    WindowWithQuickViewTest.class
+    ProxySettingTest.class
 })
 public class HybridWebDriverQt5Tests {
 

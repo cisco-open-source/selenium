@@ -27,8 +27,7 @@ java_test(name = "hybrid_tests_qt5",
     "CapabilitiesTest.java",
     "InternalWebViewTest.java",
     "WidgetAndWebViewTest.java",
-    "ProxySettingTest.java",
-    "WindowWithQuickViewTest.java"
+    "ProxySettingTest.java"
     ],
 
   deps = [
