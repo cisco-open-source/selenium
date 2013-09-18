@@ -1,9 +1,10 @@
 package org.openqa.selenium.qtwebkit.quick_tests;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.internal.Locatable;
-import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import java.util.List;
@@ -15,10 +16,10 @@ import org.junit.Before;
 import org.junit.After;
 import org.openqa.selenium.testing.JavascriptEnabled;
 import org.openqa.selenium.testing.TestUtilities;
+import org.openqa.selenium.testing.drivers.Browser;
 
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -31,17 +32,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.TestUtilities.assumeFalse;
 
 public class EmbeddedWebViewTest extends JUnit4TestBase {
 
@@ -57,7 +48,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
                 break;
             }
         }
-      assertTrue(!currentWindow.equals(driver.getWindowHandle()));
+        assertTrue(!currentWindow.equals(driver.getWindowHandle()));
     }
 
     @After
@@ -76,245 +67,188 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         }
     }
 
-  @Test
-  public void testCanClickOnALinkAndFollowIt() {
-    driver.findElement(By.id("normal")).click();
+    @Test
+    public void testCanClickOnALinkAndFollowIt() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("normal")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @Test
-  public void testCanClickOnALinkThatOverflowsAndFollowIt() {
-    driver.findElement(By.id("overflowLink")).click();
-
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @JavascriptEnabled
-  @Test
-  public void testCanClickOnAnAnchorAndNotReloadThePage() {
-    ((JavascriptExecutor) driver).executeScript("document.latch = true");
-
-    driver.findElement(By.id("anchor")).click();
-
-    Boolean samePage = (Boolean) ((JavascriptExecutor) driver)
-        .executeScript("return document.latch");
-
-    assertEquals("Latch was reset", Boolean.TRUE, samePage);
-  }
-
-  @Test
-  public void testCanClickOnALinkThatUpdatesAnotherFrame() {
-    driver.switchTo().frame("source");
-
-    driver.findElement(By.id("otherframe")).click();
-    driver.switchTo().defaultContent().switchTo().frame("target");
-
-    waitFor(WaitingConditions.pageSourceToContain(driver, "Hello WebDriver"));
-  }
-
-  @JavascriptEnabled
-  @Test
-  public void testElementsFoundByJsCanLoadUpdatesInAnotherFrame() {
-    driver.switchTo().frame("source");
-
-    WebElement toClick = (WebElement) ((JavascriptExecutor) driver).executeScript(
-        "return document.getElementById('otherframe');"
-    );
-    toClick.click();
-    driver.switchTo().defaultContent().switchTo().frame("target");
-
-    assertTrue("Target did not reload",
-               driver.getPageSource().contains("Hello WebDriver"));
-  }
-
-  @JavascriptEnabled
-  @Test
-  public void testJsLocatedElementsCanUpdateFramesIfFoundSomehowElse() {
-    driver.switchTo().frame("source");
-
-    // Prime the cache of elements
-    driver.findElement(By.id("otherframe"));
-
-    // This _should_ return the same element
-    WebElement toClick = (WebElement) ((JavascriptExecutor) driver).executeScript(
-        "return document.getElementById('otherframe');"
-    );
-    toClick.click();
-    driver.switchTo().defaultContent().switchTo().frame("target");
-
-    assertTrue("Target did not reload",
-               driver.getPageSource().contains("Hello WebDriver"));
-  }
-
-  @JavascriptEnabled
-  @Test
-  public void testCanClickOnAnElementWithTopSetToANegativeNumber() {
-    String page = appServer.whereIs("styledPage.html");
-    driver.get(page);
-    WebElement searchBox = driver.findElement(By.name("searchBox"));
-    searchBox.sendKeys("Cheese");
-    driver.findElement(By.name("btn")).click();
-
-    String log = driver.findElement(By.id("log")).getText();
-    assertEquals("click", log);
-  }
-
-  @Test
-  public void testShouldClickOnFirstBoundingClientRectWithNonZeroSize() {
-    driver.findElement(By.id("twoClientRects")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @JavascriptEnabled
-  @Test
-  public void testShouldSetRelatedTargetForMouseOver() {
-    driver.get(pages.javascriptPage);
-
-    driver.findElement(By.id("movable")).click();
-
-    String log = driver.findElement(By.id("result")).getText();
-
-    // Note: It is not guaranteed that the relatedTarget property of the mouseover
-    // event will be the parent, when using native events. Only check that the mouse
-    // has moved to this element, not that the parent element was the related target.
-    if (TestUtilities.isNativeEventsEnabled(driver)) {
-      assertTrue("Should have moved to this element.", log.startsWith("parent matches?"));
-    } else {
-      assertEquals("parent matches? true", log);
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
     }
-  }
 
-  @JavascriptEnabled
-  @NoDriverAfterTest
-  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, OPERA_MOBILE},
-          reason = "Doesn't support multiple windows; Safari: issue 3693")
-  @Test
-  public void testShouldOnlyFollowHrefOnce() {
-    driver.get(pages.clicksPage);
-    String current = driver.getWindowHandle();
-    Set<String> currentWindowHandles = driver.getWindowHandles();
+    @Test
+    public void testCanClickOnALinkThatOverflowsAndFollowIt() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("overflowLink")).click();
 
-    try {
-      driver.findElement(By.id("new-window")).click();
-      String newWindowHandle = waitFor(newWindowIsOpened(driver, currentWindowHandles));
-      driver.switchTo().window(newWindowHandle);
-      driver.close();
-    } finally {
-      driver.switchTo().window(current);
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
     }
-  }
 
-  @Ignore
-  public void testShouldSetRelatedTargetForMouseOut() {
-    fail("Must. Write. Meaningful. Test (but we don't fire mouse outs synthetically");
-  }
+    @Test
+    public void testCanClickOnALinkThatUpdatesAnotherFrame() {
+        driver.get(pages.clicksPage);
+        driver.switchTo().frame("source");
 
-  @Test
-  public void testClickingLabelShouldSetCheckbox() {
-    driver.get(pages.formPage);
+        driver.findElement(By.id("otherframe")).click();
+        driver.switchTo().defaultContent().switchTo().frame("target");
 
-    driver.findElement(By.id("label-for-checkbox-with-label")).click();
-
-    assertTrue(
-        "Should be selected",
-        driver.findElement(By.id("checkbox-with-label")).isSelected());
-  }
-
-  @Test
-  public void testCanClickOnALinkWithEnclosedImage() {
-    driver.findElement(By.id("link-with-enclosed-image")).click();
-
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @Test
-  public void testCanClickOnAnImageEnclosedInALink() {
-    driver.findElement(By.id("link-with-enclosed-image")).findElement(By.tagName("img")).click();
-
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @Test
-  public void testCanClickOnALinkThatContainsTextWrappedInASpan() {
-    driver.findElement(By.id("link-with-enclosed-span")).click();
-
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @Test
-  public void testCanClickOnALinkThatContainsEmbeddedBlockElements() {
-    driver.findElement(By.id("embeddedBlock")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  @Test
-  public void testCanClickOnAnElementEnclosedInALink() {
-    driver.findElement(By.id("link-with-enclosed-span")).findElement(By.tagName("span")).click();
-
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
-
-  // See http://code.google.com/p/selenium/issues/attachmentText?id=2700
-  @Test
-  public void testShouldBeAbleToClickOnAnElementInTheViewport() {
-    String url = appServer.whereIs("click_out_of_bounds.html");
-
-    driver.get(url);
-    WebElement button = driver.findElement(By.id("button"));
-
-    try {
-      button.click();
-    } catch (MoveTargetOutOfBoundsException e) {
-      fail("Should not be out of bounds: " + e.getMessage());
+        waitFor(WaitingConditions.pageSourceToContain(driver, "Hello WebDriver"));
     }
-  }
 
-  @Test
-  public void testClicksASurroundingStrongTag() {
-    driver.get(appServer.whereIs("ClickTest_testClicksASurroundingStrongTag.html"));
-    driver.findElement(By.tagName("a")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
-  }
+    @JavascriptEnabled
+    @Test
+    public void testElementsFoundByJsCanLoadUpdatesInAnotherFrame() {
+        driver.get(pages.clicksPage);
+        driver.switchTo().frame("source");
 
-  @Test
-  @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, IPHONE}, reason
-      = "Not tested against these browsers")
-  public void testShouldBeAbleToClickOnAnElementGreaterThanTwoViewports() {
-    String url = appServer.whereIs("click_too_big.html");
-    driver.get(url);
+        WebElement toClick = (WebElement) ((JavascriptExecutor) driver).executeScript(
+            "return document.getElementById('otherframe');"
+        );
+        toClick.click();
+        driver.switchTo().defaultContent().switchTo().frame("target");
 
-    WebElement element = driver.findElement(By.id("click"));
+        assertTrue("Target did not reload",
+                   driver.getPageSource().contains("Hello WebDriver"));
+    }
 
-    element.click();
+    @JavascriptEnabled
+    @Test
+    public void testJsLocatedElementsCanUpdateFramesIfFoundSomehowElse() {
+        driver.get(pages.clicksPage);
+        driver.switchTo().frame("source");
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
-  }
+        // Prime the cache of elements
+        driver.findElement(By.id("otherframe"));
 
-  @Test
-  public void testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports() {
-    String url = appServer.whereIs("click_too_big_in_frame.html");
-    driver.get(url);
+        // This _should_ return the same element
+        WebElement toClick = (WebElement) ((JavascriptExecutor) driver).executeScript(
+            "return document.getElementById('otherframe');"
+        );
+        toClick.click();
+        driver.switchTo().defaultContent().switchTo().frame("target");
 
-    WebElement frame = driver.findElement(By.id("iframe1"));
-    driver.switchTo().frame(frame);
+        assertTrue("Target did not reload",
+                   driver.getPageSource().contains("Hello WebDriver"));
+    }
 
-    WebElement element = driver.findElement(By.id("click"));
-    element.click();
+    @JavascriptEnabled
+    @Test
+    public void testCanClickOnAnElementWithTopSetToANegativeNumber() {
+        String page = appServer.whereIs("styledPage.html");
+        driver.get(page);
+        WebElement searchBox = driver.findElement(By.name("searchBox"));
+        searchBox.sendKeys("Cheese");
+        driver.findElement(By.name("btn")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
-  }
+        String log = driver.findElement(By.id("log")).getText();
+        assertEquals("click", log);
+    }
 
-  @Test
-  public void testShouldBeAbleToClickOnRTLLanguageLink() {
-    String url = appServer.whereIs("click_rtl.html");
-    driver.get(url);
+    @Test
+    public void testShouldClickOnFirstBoundingClientRectWithNonZeroSize() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("twoClientRects")).click();
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
 
-    WebElement element = driver.findElement(By.id("ar_link"));
-    element.click();
+    @Test
+    public void testClickingLabelShouldSetCheckbox() {
+        driver.get(pages.formPage);
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
-  }
+        driver.findElement(By.id("label-for-checkbox-with-label")).click();
+
+        assertTrue(
+            "Should be selected",
+            driver.findElement(By.id("checkbox-with-label")).isSelected());
+    }
+
+    @Test
+    public void testCanClickOnALinkWithEnclosedImage() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("link-with-enclosed-image")).click();
+
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
+
+    @Test
+    public void testCanClickOnAnImageEnclosedInALink() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("link-with-enclosed-image")).findElement(By.tagName("img"))
+            .click();
+
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
+
+    @Test
+    public void testCanClickOnALinkThatContainsTextWrappedInASpan() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("link-with-enclosed-span")).click();
+
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
+
+    @Test
+    public void testCanClickOnALinkThatContainsEmbeddedBlockElements() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("embeddedBlock")).click();
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
+
+    @Test
+    public void testCanClickOnAnElementEnclosedInALink() {
+        driver.get(pages.clicksPage);
+        driver.findElement(By.id("link-with-enclosed-span")).findElement(By.tagName("span"))
+            .click();
+
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
+
+    // See http://code.google.com/p/selenium/issues/attachmentText?id=2700
+    @Test
+    public void testShouldBeAbleToClickOnAnElementInTheViewport() {
+        String url = appServer.whereIs("click_out_of_bounds.html");
+
+        driver.get(url);
+        WebElement button = driver.findElement(By.id("button"));
+
+        try {
+            button.click();
+        } catch (MoveTargetOutOfBoundsException e) {
+            fail("Should not be out of bounds: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testClicksASurroundingStrongTag() {
+        driver.get(appServer.whereIs("ClickTest_testClicksASurroundingStrongTag.html"));
+        driver.findElement(By.tagName("a")).click();
+        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    }
+
+    @Test
+    public void testShouldBeAbleToClickOnAnElementGreaterThanTwoViewports() {
+        String url = appServer.whereIs("click_too_big.html");
+        driver.get(url);
+
+        WebElement element = driver.findElement(By.id("click"));
+
+        element.click();
+
+        waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+    }
+
+    @Test
+    public void testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports() {
+        String url = appServer.whereIs("click_too_big_in_frame.html");
+        driver.get(url);
+
+        WebElement frame = driver.findElement(By.id("iframe1"));
+        driver.switchTo().frame(frame);
+
+        WebElement element = driver.findElement(By.id("click"));
+        element.click();
+
+        waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+    }
 
     @Test
     public void testShouldGetCoordinatesOfAnElementInViewPort() {
@@ -423,7 +357,6 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         assertThat(body.getAttribute("style"), equalTo(""));
     }
 
-    @Ignore({OPERA, IPHONE, ANDROID})
     @Test
     public void testShouldReturnTheValueOfTheDisabledAttributeAsNullIfNotSet() {
         driver.get(pages.formPage);
@@ -468,8 +401,6 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         assertThat(disabledSubmitElement.isEnabled(), is(false));
     }
 
-    @Ignore(value = {IPHONE},
-            reason = "sendKeys does not determine whether the element is disabled")
     @Test
     public void testShouldThrowExceptionIfSendingKeysToElementDisabledUsingRandomDisabledStrings() {
         driver.get(pages.formPage);
@@ -599,71 +530,181 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         assertTrue(style.toLowerCase().contains("background-color"));
     }
 
-  @Test
-  public void testShouldReturnValueOfOnClickAttribute() {
-    driver.get(pages.javascriptPage);
+    @Test
+    public void testShouldReturnValueOfOnClickAttribute() {
+        driver.get(pages.javascriptPage);
 
-    WebElement mouseclickDiv = driver.findElement(By.id("mouseclick"));
+        WebElement mouseclickDiv = driver.findElement(By.id("mouseclick"));
 
-    String onClickValue = mouseclickDiv.getAttribute("onclick");
-    String expectedOnClickValue = "displayMessage('mouse click');";
-    assertThat("Javascript code expected", onClickValue, anyOf(
-        equalTo("javascript:" + expectedOnClickValue), // Non-IE
-        equalTo("function anonymous()\n{\n" + expectedOnClickValue + "\n}"), // IE
-        equalTo("function onclick()\n{\n" + expectedOnClickValue + "\n}"))); // IE
+        String onClickValue = mouseclickDiv.getAttribute("onclick");
+        String expectedOnClickValue = "displayMessage('mouse click');";
+        assertThat("Javascript code expected", onClickValue, anyOf(
+            equalTo("javascript:" + expectedOnClickValue), // Non-IE
+            equalTo("function anonymous()\n{\n" + expectedOnClickValue + "\n}"), // IE
+            equalTo("function onclick()\n{\n" + expectedOnClickValue + "\n}"))); // IE
 
-    WebElement mousedownDiv = driver.findElement(By.id("mousedown"));
-    assertEquals(null, mousedownDiv.getAttribute("onclick"));
-  }
+        WebElement mousedownDiv = driver.findElement(By.id("mousedown"));
+        assertEquals(null, mousedownDiv.getAttribute("onclick"));
+    }
 
-  @Ignore(value = {IE, IPHONE, ANDROID}, reason = "IE7 Does not support SVG; " +
-                                                  "SVG elements crash the iWebDriver app (issue 1134)",
-          issues = {1134})
-  @Test
-  public void testGetAttributeDoesNotReturnAnObjectForSvgProperties() {
-    driver.get(pages.svgPage);
-    WebElement svgElement = driver.findElement(By.id("rotate"));
-    assertEquals("rotate(30)", svgElement.getAttribute("transform"));
-  }
+    @Test
+    public void testGetAttributeDoesNotReturnAnObjectForSvgProperties() {
+        driver.get(pages.svgPage);
+        WebElement svgElement = driver.findElement(By.id("rotate"));
+        assertEquals("rotate(30)", svgElement.getAttribute("transform"));
+    }
 
-  @Test
-  public void testCanRetrieveTheCurrentValueOfATextFormField_textInput() {
-    driver.get(pages.formPage);
-    WebElement element = driver.findElement(By.id("working"));
-    assertEquals("", element.getAttribute("value"));
-    element.sendKeys("hello world");
-    assertEquals("hello world", element.getAttribute("value"));
-  }
+    @Test
+    public void testCanRetrieveTheCurrentValueOfATextFormField_textInput() {
+        driver.get(pages.formPage);
+        WebElement element = driver.findElement(By.id("working"));
+        assertEquals("", element.getAttribute("value"));
+        element.sendKeys("hello world");
+        assertEquals("hello world", element.getAttribute("value"));
+    }
 
-  @Test
-  public void testCanRetrieveTheCurrentValueOfATextFormField_emailInput() {
-    driver.get(pages.formPage);
-    WebElement element = driver.findElement(By.id("email"));
-    assertEquals("", element.getAttribute("value"));
-    element.sendKeys("hello@example.com");
-    assertEquals("hello@example.com", element.getAttribute("value"));
-  }
+    @Test
+    public void testCanRetrieveTheCurrentValueOfATextFormField_emailInput() {
+        driver.get(pages.formPage);
+        WebElement element = driver.findElement(By.id("email"));
+        assertEquals("", element.getAttribute("value"));
+        element.sendKeys("hello@example.com");
+        assertEquals("hello@example.com", element.getAttribute("value"));
+    }
 
-  @Ignore({ANDROID, OPERA_MOBILE})
-  @Test
-  public void testCanRetrieveTheCurrentValueOfATextFormField_textArea() {
-    driver.get(pages.formPage);
-    WebElement element = driver.findElement(By.id("emptyTextArea"));
-    assertEquals("", element.getAttribute("value"));
-    element.sendKeys("hello world");
-    assertEquals("hello world", element.getAttribute("value"));
-  }
+    @Test
+    public void testCanRetrieveTheCurrentValueOfATextFormField_textArea() {
+        driver.get(pages.formPage);
+        WebElement element = driver.findElement(By.id("emptyTextArea"));
+        assertEquals("", element.getAttribute("value"));
+        element.sendKeys("hello world");
+        assertEquals("hello world", element.getAttribute("value"));
+    }
 
-  @Ignore({OPERA, IPHONE, ANDROID})
-  @Test
-  public void testShouldReturnNullForNonPresentBooleanAttributes() {
-    driver.get(pages.booleanAttributes);
-    WebElement element1 = driver.findElement(By.id("working"));
-    assertNull(element1.getAttribute("required"));
-    WebElement element2 = driver.findElement(By.id("wallace"));
-    assertNull(element2.getAttribute("nowrap"));
-  }
+    @Test
+    public void testShouldReturnNullForNonPresentBooleanAttributes() {
+        driver.get(pages.booleanAttributes);
+        WebElement element1 = driver.findElement(By.id("working"));
+        assertNull(element1.getAttribute("required"));
+        WebElement element2 = driver.findElement(By.id("wallace"));
+        assertNull(element2.getAttribute("nowrap"));
+    }
 
+    private Actions getBuilder(WebDriver driver) {
+        return new Actions(driver);
+    }
 
-  private String currentWindow;
+    @JavascriptEnabled
+    @Test
+    public void testBasicKeyboardInput() {
+        driver.get(pages.javascriptPage);
+
+        WebElement keyReporter = driver.findElement(By.id("keyReporter"));
+
+        Action sendLowercase = getBuilder(driver).sendKeys(keyReporter, "abc def").build();
+
+        sendLowercase.perform();
+
+        assertThat(keyReporter.getAttribute("value"), is("abc def"));
+    }
+
+    @JavascriptEnabled
+    @Test
+    public void testSendingKeyDownOnly() {
+        ignoreOnFfWindowsWithNativeEvents(); // Issue 3722
+
+        driver.get(pages.javascriptPage);
+
+        WebElement keysEventInput = driver.findElement(By.id("theworks"));
+
+        Action pressShift = getBuilder(driver).keyDown(keysEventInput, Keys.SHIFT).build();
+
+        pressShift.perform();
+
+        WebElement keyLoggingElement = driver.findElement(By.id("result"));
+        String logText = keyLoggingElement.getText();
+
+        Action releaseShift = getBuilder(driver).keyUp(keysEventInput, Keys.SHIFT).build();
+        releaseShift.perform();
+
+        assertTrue("Key down event not isolated, got: " + logText,
+                   logText.endsWith("keydown"));
+    }
+
+    @JavascriptEnabled
+    @Test
+    public void testSendingKeyUp() {
+        ignoreOnFfWindowsWithNativeEvents(); // Issue 3722
+
+        driver.get(pages.javascriptPage);
+        WebElement keysEventInput = driver.findElement(By.id("theworks"));
+
+        Action pressShift = getBuilder(driver).keyDown(keysEventInput, Keys.SHIFT).build();
+        pressShift.perform();
+
+        WebElement keyLoggingElement = driver.findElement(By.id("result"));
+
+        String eventsText = keyLoggingElement.getText();
+        assertTrue("Key down should be isolated for this test to be meaningful. " +
+                   "Got events: " + eventsText, eventsText.endsWith("keydown"));
+
+        Action releaseShift = getBuilder(driver).keyUp(keysEventInput, Keys.SHIFT).build();
+
+        releaseShift.perform();
+
+        eventsText = keyLoggingElement.getText();
+        assertTrue("Key up event not isolated. Got events: " + eventsText,
+                   eventsText.endsWith("keyup"));
+    }
+
+    @JavascriptEnabled
+    @Test
+    public void testSendingKeysToActiveElement() {
+        driver.get(pages.bodyTypingPage);
+
+        Action someKeys = getBuilder(driver).sendKeys("ab").build();
+        someKeys.perform();
+
+        assertThatBodyEventsFiredAreExactly("keypress keypress");
+        assertThatFormEventsFiredAreExactly("");
+    }
+
+    @Test
+    public void testBasicKeyboardInputOnActiveElement() {
+        driver.get(pages.javascriptPage);
+
+        WebElement keyReporter = driver.findElement(By.id("keyReporter"));
+
+        keyReporter.click();
+
+        Action sendLowercase = getBuilder(driver).sendKeys("abc def").build();
+
+        sendLowercase.perform();
+
+        assertThat(keyReporter.getAttribute("value"), is("abc def"));
+    }
+
+    private void assertThatFormEventsFiredAreExactly(String message, String expected) {
+        assertThat(message, getFormEvents(), is(expected.trim()));
+    }
+
+    private String getFormEvents() {
+        return driver.findElement(By.id("result")).getText().trim();
+    }
+
+    private void assertThatFormEventsFiredAreExactly(String expected) {
+        assertThatFormEventsFiredAreExactly("", expected);
+    }
+
+    private void assertThatBodyEventsFiredAreExactly(String expected) {
+        assertThat(driver.findElement(By.id("body_result")).getText().trim(), is(expected.trim()));
+    }
+
+    private void ignoreOnFfWindowsWithNativeEvents() {
+        assumeFalse(Browser.detect() == Browser.ff &&
+                    TestUtilities.getEffectivePlatform().is(Platform.WINDOWS) &&
+                    TestUtilities.isNativeEventsEnabled(driver));
+    }
+
+    private String currentWindow;
 }
