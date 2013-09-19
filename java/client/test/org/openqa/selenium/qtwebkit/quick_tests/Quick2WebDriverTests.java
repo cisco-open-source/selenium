@@ -8,6 +8,7 @@ import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
 import org.openqa.selenium.qtwebkit.quick_tests.interactions.InteractionTests;
+import org.openqa.selenium.qtwebkit.quick_tests.interactions.touch.TouchTests;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.Document;
@@ -43,7 +44,8 @@ import java.util.Map;
                         VisibilityTest.class,
                         InteractionTests.class,
                         ExecutingJavascriptTest.class,
-                        VideoTest.class
+                        VideoTest.class,
+						TouchTests.class,
                     })
 public class Quick2WebDriverTests {
     @BeforeClass

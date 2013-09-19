@@ -23,5 +23,7 @@ public class Quick2TestContent extends Pages {
         basicKeyboardInterfaceTest = appServer.whereIs("quick2/BasicKeyboardInterfaceTest.qml");
         basicMouseInterfaceTest = appServer.whereIs("quick2/BasicMouseInterfaceTest.qml");
         videoTest = appServer.whereIs("quick2/VideoTest.qml");
+        touchTest = appServer.whereIs("quick2/TouchTest.qml");
+        touchScrollTest = appServer.whereIs("quick2/TouchScrollTest.qml");
     }
 }
