@@ -69,12 +69,12 @@ public class TouchInteractionTests extends TouchTestBase {
     }
 
 
-//    @Test
-//    public void testCanClickOnMulitouchArea() {
-//        driver.get(pages.touchTest);
-//        singleTapOnElement("touchArea");
-//        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleased"));
-//    }
+    @Test
+    public void testCanClickOnMulitouchArea() {
+        driver.get(pages.touchTest);
+        singleTapOnElement("touchArea");
+        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleased"));
+    }
 
     @Test
     public void testCanClickOnMouseArea() {
@@ -83,57 +83,57 @@ public class TouchInteractionTests extends TouchTestBase {
         waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "Clicked"));
     }
 
-//    @Test
-//    public void testCanDoubleClickOnMouseArea() {
-//        driver.get(pages.touchTest);
-//        doubleTapOnElement("mouseArea");
-//        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "DoubleClicked"));
-//    }
+    @Test
+    public void testCanDoubleClickOnMouseArea() {
+        driver.get(pages.touchTest);
+        doubleTapOnElement("mouseArea");
+        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "DoubleClicked"));
+    }
 
-//    @Test
-//    public void testCanDoubleClickOnMultitouchArea() {
-//        driver.get(pages.touchTest);
-//        doubleTapOnElement("touchArea");
-//        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleasedPressedReleased"));
-//    }
-//
-//    @Test
-//    public void testCanLongClick() {
-//        driver.get(pages.touchTest);
-//        longTapOnElement("mouseArea");
-//        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "LongClicked"));
-//    }
-//
-//    @Test
-//    public void testCanDownMoveUp() {
-//        driver.get(pages.touchTest);
-//        Action down = getBuilder(driver).down(100, 100).build();
-//        down.perform();
-//        Action move = getBuilder(driver).move(150, 150).build();
-//        move.perform();
-//        Action up = getBuilder(driver).up(250, 250).build();
-//        up.perform();
-//
-//        assertThat(getLocationOnScreen(By.id("pressPoint")), is(new Point(90, 90)));
-//        assertThat(getLocationOnScreen(By.id("movePoint")), is(new Point(140, 140)));
-//        assertThat(getLocationOnScreen(By.id("releasePoint")), is(new Point(240, 240)));
-//
-//    }
-//
-//    @Test
-//    public void testScroll() {
-//        driver.get(pages.touchScrollTest);
-//        int prewY = getLocationOnScreen(By.id("item6")).getY();
-//        scrollElement("item6", 0, -200);
-//        int newY = getLocationOnScreen(By.id("item6")).getY();
-//        assertTrue("Got: " + newY, newY < prewY);
-//    }
-//
-//    @Test
-//    public void testFlick() {
-//        driver.get(pages.touchScrollTest);
-//        flickElement("listView", 0, -200, FlickAction.SPEED_FAST);
-//        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "Flicked"));
-//
-//    }
+    @Test
+    public void testCanDoubleClickOnMultitouchArea() {
+        driver.get(pages.touchTest);
+        doubleTapOnElement("touchArea");
+        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleasedPressedReleased"));
+    }
+
+    @Test
+    public void testCanLongClick() {
+        driver.get(pages.touchTest);
+        longTapOnElement("mouseArea");
+        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "LongClicked"));
+    }
+
+    @Test
+    public void testCanDownMoveUp() {
+        driver.get(pages.touchTest);
+        Action down = getBuilder(driver).down(100, 100).build();
+        down.perform();
+        Action move = getBuilder(driver).move(150, 150).build();
+        move.perform();
+        Action up = getBuilder(driver).up(250, 250).build();
+        up.perform();
+
+        assertThat(getLocationOnScreen(By.id("pressPoint")), is(new Point(90, 90)));
+        assertThat(getLocationOnScreen(By.id("movePoint")), is(new Point(140, 140)));
+        assertThat(getLocationOnScreen(By.id("releasePoint")), is(new Point(240, 240)));
+
+    }
+
+    @Test
+    public void testScroll() {
+        driver.get(pages.touchScrollTest);
+        int prewY = getLocationOnScreen(By.id("item6")).getY();
+        scrollElement("item6", 0, -200);
+        int newY = getLocationOnScreen(By.id("item6")).getY();
+        assertTrue("Got: " + newY, newY < prewY);
+    }
+
+    @Test
+    public void testFlick() {
+        driver.get(pages.touchScrollTest);
+        flickElement("listView", 0, -200, FlickAction.SPEED_FAST);
+        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "Flicked"));
+
+    }
 }
