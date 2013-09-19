@@ -8,7 +8,8 @@ java_test(name = "hybrid_tests_qt4",
     "InternalWebViewTest.java",
     "WidgetAndWebViewTest.java",
     "ProxySettingTest.java",
-    "WindowWithDeclarativeViewTest.java"
+    "WindowWithDeclarativeViewTest.java",
+    "WindowWithSeparatedDeclarativeAndWebViewsTest.java"
   ],
 
   deps = [
