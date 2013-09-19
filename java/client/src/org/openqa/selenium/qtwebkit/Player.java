@@ -88,4 +88,16 @@ public interface Player extends WebElement{
    *
    */
   void setMute(boolean mute);
+  /**
+   * Gets player's playback speed
+   * @return current playing speed
+   *
+   */
+  double getSpeed();
+  /**
+   * Sets player's playback speed
+   * @param speed playing speed to set
+   *
+   */
+  void setSpeed(double speed);
 }
