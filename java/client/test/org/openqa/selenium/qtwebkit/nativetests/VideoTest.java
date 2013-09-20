@@ -69,10 +69,18 @@ public class VideoTest extends JUnit4TestBase {
     WebElement element = driver.findElement(By.id("videoPlayer"));
     if(element instanceof RemotePlayer){
       RemotePlayer player = (RemotePlayer)element;
-      assertEquals(player.getCurrentPlayingPosition(), 0, 0.2);
-
+      assertEquals(player.getCurrentPlayingPosition(), 0, 0);
       player.setState(Player.PlayerState.playing);
-      assertNotEquals(player.getCurrentPlayingPosition(), 0);
+
+      try{
+        Thread.sleep(20000);
+      }
+      catch (InterruptedException ex){}
+
+      player.setState(Player.PlayerState.paused);
+      player.seek(10.5);
+      assertEquals(10.5, player.getCurrentPlayingPosition(), 0.1);
+      player.setState(Player.PlayerState.playing);
     }
   }
 
@@ -101,6 +109,35 @@ public class VideoTest extends JUnit4TestBase {
       player.setMute(true);
       player.setMute(false);
       assertEquals(0.5 ,player.getVolume(), 0.02);
+    }
+  }
+
+  @Test
+  public void testRemotePlayerSpeed(){
+    WebElement element = driver.findElement(By.id("videoPlayer"));
+    if(element instanceof RemotePlayer){
+      RemotePlayer player = (RemotePlayer)element;
+      assertEquals(player.getCurrentPlayingPosition(), 0, 0);
+
+      player.setState(Player.PlayerState.playing);
+      player.setSpeed(10);
+      assertEquals(10, player.getSpeed(), 0.1);
+      player.setState(Player.PlayerState.paused);
+      player.setState(Player.PlayerState.playing);
+
+      try{
+        Thread.sleep(5000);
+      }
+      catch (InterruptedException ex){}
+
+      player.setSpeed(0.1);
+
+      try{
+        Thread.sleep(10000);
+      }
+      catch (InterruptedException ex){}
+
+      player.setState(Player.PlayerState.paused);
     }
   }
 
