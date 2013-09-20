@@ -35,7 +35,7 @@ import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
 
 public class QtWebKitDriver extends RemoteWebDriver
-    implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache {
+    implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
@@ -98,9 +98,4 @@ public class QtWebKitDriver extends RemoteWebDriver
                 (String) execute(DriverCommand.GET_SCREEN_ORIENTATION).getValue());
     }
 
-  @Override
-  public AppCacheStatus getStatus() {
-    String status = (String) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
-    return AppCacheStatus.getEnum(status);
-  }
 }
