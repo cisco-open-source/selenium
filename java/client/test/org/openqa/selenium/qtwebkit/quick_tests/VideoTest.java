@@ -89,14 +89,13 @@ public class VideoTest extends JUnit4TestBase {
       player.setState(Player.PlayerState.playing);
 
       try{
-        Thread.sleep(20000);
+        Thread.sleep(5000);
       }
       catch (InterruptedException ex){}
+      assertEquals(5, player.getCurrentPlayingPosition(), 1);
 
-      player.setState(Player.PlayerState.paused);
-      player.seek(10.5);
-      assertEquals(10.5, player.getCurrentPlayingPosition(), 0.1);
-      player.setState(Player.PlayerState.playing);
+      player.seek(1.5);
+      assertEquals(1.5, player.getCurrentPlayingPosition(), 0.1);
     }
   }
 
