@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         StandardSeleniumTests.class,
+        GraphicsWebSanityTest.class,
         TouchTests.class,
         QtWebDriverSwitchesTest.class,
         HTML5VideoTagTest.class,
