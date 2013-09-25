@@ -13,6 +13,7 @@ import org.openqa.selenium.qtwebkit.nativetests.interactions.BasicMouseInterface
 import org.openqa.selenium.qtwebkit.nativetests.interactions.IndividualKeyboardActionsTest;
 import org.openqa.selenium.qtwebkit.nativetests.interactions.IndividualMouseActionsTest;
 import org.openqa.selenium.qtwebkit.nativetests.interactions.InteractionTests;
+import org.openqa.selenium.qtwebkit.nativetests.interactions.touch.TouchTests;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.Document;
@@ -49,7 +50,8 @@ import java.util.Map;
         StaleElementReferenceTest.class,
         VisibilityTest.class,
         InteractionTests.class,
-        VideoTest.class
+        VideoTest.class,
+        TouchTests.class,
 })
 public class NativeWebDriverTests {
     @BeforeClass
