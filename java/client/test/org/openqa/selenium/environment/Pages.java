@@ -94,6 +94,8 @@ public class Pages {
   public String basicKeyboardInterfaceTest;
   public String basicMouseInterfaceTest;
   public String videoTest;
+  public String touchTest;
+  public String touchScrollTest;
 
   public Pages(AppServer appServer) {
     ajaxyPage = appServer.whereIs("ajaxy_page.html");

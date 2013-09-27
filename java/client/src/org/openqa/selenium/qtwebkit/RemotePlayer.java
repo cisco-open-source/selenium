@@ -79,4 +79,16 @@ public class RemotePlayer extends RemoteWebElement implements Player {
     execute(QtWebKitDriverCommand.SET_PLAYER_MUTE,
             ImmutableMap.of("id", id, "mute", mute));
   }
+
+  @Override
+  public double getSpeed() {
+    Response response = execute(QtWebKitDriverCommand.GET_PLAYBACK_SPEED, ImmutableMap.of("id", id));
+    return ((Number)response.getValue()).doubleValue();
+  }
+
+  @Override
+  public void setSpeed(double speed) {
+    execute(QtWebKitDriverCommand.SET_PLAYBACK_SPEED,
+            ImmutableMap.of("id", id, "speed", speed));
+  }
 }

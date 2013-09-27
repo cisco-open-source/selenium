@@ -36,11 +36,13 @@ import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
 /**
- *  QtWebKitDriver inplements BrowserConnection with some limitation - setOnline() can change connection state only for currently opened windows.
- *  If new view will be open now, it sets online by default (while doesn't receive a command explicitly).
+ * QtWebKitDriver implements BrowserConnection with some limitation - setOnline() can change
+ * connection state only for currently opened windows. If new view will be open now, it sets online
+ * by default (while doesn't receive a command explicitly).
  */
 
 public class QtWebKitDriver extends RemoteWebDriver
+
     implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache,
                BrowserConnection {
 
@@ -48,28 +50,30 @@ public class QtWebKitDriver extends RemoteWebDriver
     private RemoteSessionStorage sessionStorage;
     private TouchScreen touchScreen;
 
-    public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities, Capabilities requiredCapabilities) {
+    public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities,
+                          Capabilities requiredCapabilities) {
         super(executor, desiredCapabilities, requiredCapabilities);
         localStorage = new RemoteLocalStorage(getExecuteMethod());
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
         touchScreen = new RemoteTouchScreen(getExecuteMethod());
-      setElementConverter(new QtWebKitJsonToWebElementConverter(this));
+        setElementConverter(new QtWebKitJsonToWebElementConverter(this));
     }
 
     public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities) {
-	    this(executor, desiredCapabilities, null);
+        this(executor, desiredCapabilities, null);
     }
 
     public QtWebKitDriver(Capabilities desiredCapabilities) {
-	    this((URL) null, desiredCapabilities);
+        this((URL) null, desiredCapabilities);
     }
 
-    public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities, Capabilities requiredCapabilities) {
-	    this(new QtWebDriverExecutor(remoteAddress), desiredCapabilities, requiredCapabilities);
+    public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities,
+                          Capabilities requiredCapabilities) {
+        this(new QtWebDriverExecutor(remoteAddress), desiredCapabilities, requiredCapabilities);
     }
 
     public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities) {
-	    this(new QtWebDriverExecutor(remoteAddress), desiredCapabilities, null);
+        this(new QtWebDriverExecutor(remoteAddress), desiredCapabilities, null);
     }
 
     public <X> X getScreenshotAs(OutputType<X> target) {
@@ -102,23 +106,24 @@ public class QtWebKitDriver extends RemoteWebDriver
     @Override
     public ScreenOrientation getOrientation() {
         return ScreenOrientation.valueOf(
-                (String) execute(DriverCommand.GET_SCREEN_ORIENTATION).getValue());
+            (String) execute(DriverCommand.GET_SCREEN_ORIENTATION).getValue());
     }
 
-  @Override
-  public AppCacheStatus getStatus() {
-    Long status = (Long) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
-    long st = status;
-    return AppCacheStatus.getEnum((int)st);
-  }
+    @Override
+    public AppCacheStatus getStatus() {
+        Long status = (Long) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
+        long st = status;
+        return AppCacheStatus.getEnum((int)st);
+    }
 
-  @Override
-  public boolean isOnline() {
-    return ((Boolean) execute(DriverCommand.IS_BROWSER_ONLINE).getValue());
-  }
+    @Override
+    public boolean isOnline() {
+        return ((Boolean) execute(DriverCommand.IS_BROWSER_ONLINE).getValue());
+    }
 
-  @Override
-  public void setOnline(boolean online) throws WebDriverException {
-    execute(DriverCommand.SET_BROWSER_ONLINE, ImmutableMap.of("state", online));
-  }
+    @Override
+    public void setOnline(boolean online) throws WebDriverException {
+        execute(DriverCommand.SET_BROWSER_ONLINE, ImmutableMap.of("state", online));
+    }
+
 }

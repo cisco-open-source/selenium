@@ -12,4 +12,6 @@ public interface QtWebKitDriverCommand extends DriverCommand {
   String GET_PLAYER_MUTE = "getPlayerMute";
   String GET_CURRENT_PLAYING_POSITION = "getCurrentPlayingPosition";
   String SET_CURRENT_PLAYING_POSITION = "setCurrentPlayingPosition";
+  String GET_PLAYBACK_SPEED = "getPlaybackSpeed";
+  String SET_PLAYBACK_SPEED = "setPlaybackSpeed";
 }

@@ -30,8 +30,10 @@ java_test(name = "quick2_tests",
 java_library(name = "tests",
   srcs = [
     "interactions/InteractionTests.java",
+    "interactions/touch/TouchTests.java",
     "*Test.java",
     "interactions/*.java",
+    "interactions/touch/*.java",
   ],
   deps = [
     "//java/client/src/org/openqa/selenium/remote:common",
