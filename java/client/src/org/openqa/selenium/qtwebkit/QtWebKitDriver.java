@@ -18,11 +18,13 @@ limitations under the License.
 package org.openqa.selenium.qtwebkit;
 
 import java.net.URL;
+
 import com.google.common.collect.ImmutableMap;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.html5.AppCacheStatus;
 import org.openqa.selenium.html5.ApplicationCache;
+import org.openqa.selenium.html5.BrowserConnection;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.SessionStorage;
 import org.openqa.selenium.html5.WebStorage;
@@ -33,9 +35,14 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
+/**
+ *  QtWebKitDriver inplements BrowserConnection with some limitation - setOnline() can change connection state only for currently opened windows.
+ *  If new view will be open now, it sets online by default (while doesn't receive a command explicitly).
+ */
 
 public class QtWebKitDriver extends RemoteWebDriver
-    implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache {
+    implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache,
+               BrowserConnection {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
@@ -100,7 +107,18 @@ public class QtWebKitDriver extends RemoteWebDriver
 
   @Override
   public AppCacheStatus getStatus() {
-    String status = (String) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
-    return AppCacheStatus.getEnum(status);
+    Long status = (Long) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
+    long st = status;
+    return AppCacheStatus.getEnum((int)st);
+  }
+
+  @Override
+  public boolean isOnline() {
+    return ((Boolean) execute(DriverCommand.IS_BROWSER_ONLINE).getValue());
+  }
+
+  @Override
+  public void setOnline(boolean online) throws WebDriverException {
+    execute(DriverCommand.SET_BROWSER_ONLINE, ImmutableMap.of("state", online));
   }
 }
