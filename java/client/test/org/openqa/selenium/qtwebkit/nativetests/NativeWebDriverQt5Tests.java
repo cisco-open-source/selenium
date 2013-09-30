@@ -8,6 +8,7 @@ import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
 import org.openqa.selenium.qtwebkit.nativetests.interactions.InteractionTests;
+import org.openqa.selenium.qtwebkit.nativetests.interactions.touch.TouchTests;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.Document;
@@ -44,7 +45,8 @@ import java.util.Map;
         StaleElementReferenceTest.class,
         VisibilityTest.class,
         InteractionTests.class,
-        VideoTest.class
+        VideoTest.class,
+        TouchTests.class,
 })
 public class NativeWebDriverQt5Tests {
     @BeforeClass
