@@ -96,6 +96,7 @@ public class Pages {
   public String videoTest;
   public String touchTest;
   public String touchScrollTest;
+  public String multiTouchTest;
 
   public Pages(AppServer appServer) {
     ajaxyPage = appServer.whereIs("ajaxy_page.html");
