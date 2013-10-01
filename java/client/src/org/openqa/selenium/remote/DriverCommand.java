@@ -162,4 +162,8 @@ public interface DriverCommand {
   String GET_LOG = "getLog";
   String GET_SESSION_LOGS = "getSessionLogs";
 
+  //CISCO MultiTouch API
+  String TOUCH_PINCH_ZOOM = "pinchZoom";
+  String TOUCH_PINCH_ROTATE = "pinchRotate";
+
 }
