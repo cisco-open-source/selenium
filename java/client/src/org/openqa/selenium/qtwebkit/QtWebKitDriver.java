@@ -64,7 +64,7 @@ public class QtWebKitDriver extends RemoteWebDriver
     }
 
     public QtWebKitDriver(Capabilities desiredCapabilities) {
-        this((URL) null, desiredCapabilities);
+        this(QtWebKitDriverService.getCommandExecutor(), desiredCapabilities);
     }
 
     public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities,
