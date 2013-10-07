@@ -88,6 +88,7 @@ public interface DriverCommand {
   String ELEMENT_EQUALS = "elementEquals";
 
   String SCREENSHOT = "screenshot";
+  String ELEMENT_SCREENSHOT = "elementScreenshot";
 
   String GET_ALERT = "getAlert";
   String ACCEPT_ALERT = "acceptAlert";
@@ -162,4 +163,9 @@ public interface DriverCommand {
   // Logging API
   String GET_AVAILABLE_LOG_TYPES = "getAvailableLogTypes";
   String GET_LOG = "getLog";
+
+  //CISCO MultiTouch API
+  String TOUCH_PINCH_ZOOM = "pinchZoom";
+  String TOUCH_PINCH_ROTATE = "pinchRotate";
+
 }

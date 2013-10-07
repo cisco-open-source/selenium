@@ -25,7 +25,7 @@ import static org.openqa.selenium.TestWaiter.waitFor;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Pages;
+import org.openqa.selenium.environment.Pages;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;

@@ -41,6 +41,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 @Ignore(value = {ANDROID, HTMLUNIT}, reason = "Android: Race condition when click returns, "
     + "the UI did not finish scrolling..\nHtmlUnit: Scrolling requires rendering")
@@ -94,7 +95,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, FIREFOX, IPHONE},
+  @Ignore(value = {CHROME, FIREFOX, IPHONE, QTWEBKIT},
           reason = "Chrome: failed, iPhone: untested, Firefox: failed with native events")
   @Test
   public void testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow() {
@@ -128,7 +129,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, MARIONETTE},
+  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, MARIONETTE, QTWEBKIT},
       reason = "Safari: button1 is scrolled to the bottom edge of the view, " +
           "so additonal scrolling is still required for button2")
   @Test

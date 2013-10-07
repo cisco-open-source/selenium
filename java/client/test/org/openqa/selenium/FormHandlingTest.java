@@ -45,6 +45,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.isIe6;
 import static org.openqa.selenium.testing.TestUtilities.isIe7;
 
@@ -176,7 +177,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertThat(newFormValue, equalTo("some text"));
   }
 
-  @Ignore(value = {IPHONE, ANDROID, SAFARI, OPERA, OPERA_MOBILE, MARIONETTE},
+  @Ignore(value = {IPHONE, ANDROID, SAFARI, OPERA, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
           reason = "Does not yet support file uploads", issues = {4220})
   @Test
   public void testShouldBeAbleToAlterTheContentsOfAFileUploadInputElement() throws IOException {
@@ -193,7 +194,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertTrue(uploadPath.endsWith(file.getName()));
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, OPERA_MOBILE, MARIONETTE},
+  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
           reason = "Does not yet support file uploads", issues = {4220})
   @Test
   public void testShouldBeAbleToSendKeysToAFileUploadInputElementInAnXhtmlDocument()
@@ -215,7 +216,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertTrue(uploadPath.endsWith(file.getName()));
   }
 
-  @Ignore(value = {IPHONE, ANDROID, OPERA, SAFARI, MARIONETTE},
+  @Ignore(value = {IPHONE, ANDROID, OPERA, SAFARI, MARIONETTE, QTWEBKIT},
           reason = "Does not yet support file uploads", issues = {4220})
   @Test
   public void testShouldBeAbleToUploadTheSameFileTwice() throws IOException {
@@ -287,7 +288,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, MARIONETTE},
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
           reason = "Untested on all other browsers, fails on chrome")
   public void handleFormWithJavascriptAction() {
     String url = appServer.whereIs("form_handling_js_submit.html");

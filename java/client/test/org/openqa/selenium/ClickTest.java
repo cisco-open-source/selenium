@@ -34,15 +34,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 public class ClickTest extends JUnit4TestBase {
 
@@ -113,7 +105,7 @@ public class ClickTest extends JUnit4TestBase {
     driver.switchTo().defaultContent().switchTo().frame("target");
 
     assertTrue("Target did not reload",
-               driver.getPageSource().contains("Hello WebDriver"));
+            driver.getPageSource().contains("Hello WebDriver"));
   }
 
   @JavascriptEnabled
@@ -209,8 +201,8 @@ public class ClickTest extends JUnit4TestBase {
     driver.findElement(By.id("label-for-checkbox-with-label")).click();
 
     assertTrue(
-        "Should be selected",
-        driver.findElement(By.id("checkbox-with-label")).isSelected());
+            "Should be selected",
+            driver.findElement(By.id("checkbox-with-label")).isSelected());
   }
 
   @Test
@@ -270,7 +262,7 @@ public class ClickTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {CHROME, IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
+  @Ignore(value = {CHROME, IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE, QTWEBKIT}, reason
       = "Chrome: element is not clickable, Opera, IE: failed, others: not tested")
   public void testCanClickAnImageMapArea() {
     driver.get(appServer.whereIs("click_tests/google_map.html"));

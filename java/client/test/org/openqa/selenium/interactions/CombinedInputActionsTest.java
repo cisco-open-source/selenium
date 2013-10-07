@@ -47,6 +47,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.getEffectivePlatform;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox;
 import static org.openqa.selenium.testing.TestUtilities.isInternetExplorer;
@@ -55,7 +56,7 @@ import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
 /**
  * Tests combined input actions.
  */
-@Ignore(value = {ANDROID, SAFARI, MARIONETTE},
+@Ignore(value = {ANDROID, SAFARI, MARIONETTE, QTWEBKIT},
     reason = "Safari: not implemented (issue 4136)",
     issues = {4136})
 public class CombinedInputActionsTest extends JUnit4TestBase {

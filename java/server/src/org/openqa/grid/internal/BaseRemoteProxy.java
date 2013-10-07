@@ -494,7 +494,8 @@ public class BaseRemoteProxy implements RemoteProxy {
    * @throws GridException If the node if down or doesn't recognize the /wd/hub/status request.
    */
   public JSONObject getStatus() throws GridException {
-    String url = getRemoteHost().toExternalForm() + "/wd/hub/status";
+    //HE String url = getRemoteHost().toExternalForm() + "/wd/hub/status";
+    String url = getRemoteHost().toExternalForm() + "/status";  
     BasicHttpRequest r = new BasicHttpRequest("GET", url);
     HttpClient client = getHttpClientFactory().getGridHttpClient(statusCheckTimeout, statusCheckTimeout);
     HttpHost host = new HttpHost(getRemoteHost().getHost(), getRemoteHost().getPort());

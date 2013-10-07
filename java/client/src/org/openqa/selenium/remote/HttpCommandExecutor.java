@@ -154,6 +154,7 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         .put(GET_ACTIVE_ELEMENT, post("/session/:sessionId/element/active"))
         .put(FIND_CHILD_ELEMENT, post("/session/:sessionId/element/:id/element"))
         .put(FIND_CHILD_ELEMENTS, post("/session/:sessionId/element/:id/elements"))
+        .put(ELEMENT_SCREENSHOT, get("/session/:sessionId/element/:id/screenshot"))
         .put(CLICK_ELEMENT, post("/session/:sessionId/element/:id/click"))
         .put(CLEAR_ELEMENT, post("/session/:sessionId/element/:id/clear"))
         .put(SUBMIT_ELEMENT, post("/session/:sessionId/element/:id/submit"))

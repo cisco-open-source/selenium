@@ -34,6 +34,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 @RunWith(SeleniumTestRunner.class)
 @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, REMOTE, MARIONETTE},
@@ -41,6 +42,8 @@ import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 public class SessionHandlingTest {
 
   @Test
+  @Ignore(value = {QTWEBKIT},
+    reason = "QtWebkit: doesn't support multiple sessions")
   public void callingQuitMoreThanOnceOnASessionIsANoOp() {
     WebDriver driver = new WebDriverBuilder().get();
 
@@ -55,7 +58,8 @@ public class SessionHandlingTest {
   }
 
   @Test
-  @Ignore(value = {CHROME, PHANTOMJS})
+  @Ignore(value = {CHROME, PHANTOMJS, QTWEBKIT},
+        reason = "QtWebkit delete sessionId from session_manager so can't quit not existing session")
   public void callingQuitAfterClosingTheLastWindowIsANoOp() {
     WebDriver driver = new WebDriverBuilder().get();
 
@@ -70,9 +74,10 @@ public class SessionHandlingTest {
   }
 
   @Test(expected = SessionNotFoundException.class)
-  @Ignore(value = {OPERA, SAFARI}, reason =
+  @Ignore(value = {OPERA, SAFARI, QTWEBKIT}, reason =
       "Opera: throws Opera-specific exception,"
-      + "Safari: throws UnreachableBrowserException")
+      + "Safari: throws UnreachableBrowserException,"
+      + "QtWebkit: doesn't support multiple sessions")
   public void callingAnyOperationAfterQuitShouldThrowAnException() {
     WebDriver driver = new WebDriverBuilder().get();
     driver.quit();
@@ -80,12 +85,13 @@ public class SessionHandlingTest {
   }
 
   @Test(expected = SessionNotFoundException.class)
-  @Ignore(value = {FIREFOX, CHROME, OPERA, PHANTOMJS, SAFARI}, reason =
+  @Ignore(value = {FIREFOX, CHROME, OPERA, PHANTOMJS, SAFARI, QTWEBKIT}, reason =
       "Chrome: throws generic WebDriverException,"
       + "Firefox: can perform an operation after closing the last window,"
       + "Opera: throws Opera-specific exception,"
       + "PhantomJS: throws NoSuchWindowException,"
-      + "Safari: throws NullPointerException")
+      + "Safari: throws NullPointerException,"
+      + "QtWebkit: throws generic WebDriverException")
   public void callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException() {
     WebDriver driver = new WebDriverBuilder().get();
     driver.close();

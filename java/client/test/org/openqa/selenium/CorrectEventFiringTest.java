@@ -49,6 +49,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class CorrectEventFiringTest extends JUnit4TestBase {
 
@@ -110,7 +111,7 @@ public class CorrectEventFiringTest extends JUnit4TestBase {
   // while doing down, up, click
   @JavascriptEnabled
   @Test
-  @Ignore(MARIONETTE)
+  @Ignore(MARIONETTE, QTWEBKIT)
   public void testShouldFireMouseMoveEventWhenClicking() {
     driver.get(pages.javascriptPage);
 
@@ -381,7 +382,7 @@ public class CorrectEventFiringTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {IPHONE, ANDROID, OPERA, SAFARI, OPERA_MOBILE, MARIONETTE},
+  @Ignore(value = {IPHONE, ANDROID, OPERA, SAFARI, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
       reason = "Does not yet support file uploads", issues = { 4220 })
   @Test
   public void testUploadingFileShouldFireOnChangeEvent() throws IOException {

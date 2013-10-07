@@ -25,6 +25,9 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
 
+import org.openqa.selenium.testing.Ignore;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
+
 /**
  * Functional tests for {@link ChromeOptions}.
  */

@@ -40,10 +40,11 @@ require 'rake-tasks/ci'
 
 require 'rake-tasks/gecko_sdks'
 
-$DEBUG = orig_verbose != :default ? true : false
-if (ENV['debug'] == 'true') 
-  $DEBUG = true
-end
+#$DEBUG = orig_verbose != :default ? true : false
+#if (ENV['debug'] == 'true') 
+#  $DEBUG = true
+#end
+$DEBUG = true
 verbose($DEBUG)
 
 def version
@@ -167,6 +168,15 @@ task :test_remote => [
   '//java/client/test/org/openqa/selenium/remote:client-tests:run',
   :test_remote_server
 ]
+task :test_qtwebkit => [
+  '//java/client/test/org/openqa/selenium/qtwebkit:test_qtwebkit:run'
+]
+task :test_wd_native_qt4 => [  '//java/client/test/org/openqa/selenium/qtwebkit/nativetests:nativetests_qt4:run' ]
+task :test_wd_native_qt5 => [  '//java/client/test/org/openqa/selenium/qtwebkit/nativetests:nativetests_qt5:run' ]
+task :test_wd_hybrid_qt4 => [  '//java/client/test/org/openqa/selenium/qtwebkit/hybridtests:hybrid_tests_qt4:run' ]
+task :test_wd_hybrid_qt5 => [  '//java/client/test/org/openqa/selenium/qtwebkit/hybridtests:hybrid_tests_qt5:run' ]
+task :test_wd_quick1 => [  '//java/client/test/org/openqa/selenium/qtwebkit/quick_tests:quick1_tests:run' ]
+task :test_wd_quick2 => [  '//java/client/test/org/openqa/selenium/qtwebkit/quick_tests:quick2_tests:run' ]
 task :test_safari => [ "//java/client/test/org/openqa/selenium/safari:test:run" ]
 task :test_phantomjs => [ "//java/client/test/org/openqa/selenium/phantomjs:test:run" ]
 task :test_support => [

@@ -1,0 +1,50 @@
+java_test(name = "nativetests_qt4",
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit",
+      "webdriver.browserClass" : "QWidget" },
+  ],
+  srcs = ["NativeWebDriverQt4Tests.java"],
+  deps = [
+    ":tests",
+    "//third_party/java/junit",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//third_party/java/jmock",
+    "//third_party/java/junit"
+  ])
+
+java_test(name = "nativetests_qt5",
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit",
+      "webdriver.browserClass" : "QWidget" },
+  ],
+  srcs = ["NativeWebDriverQt5Tests.java"],
+  deps = [
+    ":tests",
+    "//third_party/java/junit",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//third_party/java/jmock",
+    "//third_party/java/junit"
+  ])
+
+java_library(name = "tests",
+  srcs = [
+    "interactions/InteractionTests.java",
+    "*Test.java",
+    "interactions/*.java",
+    "interactions/touch/*.java",
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/remote:common",
+    "//java/client/src/org/openqa/selenium/interactions",
+    "//java/client/src/org/openqa/selenium/internal/seleniumemulation:api",
+    "//java/client/test/org/openqa/selenium/environment",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//java/client/test/org/openqa/selenium/testing:proxy",
+    "//java/client/test/org/openqa/selenium/testing:tests",
+    "//java/client/test/org/openqa/selenium/testing:util",
+    "//java/client/test/org/openqa/selenium/v1:small_tests",
+    "//third_party/java/commons-io",
+    "//third_party/java/easymock",
+    "//third_party/java/jmock",
+    "//third_party/java/junit",
+  ])

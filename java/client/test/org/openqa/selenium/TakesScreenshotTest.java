@@ -25,12 +25,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -130,7 +125,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {SAFARI, CHROME},
+  @Ignore(value = {SAFARI, CHROME, QTWEBKIT},
           reason = " SAFARI: take only visible viewport."
                    + " CHROME: (v1) ok, (v2) take only visible viewport."
   )
@@ -157,7 +152,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {SAFARI, CHROME},
+  @Ignore(value = {SAFARI, CHROME, QTWEBKIT},
           reason = " SAFARI: take only visible viewport."
                    + " CHROME: (v1) ok, (v2) take only visible viewport."
   )
@@ -184,7 +179,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {IE, FIREFOX, SAFARI},
+  @Ignore(value = {IE, FIREFOX, SAFARI, QTWEBKIT},
           reason = "IE9: captured image is cat at driver level. it's not yet supported."
                    + " FF: unable to grab screenshot with too long size (NS_ERROR_FAILURE)."
                    + " SAFARI: take only visible viewport."
@@ -213,7 +208,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {IE, FIREFOX, SAFARI, CHROME},
+  @Ignore(value = {IE, FIREFOX, SAFARI, CHROME, QTWEBKIT},
           reason = "IE: captured image is cat at driver level. it's not yet supported."
                    + " FF: unable to grab screenshot with too long size (NS_ERROR_FAILURE)."
                    + " SAFARI: take only visible viewport."
@@ -344,7 +339,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {IE, FIREFOX, SAFARI, CHROME},
+  @Ignore(value = {IE, FIREFOX, SAFARI, CHROME, QTWEBKIT},
           reason = "IE9: unable to capture such image due Image initialization failure"
                    + " FF: unable to grab screenshot with too long size (NS_ERROR_FAILURE)."
                    + " SAFARI: take only visible viewport."

@@ -33,7 +33,7 @@ public class AppCacheTest extends JUnit4TestBase {
 
   @Test
   public void testAppCacheStatus() {
-    driver.get(pages.html5Page);
+    driver.get("https://www.google.com");
     driver.manage().timeouts().implicitlyWait(2000, MILLISECONDS);
 
     AppCacheStatus status = ((ApplicationCache) driver).getStatus();
@@ -47,7 +47,7 @@ public class AppCacheTest extends JUnit4TestBase {
     AppCacheStatus new_status = ((ApplicationCache) driver).getStatus();
     String new_title = driver.getTitle();
     ((BrowserConnection) driver).setOnline(true);
-    
+
     assertEquals("The offline page should report uncached status.",
         AppCacheStatus.UNCACHED, new_status);
     assertEquals("Should be directed to the offline page", "Offline", new_title);
@@ -57,7 +57,6 @@ public class AppCacheTest extends JUnit4TestBase {
   public void testBrowserLoadsFromCacheWhenOffline() {
     driver.get(pages.html5Page);
     driver.get(pages.formPage);
-
     ((BrowserConnection) driver).setOnline(false);
     driver.get(pages.html5Page);
     String title = driver.getTitle();

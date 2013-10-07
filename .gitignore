@@ -33,6 +33,9 @@ javascript/deps.js
 .idea/vcs.xml
 .idea/misc.xml
 .idea/workspace.xml
+.idea/projectCodeStyle.xml
+*.idea*
+*.iml
 .idea/dictionaries/
 .idea/scopes/
 out
@@ -87,3 +90,6 @@ ipch/
 /phantomjsdriver.log
 .tags
 .ruby-version
+
+*.orig
+*.orig

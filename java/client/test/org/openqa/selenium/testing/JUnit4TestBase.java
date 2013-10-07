@@ -17,6 +17,7 @@ limitations under the License.
 
 package org.openqa.selenium.testing;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -26,13 +27,14 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.Pages;
+import org.openqa.selenium.environment.Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
-import org.openqa.selenium.environment.TestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -45,7 +47,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
 
   private static final Logger logger = Logger.getLogger(JUnit4TestBase.class.getName());
 
-  protected TestEnvironment environment;
+  protected InProcessTestEnvironment environment;
   protected AppServer appServer;
   protected Pages pages;
   private static ThreadLocal<WebDriver> storedDriver = new ThreadLocal<WebDriver>();
@@ -56,7 +58,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     environment = GlobalTestEnvironment.get(InProcessTestEnvironment.class);
     appServer = environment.getAppServer();
 
-    pages = new Pages(appServer);
+    pages = environment.getTestContent();
 
     String hostName = environment.getAppServer().getHostName();
     String alternateHostName = environment.getAppServer().getAlternateHostName();
@@ -78,13 +80,57 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     protected void starting(Description description) {
       super.starting(description);
       logger.info(">>> Starting " + description);
+
+        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addCommand(commands.get(i));
+        }
     }
 
     @Override
     protected void finished(Description description) {
       super.finished(description);
       logger.info("<<< Finished " + description);
+
+        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
+        }
+
+        if(description.toString().contains("org.openqa.selenium.html5"))
+            logger.info("####[JUnit4TestBase] Finished and have commands: " + commands.size());
+
+        QtWebDriverExecutor.clearExecutedList();
     }
+
+    @Override
+    protected void succeeded(org.junit.runner.Description description)
+    {
+        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+        for (int i=0; i<commands.size(); i++)
+        {
+            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
+        }
+
+        if(description.toString().contains("org.openqa.selenium.html5"))
+            logger.info("####[JUnit4TestBase] Succeded and have commands: " + commands.size());
+
+        QtWebDriverExecutor.clearExecutedList();
+    }
+
+      @Override
+      protected void failed(java.lang.Throwable e, org.junit.runner.Description description)
+      {
+          ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
+          for (int i=0; i<commands.size(); i++)
+          {
+              ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+          }
+
+          QtWebDriverExecutor.clearExecutedList();
+      }
   };
   
   public WebDriver getWrappedDriver() {
@@ -95,7 +141,15 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     WebDriver driver = storedDriver.get();
 
     if (driver == null) {
-      driver = new WebDriverBuilder().get();
+        DesiredCapabilities caps = new DesiredCapabilities();
+        WebDriverBuilder builder = new WebDriverBuilder();
+
+        String startClass = System.getProperty("webdriver.browserClass");
+        if (null != startClass) {
+            caps.setCapability("browserClass", startClass);
+        }
+        builder.setDesiredCapabilities(caps);
+        driver = builder.get();
       storedDriver.set(driver);
     }
     return storedDriver.get();

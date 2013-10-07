@@ -40,6 +40,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -92,7 +93,8 @@ public class AlertsTest extends JUnit4TestBase {
     assertEquals("Testing Alerts", driver.getTitle());
   }
 
-  @Ignore(CHROME)
+    //QtWebkit doesn't perform wait for loading
+  @Ignore({CHROME, QTWEBKIT})
   @JavascriptEnabled
   @NeedsLocalEnvironment(reason = "Carefully timing based")
   @Test
@@ -255,7 +257,7 @@ public class AlertsTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME}, issues = {2764})
+  @Ignore(value = {CHROME, QTWEBKIT}, issues = {2764})
   @Test
   public void testSwitchingToMissingAlertInAClosedWindowThrows() throws Exception {
     String mainWindow = driver.getWindowHandle();
@@ -331,9 +333,10 @@ public class AlertsTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(driver, By.tagName("p"), "Page with onload event handler"));
   }
 
+  // Andrii Moroz : test stuck due to synchronous downloading
   @JavascriptEnabled
   @Test
-  @Ignore(CHROME)
+  @Ignore({CHROME, QTWEBKIT})
   public void testShouldHandleAlertOnPageLoadUsingGet() {
     driver.get(appServer.whereIs("pageWithOnLoad.html"));
 
@@ -345,8 +348,9 @@ public class AlertsTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(driver, By.tagName("p"), "Page with onload event handler"));
   }
 
+  // Andrii Moroz : new windows doesn't supported
   @JavascriptEnabled
-  @Ignore(value = {CHROME, FIREFOX, IE}, reason = "IE: fails in versions 6 and 7")
+  @Ignore(value = {CHROME, FIREFOX, IE, QTWEBKIT}, reason = "IE: fails in versions 6 and 7")
   @Test
   public void testShouldNotHandleAlertInAnotherWindow() {
     String mainWindow = driver.getWindowHandle();
@@ -374,8 +378,9 @@ public class AlertsTest extends JUnit4TestBase {
     }
   }
 
+  // Andrii Moroz : stuck on synchronous loading
   @JavascriptEnabled
-  @Ignore(value = {CHROME})
+  @Ignore(value = {CHROME, QTWEBKIT})
   @Test
   public void testShouldHandleAlertOnPageUnload() {
     driver.findElement(By.id("open-page-with-onunload-alert")).click();
@@ -389,8 +394,9 @@ public class AlertsTest extends JUnit4TestBase {
     waitFor(elementTextToEqual(driver, By.id("open-page-with-onunload-alert"), "open new page"));
   }
 
+  // Andrii Moroz : new windows not supported
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, CHROME}, reason = "On Android, alerts do not pop up" +
+  @Ignore(value = {ANDROID, CHROME, QTWEBKIT}, reason = "On Android, alerts do not pop up" +
       " when a window is closed.")
   @Test
   public void testShouldHandleAlertOnWindowClose() {
@@ -419,8 +425,9 @@ public class AlertsTest extends JUnit4TestBase {
     }
   }
 
+  // Andrii Moroz : our webdriver returns title even alert present
   @JavascriptEnabled
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA})
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, QTWEBKIT})
   @Test
   public void testIncludesAlertTextInUnhandledAlertException() {
     driver.findElement(By.id("alert")).click();
@@ -436,6 +443,9 @@ public class AlertsTest extends JUnit4TestBase {
 
   @NoDriverAfterTest
   @Test
+  @Ignore( value = {QTWEBKIT},
+           reason = "QtWebKit bug https://bugreports.qt-project.org/browse/QTBUG-33250",
+            issues = 746)
   public void testCanQuitWhenAnAlertIsPresent() {
     driver.get(pages.alertsPage);
     driver.findElement(By.id("alert")).click();

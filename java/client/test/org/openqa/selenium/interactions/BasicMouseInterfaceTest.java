@@ -51,6 +51,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox30;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox35;
@@ -253,7 +254,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, CHROME, IE, IPHONE, FIREFOX, OPERA, HTMLUNIT, OPERA_MOBILE})
+  @Ignore({ANDROID, CHROME, IE, IPHONE, FIREFOX, OPERA, HTMLUNIT, OPERA_MOBILE, QTWEBKIT})
   @Test
   public void testMousePositionIsNotPreservedInActionsChain() {
     driver.get(pages.javascriptPage);
@@ -271,7 +272,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     }
   }
 
-  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, REMOTE, OPERA},
+  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, REMOTE, OPERA, QTWEBKIT},
           reason = "Behaviour not finalized yet regarding linked images.")
   @Test
   public void testMovingIntoAnImageEnclosedInALink() {
@@ -314,7 +315,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     return (int) Double.parseDouble(sizeRect.get(fieldName).toString());
   }
 
-  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME},
+  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME, QTWEBKIT},
           reason = "Not implemented yet.")
   @Test
   public void testMovingMousePastViewPort() {
@@ -350,7 +351,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     waitFor(elementTextToContain(resultArea, "parent matches"));
   }
 
-  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME, OPERA, OPERA_MOBILE},
+  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME, OPERA, OPERA_MOBILE, QTWEBKIT},
           reason = "Not implemented yet.")
   @Test
   public void testMovingMouseBackAndForthPastViewPort() {

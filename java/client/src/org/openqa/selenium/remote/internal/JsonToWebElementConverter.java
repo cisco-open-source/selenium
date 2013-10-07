@@ -33,7 +33,7 @@ import java.util.Map;
  * and Maps to catch nested references. All other values pass through the converter unchanged.
  */
 public class JsonToWebElementConverter implements Function<Object, Object> {
-  private final RemoteWebDriver driver;
+  protected final RemoteWebDriver driver;
 
   public JsonToWebElementConverter(RemoteWebDriver driver) {
     this.driver = driver;

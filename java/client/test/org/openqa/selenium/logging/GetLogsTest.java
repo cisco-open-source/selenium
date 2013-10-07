@@ -29,6 +29,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import org.junit.After;
 import org.junit.Test;
@@ -98,6 +99,7 @@ public class GetLogsTest extends JUnit4TestBase {
 
   @Test
   @NeedsLocalEnvironment
+  @Ignore(QTWEBKIT)
   public void turningOffLogShouldMeanNoLogMessages() {
     assumeFalse(TestUtilities.isOldChromedriver(driver));  // Only chromedriver2 supports logging.
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();

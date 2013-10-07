@@ -48,7 +48,7 @@ public class WebDriverBuilder implements Supplier<WebDriver> {
     Capabilities desiredCaps = new DesiredCapabilities(standardCapabilities, 
         desiredCapabilities);
 
-    List<Supplier<WebDriver>> suppliers = getSuppliers(desiredCaps, 
+    List<Supplier<WebDriver>> suppliers = getSuppliers(desiredCaps,
         requiredCapabilities);
 
     for (Supplier<WebDriver> supplier : suppliers) {
@@ -84,6 +84,7 @@ public class WebDriverBuilder implements Supplier<WebDriver> {
       Capabilities requiredCaps) {
     List<Supplier<WebDriver>> suppliers = Lists.newArrayList();
     suppliers.add(new SauceBackedDriverSupplier(desiredCaps));
+    suppliers.add(new QtWebKitDriverSupplier(desiredCaps, requiredCaps));
     suppliers.add(new RemoteSupplier(desiredCaps, requiredCaps));
     suppliers.add(new OperaDriverSupplier(desiredCaps));
     suppliers.add(new PhantomJSDriverSupplier(desiredCaps));

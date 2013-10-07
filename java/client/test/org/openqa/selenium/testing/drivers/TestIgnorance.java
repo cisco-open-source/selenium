@@ -34,19 +34,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.openqa.selenium.Platform.LINUX;
 import static org.openqa.selenium.Platform.WINDOWS;
-import static org.openqa.selenium.testing.Ignore.Driver.ALL;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
-import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 import static org.openqa.selenium.testing.drivers.Browser.android;
 import static org.openqa.selenium.testing.drivers.Browser.chrome;
 import static org.openqa.selenium.testing.drivers.Browser.htmlunit;
@@ -213,6 +201,10 @@ public class TestIgnorance {
       case safari:
         comparator.addDriver(SAFARI);
         break;
+
+      case qtwebkit:
+          comparator.addDriver(QTWEBKIT);
+          break;
 
       default:
         throw new RuntimeException("Cannot determine which ignore to add ignores rules for");
