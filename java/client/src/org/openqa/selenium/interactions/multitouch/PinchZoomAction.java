@@ -1,7 +1,7 @@
 package org.openqa.selenium.interactions.multitouch;
 
-import org.openqa.selenium.MultiTouchScreen;
 import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.MultiTouchScreen;
 import org.openqa.selenium.interactions.internal.MultiTouchAction;
 import org.openqa.selenium.internal.Locatable;
 

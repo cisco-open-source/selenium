@@ -1,6 +1,6 @@
 package org.openqa.selenium.remote;
 
-import org.openqa.selenium.MultiTouchScreen;
+import org.openqa.selenium.interactions.MultiTouchScreen;
 import org.openqa.selenium.interactions.internal.Coordinates;
 import org.openqa.selenium.remote.ExecuteMethod;
 import org.openqa.selenium.remote.CoordinatesUtils;

@@ -2,6 +2,10 @@ package org.openqa.selenium.interactions.multitouch;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.HasInputDevices;
+import org.openqa.selenium.interactions.HasMultiTouchScreen;
+import org.openqa.selenium.interactions.MultiTouchScreen;
+import org.openqa.selenium.interactions.Keyboard;
 import org.openqa.selenium.internal.Locatable;
 
 /**

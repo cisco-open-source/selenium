@@ -1,6 +1,6 @@
 package org.openqa.selenium.interactions.internal;
 
-import org.openqa.selenium.MultiTouchScreen;
+import org.openqa.selenium.interactions.MultiTouchScreen;
 import org.openqa.selenium.interactions.internal.DisplayAction;
 import org.openqa.selenium.internal.Locatable;
 
