@@ -47,7 +47,7 @@ end
 verbose($DEBUG)
 
 def version
-  "2.33.0"
+  "2.35.0"
 end
 ide_version = "1.10.0"
 
@@ -456,6 +456,30 @@ GeckoSDKs.new do |sdks|
   sdks.add 'third_party/gecko-21/win32',
            'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/21.0/sdk/xulrunner-21.0.en-US.win32.sdk.zip',
            '246304f40c6b970b7a0c53305452630d'
+
+  sdks.add 'third_party/gecko-22/linux',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/22.0/sdk/xulrunner-22.0.en-US.linux-i686.sdk.tar.bz2',
+           '39fde24e395bf49d2e74d31b60c7e514'
+
+  sdks.add 'third_party/gecko-22/linux64',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/22.0/sdk/xulrunner-22.0.en-US.linux-x86_64.sdk.tar.bz2',
+           'a8d41f23fad4fa6a2d534b10daf9ab97'
+
+  sdks.add 'third_party/gecko-22/win32',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/22.0/sdk/xulrunner-22.0.en-US.win32.sdk.zip',
+           '2f9cd784be008aa2b18231a365d6b59a'
+
+  sdks.add 'third_party/gecko-23/linux',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/23.0/sdk/xulrunner-23.0.en-US.linux-i686.sdk.tar.bz2',
+           '19cf2596c01fe981f72a5726104e4f06'
+
+  sdks.add 'third_party/gecko-23/linux64',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/23.0/sdk/xulrunner-23.0.en-US.linux-x86_64.sdk.tar.bz2',
+           '17dec0f03d6c3c793a6d532dabfd0124'
+
+  sdks.add 'third_party/gecko-23/win32',
+           'http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/23.0/sdk/xulrunner-23.0.en-US.win32.sdk.zip',
+           'f5e5945ee9a541fca65f3f9355160104'
 end
 
 task :'selenium-server_zip' do
@@ -524,6 +548,8 @@ task :py_prep_for_install_release => ["//javascript/firefox-driver:webdriver", :
         cp xpi_zip_build , firefox_py_home, :verbose => true
     end
 end
+
+task :py_docs => "//py:docs"
 
 task :py_install => :py_prep_for_install_release do
     sh "python setup.py install"
@@ -612,6 +638,7 @@ desc "Generate a single file with WebDriverJS' public API"
 task :webdriverjs => [ "//javascript/webdriver:webdriver" ]
 
 task :release => [
+    :clean,
     '//java/server/src/org/openqa/selenium/server:server:zip',
     '//java/server/src/org/openqa/grid/selenium:selenium:zip',
     '//java/client/src/org/openqa/selenium:client-combined:zip',
@@ -713,10 +740,15 @@ namespace :safari do
       "//javascript/webdriver:test_safari:run"
   ]
 
+  desc "Run Java tests for Safari"
+  task :testjava => [
+      "//java/client/test/org/openqa/selenium/safari:test:run"
+  ]
+
   desc "Run all SafariDriver tests"
   task :test => [
       "safari:testjs",
-      "//java/client/test/org/openqa/selenium/safari:test:run"
+      "safari:testjava"
   ]
 
   desc "Re-install the SafariDriver extension; OSX only"

@@ -19,19 +19,21 @@ package org.openqa.selenium;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 
 import org.junit.Test;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
+import org.openqa.selenium.testing.TestUtilities;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,14 +58,14 @@ public class I18nTest extends JUnit4TestBase {
    */
   private static final String tokyo = "\u6771\u4EAC";
 
-  @Ignore({IPHONE})
+  @Ignore({IPHONE, MARIONETTE})
   @Test
   public void testCn() {
     driver.get(pages.chinesePage);
     driver.findElement(By.linkText(Messages.getString("I18nTest.link1"))).click();
   }
 
-  @Ignore(ANDROID)
+  @Ignore({ANDROID, MARIONETTE})
   @Test
   public void testEnteringHebrewTextFromLeftToRight() {
     driver.get(pages.chinesePage);
@@ -74,7 +76,7 @@ public class I18nTest extends JUnit4TestBase {
     assertEquals(shalom, input.getAttribute("value"));
   }
 
-  @Ignore(ANDROID)
+  @Ignore({ANDROID, MARIONETTE})
   @Test
   public void testEnteringHebrewTextFromRightToLeft() {
     driver.get(pages.chinesePage);
@@ -86,6 +88,7 @@ public class I18nTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(MARIONETTE)
   public void testShouldBeAbleToReturnTheTextInAPage() {
     String url = GlobalTestEnvironment.get()
         .getAppServer()
@@ -103,22 +106,10 @@ public class I18nTest extends JUnit4TestBase {
           + "Firefox/Linux at the moment.")
   @Test
   public void testShouldBeAbleToActivateIMEEngine() throws InterruptedException {
-    if (!Platform.getCurrent().is(Platform.LINUX)) {
-      System.out.println("Skipping test because IME is supported on Linux only.");
-      return;
-    }
-
-    if (!(driver instanceof HasCapabilities)) {
-      System.out.println("Cannot query driver for native events capabilities -"
-          + " no point in testing IME input.");
-      return;
-    }
-
-    Capabilities capabilities = ((HasCapabilities) driver).getCapabilities();
-    if (!(Boolean) capabilities.getCapability(CapabilityType.HAS_NATIVE_EVENTS)) {
-      System.out.println("Native events are disabled, IME will not work.");
-      return;
-    }
+    assumeTrue("IME is supported on Linux only.",
+               TestUtilities.getEffectivePlatform().is(Platform.LINUX));
+    assumeTrue("Native events are disabled, IME will not work.",
+               TestUtilities.isNativeEventsEnabled(driver));
 
     driver.get(pages.formPage);
 
@@ -165,22 +156,10 @@ public class I18nTest extends JUnit4TestBase {
           + "Firefox/Linux at the moment.")
   @Test
   public void testShouldBeAbleToInputJapanese() {
-    if (!Platform.getCurrent().is(Platform.LINUX)) {
-      System.out.println("Skipping test because IME is supported on Linux only.");
-      return;
-    }
-
-    if (!(driver instanceof HasCapabilities)) {
-      System.out.println("Cannot query driver for native events capabilities -"
-          + " no point in testing IME input.");
-      return;
-    }
-
-    Capabilities capabilities = ((HasCapabilities) driver).getCapabilities();
-    if (!(Boolean) capabilities.getCapability(CapabilityType.HAS_NATIVE_EVENTS)) {
-      System.out.println("Native events are disabled, IME will not work.");
-      return;
-    }
+    assumeTrue("IME is supported on Linux only.",
+               TestUtilities.getEffectivePlatform().is(Platform.LINUX));
+    assumeTrue("Native events are disabled, IME will not work.",
+               TestUtilities.isNativeEventsEnabled(driver));
 
     driver.get(pages.formPage);
 
