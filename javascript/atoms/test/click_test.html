@@ -388,14 +388,19 @@
     }
 
     function testClickShouldScrollWhenElementNotInView() {
-      if (bot.userAgent.MOBILE || goog.userAgent.product.SAFARI) {
+      if (bot.userAgent.MOBILE) {
         return;
       }
       var target = findElement({id: 'targetNotInView'});
       var oldPos = goog.style.getClientPosition(target);
       bot.action.click(target);
-      var newPos = goog.style.getClientPosition(target);
-      assertNotEquals(oldPos.y, newPos.y);
+      // In Safari 6, the affects of window.scrollTo are applied
+      // applied asynchronously, so we cannot verify scrolling here.
+      if (!goog.userAgent.product.SAFARI ||
+          !goog.userAgent.isVersionOrHigher(6)) {
+        var newPos = goog.style.getClientPosition(target);
+        assertNotEquals(oldPos.y, newPos.y);
+      }
       window.scrollTo(0, 0);
     }
   </script>

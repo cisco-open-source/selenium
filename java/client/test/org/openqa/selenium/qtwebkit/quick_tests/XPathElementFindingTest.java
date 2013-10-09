@@ -43,6 +43,7 @@ public class XPathElementFindingTest extends JUnit4TestBase {
     public void testShouldFindSingleElementByXPathAndId() {
         WebElement element = driver.findElement(By.xpath("//TextEdit[@id='workingArea']"));
         assertThat(element.getText(), equalTo("Example text"));
+        assertThat(element.getAttribute("id"), equalTo("workingArea"));
     }
 
     @Test

@@ -1,9 +1,23 @@
-java_test(name = "nativetests",
+java_test(name = "nativetests_qt4",
   sysproperties = [
     { "selenium.browser" : "qtwebkit",
       "webdriver.browserClass" : "QWidget" },
   ],
-  srcs = ["NativeWebDriverTests.java"],
+  srcs = ["NativeWebDriverQt4Tests.java"],
+  deps = [
+    ":tests",
+    "//third_party/java/junit",
+    "//java/client/test/org/openqa/selenium/testing:junit_4",
+    "//third_party/java/jmock",
+    "//third_party/java/junit"
+  ])
+
+java_test(name = "nativetests_qt5",
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit",
+      "webdriver.browserClass" : "QWidget" },
+  ],
+  srcs = ["NativeWebDriverQt5Tests.java"],
   deps = [
     ":tests",
     "//third_party/java/junit",

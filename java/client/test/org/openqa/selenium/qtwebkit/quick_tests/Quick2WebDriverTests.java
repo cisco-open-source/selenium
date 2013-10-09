@@ -45,7 +45,7 @@ import java.util.Map;
                         InteractionTests.class,
                         ExecutingJavascriptTest.class,
                         VideoTest.class,
-						TouchTests.class,
+                        TouchTests.class,
                     })
 public class Quick2WebDriverTests {
     @BeforeClass

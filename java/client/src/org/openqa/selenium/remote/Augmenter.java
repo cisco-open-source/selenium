@@ -23,6 +23,7 @@ import static org.openqa.selenium.remote.CapabilityType.SUPPORTS_FINDING_BY_CSS;
 import static org.openqa.selenium.remote.CapabilityType.SUPPORTS_LOCATION_CONTEXT;
 import static org.openqa.selenium.remote.CapabilityType.SUPPORTS_SQL_DATABASE;
 import static org.openqa.selenium.remote.CapabilityType.SUPPORTS_WEB_STORAGE;
+import static org.openqa.selenium.remote.CapabilityType.TAKES_ELEMENT_SCREENSHOT;
 import static org.openqa.selenium.remote.CapabilityType.TAKES_SCREENSHOT;
 
 import com.google.common.base.Throwables;
@@ -73,6 +74,7 @@ public class Augmenter {
     addDriverAugmentation(ROTATABLE, new AddRotatable());
 
     addElementAugmentation(SUPPORTS_FINDING_BY_CSS, new AddFindsChildByCss());
+    addElementAugmentation(TAKES_ELEMENT_SCREENSHOT, new AddTakesElementScreenshot());
   }
 
   /**

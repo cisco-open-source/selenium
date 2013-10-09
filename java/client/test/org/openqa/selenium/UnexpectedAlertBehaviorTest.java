@@ -28,6 +28,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
@@ -46,7 +47,7 @@ import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 @NeedsLocalEnvironment(reason = "Requires local browser launching environment")
 //Not supported in chromedriver, so not supported in qtwebkit
-@Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, QTWEBKIT},
+@Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
         issues = {3862})
 public class UnexpectedAlertBehaviorTest extends JUnit4TestBase {
 

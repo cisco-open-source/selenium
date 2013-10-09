@@ -28,10 +28,12 @@ import org.openqa.selenium.html5.BrowserConnection;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.SessionStorage;
 import org.openqa.selenium.html5.WebStorage;
-import org.openqa.selenium.remote.CommandExecutor;
-import org.openqa.selenium.remote.DriverCommand;
-import org.openqa.selenium.remote.RemoteTouchScreen;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.interactions.HasTouchScreen;
+import org.openqa.selenium.interactions.HasMultiTouchScreen;
+import org.openqa.selenium.interactions.TouchScreen;
+import org.openqa.selenium.interactions.MultiTouchScreen;
+import org.openqa.selenium.remote.*;
+import org.openqa.selenium.remote.RemoteMultiTouchScreen;
 import org.openqa.selenium.remote.html5.RemoteLocalStorage;
 import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
@@ -44,11 +46,12 @@ import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 public class QtWebKitDriver extends RemoteWebDriver
 
     implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache,
-               BrowserConnection {
+               BrowserConnection, HasMultiTouchScreen {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
     private TouchScreen touchScreen;
+    private MultiTouchScreen multiTouchScreen;
 
     public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities,
                           Capabilities requiredCapabilities) {
@@ -56,6 +59,7 @@ public class QtWebKitDriver extends RemoteWebDriver
         localStorage = new RemoteLocalStorage(getExecuteMethod());
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
         touchScreen = new RemoteTouchScreen(getExecuteMethod());
+        multiTouchScreen = new RemoteMultiTouchScreen(getExecuteMethod());
         setElementConverter(new QtWebKitJsonToWebElementConverter(this));
     }
 
@@ -124,6 +128,11 @@ public class QtWebKitDriver extends RemoteWebDriver
     @Override
     public void setOnline(boolean online) throws WebDriverException {
         execute(DriverCommand.SET_BROWSER_ONLINE, ImmutableMap.of("state", online));
+    }
+	
+	@Override
+    public MultiTouchScreen getMultiTouch() {
+        return multiTouchScreen;
     }
 
 }

@@ -18,8 +18,8 @@ package org.openqa.selenium.interactions;
 
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.openqa.selenium.testing.Ignore.Driver.*;
-import static org.openqa.selenium.testing.TestUtilities.assumeFalse;
 
 import static org.hamcrest.Matchers.is;
 
@@ -39,7 +39,7 @@ import org.openqa.selenium.testing.drivers.Browser;
  * Tests interaction through the advanced gestures API of keyboard handling.
  * 
  */
-@Ignore(value = {SAFARI},
+@Ignore(value = {SAFARI, MARIONETTE},
     reason = "Safari: not implemented (issue 4136)",
     issues = {4136})
 public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
@@ -147,11 +147,10 @@ public class BasicKeyboardInterfaceTest extends JUnit4TestBase {
   @Ignore({ANDROID, IPHONE})
   @Test
   public void testSendingKeysToActiveElement() {
-    if (TestUtilities.isFirefox9(driver)) {
-      // This test fails due to a bug in Firefox 9. For more details, see:
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=696020
-      return;
-    }
+    assumeFalse("This test fails due to a bug in Firefox 9. For more details, see: " +
+                "https://bugzilla.mozilla.org/show_bug.cgi?id=696020",
+                TestUtilities.isFirefox9(driver));
+
     driver.get(pages.bodyTypingPage);
 
     Action someKeys = getBuilder(driver).sendKeys("ab").build();
