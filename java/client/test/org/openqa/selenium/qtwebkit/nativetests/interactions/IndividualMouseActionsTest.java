@@ -16,29 +16,33 @@ limitations under the License.
 
 package org.openqa.selenium.qtwebkit.nativetests.interactions;
 
-import org.jmock.Expectations;
-import org.junit.Before;
-import org.junit.Test;
-import org.openqa.selenium.Mouse;
+import org.jmock.integration.junit4.JUnitRuleMockery;
+import org.junit.Rule;
 import org.openqa.selenium.StubRenderedWebElement;
 import org.openqa.selenium.interactions.*;
 import org.openqa.selenium.interactions.internal.Coordinates;
 import org.openqa.selenium.internal.Locatable;
-import org.openqa.selenium.testing.MockTestBase;
+
+import org.jmock.Expectations;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit test for all simple keyboard actions.
  * 
  */
-public class IndividualMouseActionsTest extends MockTestBase {
+public class IndividualMouseActionsTest {
+
+  @Rule public JUnitRuleMockery mockery = new JUnitRuleMockery();
+  
   private Mouse dummyMouse;
   private Locatable locatableElement;
   private Coordinates dummyCoordinates;
 
   @Before
   public void setUp() {
-    dummyMouse = mock(Mouse.class);
-    dummyCoordinates = mock(Coordinates.class);
+    dummyMouse = mockery.mock(Mouse.class);
+    dummyCoordinates = mockery.mock(Coordinates.class);
 
     locatableElement = new StubRenderedWebElement() {
       @Override
@@ -50,9 +54,9 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseClickAndHoldAction() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates);
-      one(dummyMouse).mouseDown(dummyCoordinates);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates);
+      oneOf(dummyMouse).mouseDown(dummyCoordinates);
     }});
 
     ClickAndHoldAction action = new ClickAndHoldAction(dummyMouse, locatableElement);
@@ -61,8 +65,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseClickAndHoldActionOnCurrentLocation() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseDown(null);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseDown(null);
     }});
 
     ClickAndHoldAction action = new ClickAndHoldAction(dummyMouse, null);
@@ -71,9 +75,9 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseReleaseAction() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates);
-      one(dummyMouse).mouseUp(dummyCoordinates);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates);
+      oneOf(dummyMouse).mouseUp(dummyCoordinates);
     }});
 
     ButtonReleaseAction action = new ButtonReleaseAction(dummyMouse, locatableElement);
@@ -82,8 +86,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseReleaseActionOnCurrentLocation() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseUp(null);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseUp(null);
     }});
 
     ButtonReleaseAction action = new ButtonReleaseAction(dummyMouse, null);
@@ -92,9 +96,9 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseClickAction() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates);
-      one(dummyMouse).click(dummyCoordinates);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates);
+      oneOf(dummyMouse).click(dummyCoordinates);
     }});
 
     ClickAction action = new ClickAction(dummyMouse, locatableElement);
@@ -103,8 +107,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseClickActionOnCurrentLocation() {
-    checking(new Expectations() {{
-      one(dummyMouse).click(null);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).click(null);
     }});
 
     ClickAction action = new ClickAction(dummyMouse, null);
@@ -113,9 +117,9 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseDoubleClickAction() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates);
-      one(dummyMouse).doubleClick(dummyCoordinates);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates);
+      oneOf(dummyMouse).doubleClick(dummyCoordinates);
     }});
 
     DoubleClickAction action = new DoubleClickAction(dummyMouse, locatableElement);
@@ -124,8 +128,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseDoubleClickActionOnCurrentLocation() {
-    checking(new Expectations() {{
-      one(dummyMouse).doubleClick(null);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).doubleClick(null);
     }});
 
     DoubleClickAction action = new DoubleClickAction(dummyMouse, null);
@@ -134,8 +138,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseMoveAction() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates);
     }});
 
     MoveMouseAction action = new MoveMouseAction(dummyMouse, locatableElement);
@@ -144,8 +148,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseMoveActionToCoordinatesInElement() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates, 20, 20);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates, 20, 20);
     }});
 
     MoveToOffsetAction action = new MoveToOffsetAction(dummyMouse, locatableElement, 20, 20);
@@ -154,9 +158,9 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseContextClickAction() {
-    checking(new Expectations() {{
-      one(dummyMouse).mouseMove(dummyCoordinates);
-      one(dummyMouse).contextClick(dummyCoordinates);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).mouseMove(dummyCoordinates);
+      oneOf(dummyMouse).contextClick(dummyCoordinates);
     }});
 
     ContextClickAction action = new ContextClickAction(dummyMouse, locatableElement);
@@ -165,8 +169,8 @@ public class IndividualMouseActionsTest extends MockTestBase {
 
   @Test
   public void mouseContextClickActionOnCurrentLocation() {
-    checking(new Expectations() {{
-      one(dummyMouse).contextClick(null);
+    mockery.checking(new Expectations() {{
+      oneOf(dummyMouse).contextClick(null);
     }});
 
     ContextClickAction action = new ContextClickAction(dummyMouse, null);
