@@ -363,8 +363,7 @@ public class TestSession {
   private HttpRequest prepareProxyRequest(HttpServletRequest request
 /*, ForwardConfiguration config*/)
       throws IOException {
-    //HE URL remoteURL = slot.getRemoteURL();
-    URL remoteURL = slot.getProxy().getRemoteHost();
+    URL remoteURL = slot.getRemoteURL();
     String pathSpec = request.getServletPath() + request.getContextPath();
     String path = request.getRequestURI();
     if (!path.startsWith(pathSpec)) {
@@ -481,10 +480,9 @@ public class TestSession {
       // the location needs to point to the hub that will proxy
       // everything.
       if (name.equalsIgnoreCase("Location")) {
-        //HE URL returnedLocation = new URL(value);
+        URL returnedLocation = new URL(value);
         String driverPath = remoteURL.getPath();
-        //HE String wrongPath = returnedLocation.getPath();
-        String wrongPath = value;
+        String wrongPath = returnedLocation.getPath();
         String correctPath = wrongPath.replace(driverPath, "");
         Hub hub = slot.getProxy().getRegistry().getHub();
         String location = "http://" + hub.getHost() + ":" + hub.getPort() + pathSpec + correctPath;
@@ -521,9 +519,7 @@ public class TestSession {
    * @return true is the remote replied successfully to the request.
    */
   public boolean sendDeleteSessionRequest() {
-    //HE	URL remoteURL = slot.getRemoteURL();
-  	URL remoteURL = slot.getProxy().getRemoteHost(); 
-
+    URL remoteURL = slot.getRemoteURL();
 
     HttpRequest request;
     switch (slot.getProtocol()) {
