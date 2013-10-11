@@ -4,6 +4,8 @@ import org.junit.AfterClass;
 import org.openqa.selenium.*;
 import org.openqa.selenium.qtwebkit.Player;
 import org.openqa.selenium.qtwebkit.RemotePlayer;
+import org.openqa.selenium.testing.Ignore;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import org.junit.Test;
@@ -133,6 +135,9 @@ public class VideoTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(value = {QTWEBKIT},
+          reason = "Qt bug https://bugreports.qt-project.org/browse/QTBUG-34004",
+          issues = 764)
   public void testRemotePlayerSpeed(){
     WebElement element = driver.findElement(By.id("videoPlayer"));
     if(element instanceof RemotePlayer){
@@ -140,8 +145,8 @@ public class VideoTest extends JUnit4TestBase {
       assertEquals(player.getCurrentPlayingPosition(), 0, 0);
 
       player.setState(Player.PlayerState.playing);
-      player.setSpeed(10);
-      assertEquals(10, player.getSpeed(), 0.1);
+      player.setSpeed(2);
+      assertEquals(2, player.getSpeed(), 0.1);
       player.setState(Player.PlayerState.paused);
       player.setState(Player.PlayerState.playing);
 
