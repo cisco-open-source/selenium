@@ -122,7 +122,10 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
       builder.put(entry.getKey(), entry.getValue());
     }
 
-    builder.put(NEW_SESSION, post("/session"))
+    builder
+	.put(GET_ALL_SESSIONS, get("/sessions"))
+        .put(NEW_SESSION, post("/session"))
+        .put(GET_CAPABILITIES, get("/session/:sessionId"))
         .put(QUIT, delete("/session/:sessionId"))
         .put(GET_CURRENT_WINDOW_HANDLE, get("/session/:sessionId/window_handle"))
         .put(GET_WINDOW_HANDLES, get("/session/:sessionId/window_handles"))
@@ -151,6 +154,7 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         .put(GET_ACTIVE_ELEMENT, post("/session/:sessionId/element/active"))
         .put(FIND_CHILD_ELEMENT, post("/session/:sessionId/element/:id/element"))
         .put(FIND_CHILD_ELEMENTS, post("/session/:sessionId/element/:id/elements"))
+        .put(ELEMENT_SCREENSHOT, get("/session/:sessionId/element/:id/screenshot"))
         .put(CLICK_ELEMENT, post("/session/:sessionId/element/:id/click"))
         .put(CLEAR_ELEMENT, post("/session/:sessionId/element/:id/clear"))
         .put(SUBMIT_ELEMENT, post("/session/:sessionId/element/:id/submit"))
@@ -243,7 +247,6 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
 
         .put(GET_LOG, post("/session/:sessionId/log"))
         .put(GET_AVAILABLE_LOG_TYPES, get("/session/:sessionId/log/types"))
-        .put(GET_SESSION_LOGS, post("/logs"))
 
         .put(STATUS, get("/status"));
 
@@ -269,7 +272,8 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
       if (QUIT.equals(command.getName())) {
         return new Response();
       }
-      if (!NEW_SESSION.equals(command.getName())) {
+      if (!GET_ALL_SESSIONS.equals(command.getName())
+          && !NEW_SESSION.equals(command.getName())) {
         throw new SessionNotFoundException("Session ID is null");
       }
     }

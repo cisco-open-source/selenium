@@ -24,8 +24,8 @@ import org.openqa.selenium.remote.CommandExecutor;
 import java.net.URL;
 import java.net.MalformedURLException;
 
-/*
-* A specialized {@link HttpCommandExecutor} that will use a {@link ChromeDriverService} that lives
+/**
+* A specialized {@link org.openqa.selenium.remote.HttpCommandExecutor} that will use a {@link org.openqa.selenium.chrome.ChromeDriverService} that lives
 * and dies with a single WebDriver session. The service will be restarted upon each new session
 * request and shutdown after each quit command.
 */

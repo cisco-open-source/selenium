@@ -26,7 +26,6 @@ import java.io.IOException;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -34,7 +33,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
@@ -42,6 +40,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
@@ -82,6 +81,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(MARIONETTE)
   public void testShouldBeAbleToSubmitForms() {
     driver.get(pages.formPage);
     driver.findElement(By.name("login")).submit();
@@ -89,6 +89,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(MARIONETTE)
   public void testShouldSubmitAFormWhenAnyInputElementWithinThatFormIsSubmitted() {
     driver.get(pages.formPage);
     driver.findElement(By.id("checky")).submit();
@@ -96,6 +97,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore(MARIONETTE)
   public void testShouldSubmitAFormWhenAnyElementWithinThatFormIsSubmitted() {
     driver.get(pages.formPage);
     driver.findElement(By.xpath("//form/p")).submit();
@@ -103,7 +105,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {ANDROID, CHROME, IE, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE})
+  @Ignore(value = {ANDROID, CHROME, IE, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, MARIONETTE})
   public void testShouldNotBeAbleToSubmitAFormThatDoesNotExist() {
     driver.get(pages.formPage);
 
@@ -148,7 +150,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertTrue(driver.getCurrentUrl().endsWith("?x=name"));
   }
 
-  @Ignore({IPHONE, ANDROID, OPERA_MOBILE})
+  @Ignore({IPHONE, ANDROID, OPERA_MOBILE, MARIONETTE})
   @Test
   public void testShouldSubmitAFormUsingTheEnterKey() {
     driver.get(pages.formPage);
@@ -162,9 +164,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   @Test
   public void testShouldEnterDataIntoFormFields() {
     driver.get(pages.xhtmlTestPage);
-    WebElement element = driver.findElement(By
-                                                .xpath(
-                                                    "//form[@name='someForm']/input[@id='username']"));
+    WebElement element = driver.findElement(By.xpath("//form[@name='someForm']/input[@id='username']"));
     String originalValue = element.getAttribute("value");
     assertThat(originalValue, equalTo("change"));
 
@@ -177,7 +177,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertThat(newFormValue, equalTo("some text"));
   }
 
-  @Ignore(value = {IPHONE, ANDROID, SAFARI, OPERA, OPERA_MOBILE, QTWEBKIT},
+  @Ignore(value = {IPHONE, ANDROID, SAFARI, OPERA, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
           reason = "Does not yet support file uploads", issues = {4220})
   @Test
   public void testShouldBeAbleToAlterTheContentsOfAFileUploadInputElement() throws IOException {
@@ -194,14 +194,14 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertTrue(uploadPath.endsWith(file.getName()));
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, OPERA_MOBILE, QTWEBKIT},
+  @Ignore(value = {ANDROID, IPHONE, OPERA, SAFARI, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
           reason = "Does not yet support file uploads", issues = {4220})
   @Test
   public void testShouldBeAbleToSendKeysToAFileUploadInputElementInAnXhtmlDocument()
       throws IOException {
-    // IE before 9 doesn't handle pages served with an XHTML content type, and just prompts for to
-    // download it
-    assumeTrue(!TestUtilities.isInternetExplorer(driver) || !TestUtilities.isOldIe(driver));
+    assumeFalse("IE before 9 doesn't handle pages served with an XHTML content type,"
+                + " and just prompts for to download it",
+                TestUtilities.isOldIe(driver));
 
     driver.get(pages.xhtmlFormPage);
     WebElement uploadElement = driver.findElement(By.id("file"));
@@ -216,7 +216,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertTrue(uploadPath.endsWith(file.getName()));
   }
 
-  @Ignore(value = {IPHONE, ANDROID, OPERA, SAFARI, QTWEBKIT},
+  @Ignore(value = {IPHONE, ANDROID, OPERA, SAFARI, MARIONETTE, QTWEBKIT},
           reason = "Does not yet support file uploads", issues = {4220})
   @Test
   public void testShouldBeAbleToUploadTheSameFileTwice() throws IOException {
@@ -288,7 +288,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, QTWEBKIT},
+  @Ignore(value = {ANDROID, CHROME, HTMLUNIT, IPHONE, OPERA, PHANTOMJS, SAFARI, OPERA_MOBILE, MARIONETTE, QTWEBKIT},
           reason = "Untested on all other browsers, fails on chrome")
   public void handleFormWithJavascriptAction() {
     String url = appServer.whereIs("form_handling_js_submit.html");

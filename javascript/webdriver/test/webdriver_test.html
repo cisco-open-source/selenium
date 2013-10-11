@@ -516,6 +516,14 @@ limitations under the License.
   }
 
 
+  function testFromWireValue_passesThroughFunctionProperties() {
+    var json = [{'foo': {'bar': 123}, 'func': goog.nullFunction}];
+    var out = webdriver.WebDriver.fromWireValue_({}, json);
+    webdriver.test.testutil.assertObjectEquals(json, out);
+    verifyAll();  // Expected by tear down.
+  }
+
+
   function testDoesNotExecuteCommandIfSessionDoesNotResolve() {
     var session = webdriver.promise.rejected(STUB_ERROR);
     var testHelper = TestHelper.
@@ -1858,8 +1866,9 @@ limitations under the License.
 
     var driver = testHelper.createDriver();
     var element = driver.findElement(By.id('foo'));
-    element.sendKeys(webdriver.promise.resolved('abc'), 123,
-                     webdriver.promise.resolved('def'));
+    element.sendKeys(
+        webdriver.promise.fulfilled('abc'), 123,
+        webdriver.promise.fulfilled('def'));
     testHelper.execute();
   }
 

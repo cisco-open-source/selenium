@@ -32,7 +32,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.testing.TestUtilities.assumeFalse;
+import static org.junit.Assume.assumeFalse;
 
 public class EmbeddedWebViewTest extends JUnit4TestBase {
 

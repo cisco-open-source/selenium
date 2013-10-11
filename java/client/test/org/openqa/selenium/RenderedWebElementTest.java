@@ -17,6 +17,7 @@ package org.openqa.selenium;
 
 import org.junit.Test;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.HasInputDevices;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
@@ -42,6 +43,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
@@ -51,7 +53,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 public class RenderedWebElementTest extends JUnit4TestBase {
 
   @JavascriptEnabled
-  @Ignore({ANDROID, HTMLUNIT, OPERA})
+  @Ignore({ANDROID, HTMLUNIT, OPERA, MARIONETTE})
   @Test
   public void testShouldPickUpStyleOfAnElement() {
     driver.get(pages.javascriptPage);
@@ -68,7 +70,7 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, HTMLUNIT, OPERA})
+  @Ignore({ANDROID, HTMLUNIT, OPERA, MARIONETTE})
   @Test
   public void testGetCssValueShouldReturnStandardizedColour() {
     driver.get(pages.colorPage);
@@ -88,7 +90,7 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   // should handle sub-pixel rendering, and every browser seems to be different anyhow:
   // http://ejohn.org/blog/sub-pixel-problems-in-css/
   @JavascriptEnabled
-  @Ignore({IE, CHROME, IPHONE, OPERA, ANDROID, SAFARI, OPERA_MOBILE, PHANTOMJS, QTWEBKIT})
+  @Ignore({IE, CHROME, IPHONE, OPERA, ANDROID, SAFARI, OPERA_MOBILE, PHANTOMJS, MARIONETTE, QTWEBKIT})
   // Reason for Chrome: WebKit bug 28804
   @Test
   public void testShouldHandleNonIntegerPositionAndSize() {
@@ -108,7 +110,7 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore({ANDROID, IPHONE, OPERA, HTMLUNIT})
+  @Ignore({ANDROID, IPHONE, OPERA, HTMLUNIT, MARIONETTE})
   @Test
   public void testShouldAllowInheritedStylesToBeUsed() {
     driver.get(pages.javascriptPage);
@@ -125,18 +127,12 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   @JavascriptEnabled
   @NeedsFreshDriver
   @Ignore(
-      value = {HTMLUNIT, IPHONE,  OPERA},
-      reason = "HtmlUnit: Advanced mouse actions only implemented in rendered browsers. Firefox: hover is broken again.")
+      value = {HTMLUNIT, IPHONE,  OPERA, SAFARI, MARIONETTE},
+      reason = "HtmlUnit: Advanced mouse actions only implemented in rendered browsers.",
+      issues = {4136})
   @Test
   public void testShouldAllowUsersToHoverOverElements() {
-    if (!hasInputDevices()) {
-      return;
-    }
-
-    if (!TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println("Skipping hover test: needs native events");
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     driver.get(pages.javascriptPage);
 
@@ -160,23 +156,17 @@ public class RenderedWebElementTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Ignore(
-      value = {HTMLUNIT, IPHONE, OPERA},
-      reason = "HtmlUnit: Advanced mouse actions only implemented in rendered browsers")
+      value = {HTMLUNIT, IPHONE, OPERA, SAFARI, MARIONETTE},
+      reason = "HtmlUnit: Advanced mouse actions only implemented in rendered browsers",
+      issues = {4136})
   @Test
   public void testHoverPersists() throws Exception {
-    if (!hasInputDevices()) {
-      return;
-    }
-
-    if (!TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println("Skipping hover test: needs native events");
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     // This test passes on IE. When running in Firefox on Windows, the test
     // will fail if the mouse cursor is not in the window. Solution: Maximize.
     if ((TestUtilities.getEffectivePlatform().is(Platform.WINDOWS)) &&
-        TestUtilities.isFirefox(driver)) {
+        TestUtilities.isFirefox(driver) && TestUtilities.isNativeEventsEnabled(driver)) {
       driver.manage().window().maximize();
     }
 
@@ -215,9 +205,7 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   @NeedsLocalEnvironment
   @Test
   public void testPersistentHoverCanBeTurnedOff() throws Exception {
-    if (!hasInputDevices()) {
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     assumeTrue(TestUtilities.isInternetExplorer(driver));
     // Destroy the previous driver to make sure the hovering thread is
@@ -267,17 +255,16 @@ public class RenderedWebElementTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
-  @Ignore({OPERA, OPERA_MOBILE})
+  @Ignore(value = {OPERA, OPERA_MOBILE, SAFARI, MARIONETTE}, issues = {4136})
   public void canClickOnASuckerFishStyleMenu() throws InterruptedException {
     assumeTrue(hasInputDevices());
-    assumeTrue(TestUtilities.isNativeEventsEnabled(driver));
 
     driver.get(pages.javascriptPage);
 
     // This test passes on IE. When running in Firefox on Windows, the test
     // will fail if the mouse cursor is not in the window. Solution: Maximize.
     if ((TestUtilities.getEffectivePlatform().is(Platform.WINDOWS)) &&
-        TestUtilities.isFirefox(driver)) {
+        TestUtilities.isFirefox(driver) && TestUtilities.isNativeEventsEnabled(driver)) {
       driver.manage().window().maximize();
     }
 
@@ -326,18 +313,13 @@ public class RenderedWebElementTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
+  @Ignore(value = {SAFARI, MARIONETTE}, issues = {4136})
   public void testCanClickOnSuckerFishMenuItem() throws Exception {
-    if (!hasInputDevices()) {
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     driver.get(pages.javascriptPage);
 
     WebElement element = driver.findElement(By.id("menu1"));
-    if (!TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println("Skipping hover test: needs native events");
-      return;
-    }
 
     new Actions(driver).moveToElement(element).build().perform();
 
@@ -351,16 +333,12 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT},
-      reason = "Advanced mouse actions only implemented in rendered browsers")
+  @Ignore(value = {HTMLUNIT, OPERA, SAFARI, MARIONETTE},
+      reason = "Advanced mouse actions only implemented in rendered browsers",
+      issues = {4136})
   @Test
   public void testMovingMouseByRelativeOffset() {
-    if (!hasInputDevices() || !TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println(
-          String.format("Skipping move by offset test: native events %s has input devices: %s",
-            TestUtilities.isNativeEventsEnabled(driver), hasInputDevices()));
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     driver.get(pages.mouseTrackerPage);
 
@@ -377,16 +355,12 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT},
-      reason = "Advanced mouse actions only implemented in rendered browsers")
+  @Ignore(value = {HTMLUNIT, SAFARI, MARIONETTE},
+      reason = "Advanced mouse actions only implemented in rendered browsers",
+      issues = {4136})
   @Test
   public void testMovingMouseToRelativeElementOffset() {
-    if (!hasInputDevices() || !TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println(
-          String.format("Skipping move to offset test: native events %s has input devices: %s",
-            TestUtilities.isNativeEventsEnabled(driver), hasInputDevices()));
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     driver.get(pages.mouseTrackerPage);
 
@@ -400,16 +374,12 @@ public class RenderedWebElementTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {HTMLUNIT},
-      reason = "Advanced mouse actions only implemented in rendered browsers")
+  @Ignore(value = {HTMLUNIT, SAFARI, MARIONETTE},
+      reason = "Advanced mouse actions only implemented in rendered browsers",
+      issues = {4136})
   @Test
   public void testMovingMouseToRelativeZeroElementOffset() {
-    if (!hasInputDevices() || !TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println(
-          String.format("Skipping move to offset test: native events %s has input devices: %s",
-            TestUtilities.isNativeEventsEnabled(driver), hasInputDevices()));
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     driver.get(pages.mouseTrackerPage);
 
@@ -424,15 +394,12 @@ public class RenderedWebElementTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @NeedsFreshDriver
-  @Ignore(value = {HTMLUNIT, QTWEBKIT}, reason = "Advanced mouse actions only implemented in rendered browsers")
+  @Ignore(value = {HTMLUNIT, OPERA, SAFARI, MARIONETTE, QTWEBKIT},
+          reason = "Advanced mouse actions only implemented in rendered browsers",
+          issues = {4136})
   @Test
   public void testMoveRelativeToBody() {
-    if (!hasInputDevices() || !TestUtilities.isNativeEventsEnabled(driver)) {
-      System.out.println(
-          String.format("Skipping move to offset test: native events %s has input devices: %s",
-            TestUtilities.isNativeEventsEnabled(driver), hasInputDevices()));
-      return;
-    }
+    assumeTrue(hasInputDevices());
 
     try {
       driver.get(pages.mouseTrackerPage);

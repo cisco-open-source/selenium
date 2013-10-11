@@ -739,7 +739,7 @@ class WebDriver(object):
         :Usage:
             driver.set_window_size(800,600)
         """
-        self.execute(Command.SET_WINDOW_SIZE, {'width': width, 'height': height,
+        self.execute(Command.SET_WINDOW_SIZE, {'width': int(width), 'height': int(height),
           'windowHandle': windowHandle})
 
     def get_window_size(self, windowHandle='current'):
@@ -763,7 +763,7 @@ class WebDriver(object):
         :Usage:
             driver.set_window_position(0,0)
         """
-        self.execute(Command.SET_WINDOW_POSITION, {'x': x, 'y': y,
+        self.execute(Command.SET_WINDOW_POSITION, {'x': int(x), 'y': int(y),
           'windowHandle': windowHandle})
 
     def get_window_position(self, windowHandle='current'):
@@ -827,3 +827,28 @@ class WebDriver(object):
         finally:
             del png
         return True
+
+    @property
+    def log_types(self):
+        """
+        Gets a list of the available log types
+
+        :Usage:
+            driver.log_types
+        """
+        return self.execute(Command.GET_AVAILABLE_LOG_TYPES)['value']
+
+    def get_log(self, log_type):
+        """
+        Gets the log for a given log type
+
+        :Args:
+         - log_type: type of log that which will be returned
+
+        :Usage:
+            driver.get_log('browser')
+            driver.get_log('driver')
+            driver.get_log('client')
+            driver.get_log('server')
+        """
+        return self.execute(Command.GET_LOG, {'type': log_type})['value']

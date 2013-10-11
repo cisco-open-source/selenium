@@ -38,7 +38,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.*;
 /**
  * Demonstrates how to use WebDriver with a file input element.
  */
-@Ignore(value = {IPHONE, ANDROID, SAFARI}, reason = "File uploads not allowed on the iPhone",
+@Ignore(value = {IPHONE, ANDROID, SAFARI, MARIONETTE}, reason = "File uploads not allowed on the iPhone",
         issues = {4220})
 public class UploadTest extends JUnit4TestBase {
 
