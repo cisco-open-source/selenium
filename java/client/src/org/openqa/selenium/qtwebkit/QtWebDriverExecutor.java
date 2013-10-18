@@ -36,7 +36,8 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
       .put(SET_PLAYBACK_SPEED, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/speed", HttpVerb.POST))
       .put(GET_PLAYBACK_SPEED, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/speed", HttpVerb.GET))
       .put(TOUCH_PINCH_ZOOM, new CommandInfo("/session/:sessionId/touch/-cisco-pinch-zoom", HttpVerb.POST))
-      .put(TOUCH_PINCH_ROTATE, new CommandInfo("/session/:sessionId/touch/-cisco-pinch-rotate", HttpVerb.POST));
+      .put(TOUCH_PINCH_ROTATE, new CommandInfo("/session/:sessionId/touch/-cisco-pinch-rotate", HttpVerb.POST))
+      .put(GET_VISUALIZER_SOURCE, new CommandInfo("/session/:sessionId/-cisco-visualizer-source", HttpVerb.GET));
 
     additionalCommands = builder.build();
   }
@@ -156,6 +157,8 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
                     //CISO MultiTouch commands
                     {"POST", TOUCH_PINCH_ZOOM, "/session/:sessionId/touch/-cisco-pinch-zoom"},
                     {"POST", TOUCH_PINCH_ROTATE, "/session/:sessionId/touch/-cisco-pinch-rotate"},
+                    // CISCO Visualizer commands
+                    {"GET", GET_VISUALIZER_SOURCE, "/session/:sessionId/-cisco-visualizer-source"},
             };
 
     public QtWebDriverExecutor(URL addressOfRemoteServer)
