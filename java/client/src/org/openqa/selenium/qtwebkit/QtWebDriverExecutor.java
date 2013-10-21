@@ -22,18 +22,18 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
   static {
     ImmutableMap.Builder<String, CommandInfo> builder = ImmutableMap.builder();
       builder.put(GET_PLAYER_STATE,
-                  new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/state", HttpVerb.GET))
-      .put(SET_PLAYER_STATE, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/state", HttpVerb.POST))
-      .put(GET_PLAYER_VOLUME, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/volume", HttpVerb.GET))
-      .put(SET_PLAYER_VOLUME, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/volume", HttpVerb.POST))
+                  new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/state", HttpVerb.GET))
+      .put(SET_PLAYER_STATE, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/state", HttpVerb.POST))
+      .put(GET_PLAYER_VOLUME, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/volume", HttpVerb.GET))
+      .put(SET_PLAYER_VOLUME, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/volume", HttpVerb.POST))
       .put(GET_CURRENT_PLAYING_POSITION,
-           new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.GET))
+           new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/seek", HttpVerb.GET))
       .put(SET_CURRENT_PLAYING_POSITION,
-           new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/seek", HttpVerb.POST))
-      .put(SET_PLAYER_MUTE, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/mute", HttpVerb.POST))
-      .put(GET_PLAYER_MUTE, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/mute", HttpVerb.GET))
-      .put(SET_PLAYBACK_SPEED, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/speed", HttpVerb.POST))
-      .put(GET_PLAYBACK_SPEED, new CommandInfo("/session/:sessionId/element/:id/-CISCO-player-element/speed", HttpVerb.GET))
+           new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/seek", HttpVerb.POST))
+      .put(SET_PLAYER_MUTE, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/mute", HttpVerb.POST))
+      .put(GET_PLAYER_MUTE, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/mute", HttpVerb.GET))
+      .put(SET_PLAYBACK_SPEED, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/speed", HttpVerb.POST))
+      .put(GET_PLAYBACK_SPEED, new CommandInfo("/session/:sessionId/element/:id/-cisco-player-element/speed", HttpVerb.GET))
       .put(TOUCH_PINCH_ZOOM, new CommandInfo("/session/:sessionId/touch/-cisco-pinch-zoom", HttpVerb.POST))
       .put(TOUCH_PINCH_ROTATE, new CommandInfo("/session/:sessionId/touch/-cisco-pinch-rotate", HttpVerb.POST));
 
@@ -142,16 +142,16 @@ public class QtWebDriverExecutor extends HttpCommandExecutor {
                     {"POST", SET_BROWSER_VISIBLE, "/session/:sessionId/visible"},
                     {"GET", IS_BROWSER_VISIBLE, "/session/:sessionId/visible"},
                 //CISO Player commands
-                    {"GET", GET_PLAYER_STATE, "/session/:sessionId/element/:id/-CISCO-player-element/state"},
-                    {"POST", SET_PLAYER_STATE, "/session/:sessionId/element/:id/-CISCO-player-element/state"},
-                    {"GET", GET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-CISCO-player-element/volume"},
-                    {"POST", SET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-CISCO-player-element/volume"},
-                    {"GET", GET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"},
-                    {"POST", SET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-CISCO-player-element/seek"},
-                    {"GET", GET_PLAYBACK_SPEED, "/session/:sessionId/element/:id/-CISCO-player-element/speed"},
-                    {"POST", SET_PLAYBACK_SPEED, "/session/:sessionId/element/:id/-CISCO-player-element/speed"},
-                    {"GET", GET_PLAYER_MUTE, "/session/:sessionId/element/:id/-CISCO-player-element/mute"},
-                    {"POST", SET_PLAYER_MUTE, "/session/:sessionId/element/:id/-CISCO-player-element/mute"},
+                    {"GET", GET_PLAYER_STATE, "/session/:sessionId/element/:id/-cisco-player-element/state"},
+                    {"POST", SET_PLAYER_STATE, "/session/:sessionId/element/:id/-cisco-player-element/state"},
+                    {"GET", GET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-cisco-player-element/volume"},
+                    {"POST", SET_PLAYER_VOLUME, "/session/:sessionId/element/:id/-cisco-player-element/volume"},
+                    {"GET", GET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-cisco-player-element/seek"},
+                    {"POST", SET_CURRENT_PLAYING_POSITION, "/session/:sessionId/element/:id/-cisco-player-element/seek"},
+                    {"GET", GET_PLAYBACK_SPEED, "/session/:sessionId/element/:id/-cisco-player-element/speed"},
+                    {"POST", SET_PLAYBACK_SPEED, "/session/:sessionId/element/:id/-cisco-player-element/speed"},
+                    {"GET", GET_PLAYER_MUTE, "/session/:sessionId/element/:id/-cisco-player-element/mute"},
+                    {"POST", SET_PLAYER_MUTE, "/session/:sessionId/element/:id/-cisco-player-element/mute"},
                     //CISO MultiTouch commands
                     {"POST", TOUCH_PINCH_ZOOM, "/session/:sessionId/touch/-cisco-pinch-zoom"},
                     {"POST", TOUCH_PINCH_ROTATE, "/session/:sessionId/touch/-cisco-pinch-rotate"},

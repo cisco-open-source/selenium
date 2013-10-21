@@ -1,7 +1,6 @@
 
 java_library(name = "qtwebkit",
-  srcs = [ "*.java",
-            "CISCO_Player/*.java" ],
+  srcs = [ "*.java" ],
   deps = [
     "//java/client/src/org/openqa/selenium/net",
     "//java/client/src/org/openqa/selenium/remote",
