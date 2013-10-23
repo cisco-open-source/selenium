@@ -10,7 +10,8 @@ java_test(name = "hybrid_tests_qt4",
     "WidgetAndWebViewTest.java",
     "ProxySettingTest.java",
     "WindowWithDeclarativeViewTest.java",
-    "WindowWithSeparatedDeclarativeAndWebViewsTest.java"
+    "WindowWithSeparatedDeclarativeAndWebViewsTest.java",
+    "CustomCapabilitiesQt4Test.java"
   ],
 
   deps = [
@@ -29,7 +30,8 @@ java_test(name = "hybrid_tests_qt5",
     "CapabilitiesTest.java",
     "InternalWebViewTest.java",
     "WidgetAndWebViewTest.java",
-    "ProxySettingTest.java"
+    "ProxySettingTest.java",
+    "CustomCapabilitiesQt5Test.java"
     ],
 
   deps = [
