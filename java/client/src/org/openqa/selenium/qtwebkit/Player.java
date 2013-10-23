@@ -7,7 +7,7 @@ import org.openqa.selenium.WebElement;
  * Widgets QVideoWidget and QML video tag.
  *
  */
-public interface Player extends WebElement{
+public interface Player {
 
 
   /**

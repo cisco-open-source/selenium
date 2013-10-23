@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.QtWebkitAugmenter;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import static org.junit.Assert.assertEquals;
@@ -13,151 +15,143 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class HTML5VideoTagTest extends JUnit4TestBase {
-  @Before
-  public void setUp() throws Exception {
-    driver.get(pages.html5VideoTest);
-//    driver.get("http://www.w3.org/2010/05/video/mediaevents.html");
-    try {Thread.sleep(500);} catch (InterruptedException ex){}
-  }
+    @Before
+    public void setUp() throws Exception {
+        driver.get(pages.html5VideoTest);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+        }
+    }
 
-  @AfterClass
-  public static void cleanUpDriver() {
-    JUnit4TestBase.removeDriver();
-  }
-
-  @Test
-  public void testRemotePlayerState(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      player.setState(Player.PlayerState.playing);
-      Player.PlayerState state = player.getState();
-      assertEquals(Player.PlayerState.playing, state);
-      assertEquals(null, player.getAttribute("paused"));
-
-      try{
-        Thread.sleep(5000);
-      } catch (InterruptedException ex){}
-
-      player.setState(Player.PlayerState.paused);
-      state = player.getState();
-      assertEquals(Player.PlayerState.paused, state);
-      assertEquals("true", player.getAttribute("paused"));
-
-      player.setState(Player.PlayerState.stopped);
-      state = player.getState();
-      assertEquals("true", player.getAttribute("paused"));
-      assertEquals(0, player.getCurrentPlayingPosition(), 0.01);
-      assertEquals(Player.PlayerState.stopped, state);
-      }
+    @AfterClass
+    public static void cleanUpDriver() {
+        JUnit4TestBase.removeDriver();
     }
 
     @Test
-  public void testRemotePlayerSetMute(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      player.setMute(true);
-      assertEquals("true", player.getAttribute("muted"));
+    public void testRemotePlayerState() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        player.setState(Player.PlayerState.playing);
+        Player.PlayerState state = player.getState();
+        assertEquals(Player.PlayerState.playing, state);
+        assertEquals(null, element.getAttribute("paused"));
 
-      player.setMute(false);
-      assertEquals(null, player.getAttribute("muted"));
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+        }
+
+        player.setState(Player.PlayerState.paused);
+        state = player.getState();
+        assertEquals(Player.PlayerState.paused, state);
+        assertEquals("true", element.getAttribute("paused"));
+
+        player.setState(Player.PlayerState.stopped);
+        state = player.getState();
+        assertEquals("true", element.getAttribute("paused"));
+        assertEquals(0, player.getCurrentPlayingPosition(), 0.01);
+        assertEquals(Player.PlayerState.stopped, state);
     }
 
-  }
+    @Test
+    public void testRemotePlayerSetMute() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        player.setMute(true);
+        assertEquals("true", element.getAttribute("muted"));
 
-  @Test
-  public void testRemotePlayerGetMute(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      assertEquals(player.isMuted() ? "true" : null , player.getAttribute("muted"));
-      player.setMute(true);
-      assertEquals(player.isMuted() ? "true" : null , player.getAttribute("muted"));
+        player.setMute(false);
+        assertEquals(null, element.getAttribute("muted"));
     }
-  }
 
-  @Test
-  public void testRemotePlayerSeek(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      assertEquals(player.getCurrentPlayingPosition(), 0, 0);
-      player.setState(Player.PlayerState.playing);
-
-      try{
-        Thread.sleep(20000);
-      }
-      catch (InterruptedException ex){}
-
-      player.setState(Player.PlayerState.paused);
-      player.seek(10.5);
-      assertEquals(10.5, player.getCurrentPlayingPosition(), 0.1);
-      player.setState(Player.PlayerState.playing);
+    @Test
+    public void testRemotePlayerGetMute() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        assertEquals(player.isMuted() ? "true" : null, element.getAttribute("muted"));
+        player.setMute(true);
+        assertEquals(player.isMuted() ? "true" : null, element.getAttribute("muted"));
     }
-  }
 
-  @Test
-  public void testRemotePlayerSpeed(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      assertEquals(player.getCurrentPlayingPosition(), 0, 0);
+    @Test
+    public void testRemotePlayerSeek() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        assertEquals(player.getCurrentPlayingPosition(), 0, 0);
+        player.setState(Player.PlayerState.playing);
 
-      player.setState(Player.PlayerState.playing);
-      player.setSpeed(10);
-      assertEquals(10, player.getSpeed(), 0.1);
-      player.setState(Player.PlayerState.paused);
-      player.setState(Player.PlayerState.playing);
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException ex) {
+        }
 
-      try{
-        Thread.sleep(5000);
-      }
-      catch (InterruptedException ex){}
-      assertEquals(10, player.getSpeed(), 0.1);
-
-      player.setSpeed(0.1);
-
-      try{
-        Thread.sleep(10000);
-      }
-      catch (InterruptedException ex){}
-      assertEquals(0.1, player.getSpeed(), 0.01);
-
-      player.setState(Player.PlayerState.paused);
+        player.setState(Player.PlayerState.paused);
+        player.seek(10.5);
+        assertEquals(10.5, player.getCurrentPlayingPosition(), 0.1);
+        player.setState(Player.PlayerState.playing);
     }
-  }
 
-  @Test
-  public void testRemotePlayerVolume(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof  RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      player.setVolume(0.5);
-      assertEquals(0.5 ,player.getVolume(), 0);
-      assertEquals("0.5", player.getAttribute("volume"));
+    @Test
+    public void testRemotePlayerSpeed() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        assertEquals(player.getCurrentPlayingPosition(), 0, 0);
 
-      player.setVolume(0);
-      assertEquals(0 ,player.getVolume(), 0);
-      assertEquals("0", player.getAttribute("volume"));
+        player.setState(Player.PlayerState.playing);
+        player.setSpeed(10);
+        assertEquals(10, player.getSpeed(), 0.1);
+        player.setState(Player.PlayerState.paused);
+        player.setState(Player.PlayerState.playing);
 
-      player.setVolume(1.0);
-      assertEquals(1.0 ,player.getVolume(), 0);
-      assertEquals("1", player.getAttribute("volume"));
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+        }
+        assertEquals(10, player.getSpeed(), 0.1);
+
+        player.setSpeed(0.1);
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+        }
+        assertEquals(0.1, player.getSpeed(), 0.01);
+
+        player.setState(Player.PlayerState.paused);
     }
-  }
 
-  @Test
-  public void testRemotePlayerVolumeAndMute(){
-    WebElement element = driver.findElement(By.id("videoPlayer"));
-    if(element instanceof  RemotePlayer){
-      RemotePlayer player = (RemotePlayer)element;
-      player.setVolume(0.5);
-      player.setMute(true);
-      player.setMute(false);
-      assertEquals(0.5 ,player.getVolume(), 0.02);
-      assertEquals("0.5", player.getAttribute("volume"));
+    @Test
+    public void testRemotePlayerVolume() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        player.setVolume(0.5);
+        assertEquals(0.5, player.getVolume(), 0);
+        assertEquals("0.5", element.getAttribute("volume"));
+
+        player.setVolume(0);
+        assertEquals(0, player.getVolume(), 0);
+        assertEquals("0", element.getAttribute("volume"));
+
+        player.setVolume(1.0);
+        assertEquals(1.0, player.getVolume(), 0);
+        assertEquals("1", element.getAttribute("volume"));
     }
-  }
+
+    @Test
+    public void testRemotePlayerVolumeAndMute() {
+        WebElement element = driver.findElement(By.id("videoPlayer"));
+        Player player = getPlayer((RemoteWebElement) element);
+        player.setVolume(0.5);
+        player.setMute(true);
+        player.setMute(false);
+        assertEquals(0.5, player.getVolume(), 0.02);
+        assertEquals("0.5", element.getAttribute("volume"));
+    }
+
+    public Player getPlayer(RemoteWebElement element) {
+        return (Player) (new QtWebkitAugmenter().augment(element));
+    }
 
 }

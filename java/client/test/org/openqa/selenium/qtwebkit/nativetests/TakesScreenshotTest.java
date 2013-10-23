@@ -6,7 +6,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.Augmenter;
+import org.openqa.selenium.remote.QtWebkitAugmenter;
 import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
@@ -75,7 +75,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
     }
 
     public TakesScreenshot getScreenshot(RemoteWebElement element) {
-        return (TakesScreenshot)(new Augmenter().augment(element));
+        return (TakesScreenshot)(new QtWebkitAugmenter().augment(element));
     }
 
     private boolean isAbleToTakeScreenshots(WebDriver driver) throws Exception {
