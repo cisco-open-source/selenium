@@ -1,0 +1,26 @@
+{
+    "capabilities":
+        [
+            {
+                "browserName": "qtwebkit",
+                "hybrid": {
+                    "html": true,
+                    "qml": true,
+                    "qtVersion": "4.8.2"
+                },
+                "platform": "LINUX",
+                "maxInstances": 5,
+                "seleniumProtocol": "WebDriver"
+            }
+        ],
+    "configuration": {
+	    "proxy": "org.openqa.grid.selenium.proxy.DefaultRemoteProxy",
+	    "maxSession": 1,
+	    "port": 5555,
+	    "host": "localhost",
+	    "register": true,
+	    "registerCycle": 5000,
+	    "hubPort": 4444,
+	    "hubHost": "localhost"
+    }
+}

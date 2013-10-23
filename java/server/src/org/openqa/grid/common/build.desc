@@ -3,6 +3,7 @@ java_library(name = "common",
   srcs = [ "**/*.java" ],
   embedded = [
     "defaults",
+    "qtjsons",
   ],
   deps = [
     "//java/client/src/org/openqa/selenium/net",
