@@ -53,6 +53,12 @@ public class QtWebKitDriver extends RemoteWebDriver
     private TouchScreen touchScreen;
     private MultiTouchScreen multiTouchScreen;
 
+    /**
+     * Custom capability that defines support different view and qtVersion. .
+     */
+    public final static String HYBRID = "hybrid";
+
+
     public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities,
                           Capabilities requiredCapabilities) {
         super(executor, desiredCapabilities, requiredCapabilities);
