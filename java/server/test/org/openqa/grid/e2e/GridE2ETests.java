@@ -41,6 +41,7 @@ import org.openqa.grid.e2e.utils.ExtraServletUtilTest;
     NodeTimeOutTest.class,
     SmokeTest.class, // slow
     ExtraServletUtilTest.class,
+    GridQtWebDriverTest.class
 })
 public class GridE2ETests {
 
