@@ -74,7 +74,6 @@ public class Augmenter {
     addDriverAugmentation(ROTATABLE, new AddRotatable());
 
     addElementAugmentation(SUPPORTS_FINDING_BY_CSS, new AddFindsChildByCss());
-    addElementAugmentation(TAKES_ELEMENT_SCREENSHOT, new AddTakesElementScreenshot());
   }
 
   /**

@@ -60,7 +60,6 @@ public class QtWebKitDriver extends RemoteWebDriver
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
         touchScreen = new RemoteTouchScreen(getExecuteMethod());
         multiTouchScreen = new RemoteMultiTouchScreen(getExecuteMethod());
-        setElementConverter(new QtWebKitJsonToWebElementConverter(this));
     }
 
     public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities) {
