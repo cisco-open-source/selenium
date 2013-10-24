@@ -35,9 +35,13 @@ import java.util.Map;
 
 
 public class DefaultCapabilityMatcherTest {
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class DefaultCapabilityMatcherTest ");}
 
 
-  static Map<String, Object> firefox = new HashMap<String, Object>();
+    static Map<String, Object> firefox = new HashMap<String, Object>();
   static Map<String, Object> tl = new HashMap<String, Object>();
 
   static Map<String, Object> firefox2 = new HashMap<String, Object>();

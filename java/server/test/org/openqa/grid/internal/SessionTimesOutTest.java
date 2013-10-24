@@ -37,6 +37,10 @@ import org.openqa.grid.internal.mock.GridHelper;
 import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 public class SessionTimesOutTest {
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class SessionTimesOutTest");}
 
   private static RegistrationRequest req = new RegistrationRequest();
   private static Map<String, Object> app1 = new HashMap<String, Object>();

@@ -35,6 +35,10 @@ import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 public class PriorityTest {
 
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class PriorityTest");}
   private static Registry registry;
 
   // priority rule : the request with the highest priority goes first.

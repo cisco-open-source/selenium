@@ -39,6 +39,10 @@ import org.openqa.selenium.remote.CapabilityType;
 
 public class ParallelTest {
 
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class ParallelTest");}
   static RegistrationRequest req = null;
   static Map<String, Object> app1 = new HashMap<String, Object>();
   static Map<String, Object> app2 = new HashMap<String, Object>();

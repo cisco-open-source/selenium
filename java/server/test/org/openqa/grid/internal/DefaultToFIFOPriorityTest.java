@@ -37,7 +37,10 @@ import org.openqa.grid.internal.mock.MockedRequestHandler;
 // TODO freynaud copy paste from PriorityTestLoad ....
 
 public class DefaultToFIFOPriorityTest {
-
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class DefaultToFIFOPriorityTest ");}
   private final static int MAX = 50;
 
   private static Registry registry;

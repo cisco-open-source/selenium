@@ -31,6 +31,10 @@ import org.openqa.grid.common.RegistrationRequest;
 import org.openqa.grid.internal.listeners.RegistrationListener;
 
 public class RemoteProxySlowSetup {
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class RemoteProxySlowSetup");}
 
   private static RemoteProxy p1;
   private static RemoteProxy p2;

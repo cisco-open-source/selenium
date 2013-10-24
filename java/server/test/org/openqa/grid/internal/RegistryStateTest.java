@@ -38,6 +38,10 @@ import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 public class RegistryStateTest {
 
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>> class  RegistryStateTest");}
 
   static RegistrationRequest req = null;
   static Map<String, Object> app1 = new HashMap<String, Object>();

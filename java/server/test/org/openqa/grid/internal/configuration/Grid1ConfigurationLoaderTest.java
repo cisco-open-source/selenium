@@ -18,13 +18,18 @@ limitations under the License.
 package org.openqa.grid.internal.configuration;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.grid.internal.utils.GridHubConfiguration;
 
 
 public class Grid1ConfigurationLoaderTest {
+    @BeforeClass
+    public static void status() {
+        System.out.println();
+        System.out.println(">>>>>>>>>>>>  class Grid1ConfigurationLoaderTest");}
 
-  /**
+    /**
    * check that the example from grid1 1.0.8 can be parsed properly.
    */
   @Test
