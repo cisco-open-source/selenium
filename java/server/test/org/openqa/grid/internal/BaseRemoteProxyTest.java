@@ -33,10 +33,6 @@ import static org.openqa.grid.common.RegistrationRequest.APP;
 import static org.openqa.grid.common.RegistrationRequest.REMOTE_HOST;
 
 public class BaseRemoteProxyTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>> class  BaseRemoteProxyTest");}
 
   private static RemoteProxy p1 = null;
   private static RemoteProxy p2 = null;

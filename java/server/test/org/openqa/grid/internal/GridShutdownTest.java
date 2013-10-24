@@ -29,19 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.grid.internal.mock.GridHelper;
 import org.openqa.grid.internal.mock.MockedRequestHandler;
 import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 public class GridShutdownTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>>  class GridShutdownTest");}
 
-    @Test(timeout = 5000)
+  @Test(timeout = 5000)
   public void shutdown() throws InterruptedException {
 
     final Map<String, Object> ff = new HashMap<String, Object>();

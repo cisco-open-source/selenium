@@ -38,10 +38,6 @@ import org.openqa.grid.web.servlet.handler.RequestHandler;
  */
 public class PriorityTestLoad {
 
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>> class PriorityTestLoad");}
   private final static int MAX = 100;
 
   private static Registry registry;

@@ -33,10 +33,6 @@ import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 
 public class SmokeTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>> class SmokeTest");}
   private static Registry registry;
 
   private static Map<String, Object> ie = new HashMap<String, Object>();

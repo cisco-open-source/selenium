@@ -43,12 +43,8 @@ import org.openqa.grid.internal.mock.GridHelper;
 import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 public class SessionListenerTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>>  class SessionListenerTest  ");}
 
-    static class MyRemoteProxy extends DetachedRemoteProxy implements TestSessionListener {
+  static class MyRemoteProxy extends DetachedRemoteProxy implements TestSessionListener {
 
     public MyRemoteProxy(RegistrationRequest request, Registry registry) {
       super(request, registry);

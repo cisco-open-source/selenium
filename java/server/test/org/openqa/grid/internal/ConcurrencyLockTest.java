@@ -41,12 +41,8 @@ import java.util.Map;
  */
 
 public class ConcurrencyLockTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>>  class ConcurrencyLockTest");}
 
-    private static Registry registry;
+  private static Registry registry;
 
   private static Map<String, Object> ie = new HashMap<String, Object>();
   private static Map<String, Object> ff = new HashMap<String, Object>();

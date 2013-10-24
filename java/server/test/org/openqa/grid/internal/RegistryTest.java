@@ -38,10 +38,6 @@ import org.openqa.grid.web.servlet.handler.RequestHandler;
 import org.openqa.selenium.remote.CapabilityType;
 
 public class RegistryTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>> class  RegistryTest");}
 
   private static final int TOTAL_THREADS = 100;
 

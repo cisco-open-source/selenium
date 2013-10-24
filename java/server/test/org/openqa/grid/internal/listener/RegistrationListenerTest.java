@@ -37,12 +37,8 @@ import org.openqa.grid.web.servlet.handler.RequestHandler;
 
 
 public class RegistrationListenerTest {
-    @BeforeClass
-    public static void status() {
-        System.out.println();
-        System.out.println(">>>>>>>>>>>>  class RegistrationListenerTest");}
 
-    private static boolean serverUp = false;
+  private static boolean serverUp = false;
 
   static class MyRemoteProxy extends DetachedRemoteProxy implements RegistrationListener {
 
