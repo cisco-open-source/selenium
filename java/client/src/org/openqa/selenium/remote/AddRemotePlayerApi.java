@@ -73,7 +73,7 @@ public class AddRemotePlayerApi implements AugmenterProvider {
         public PlayerState getState() {
             Number response = (Number)driverExecuteMethod
                     .execute(QtWebKitDriverCommand.GET_PLAYER_STATE, ImmutableMap.of("id", id));
-            PlayerState state = PlayerState.values()[((Long)response).intValue()];
+            PlayerState state = PlayerState.values()[response.intValue()];
             return state;
         }
 
