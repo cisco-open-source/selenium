@@ -54,9 +54,10 @@ public class ProxySettingTest extends JUnit4TestBase {
     proxyServer = new ProxyServer();
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI},
+  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
-                   + "Opera mobile/Safari - not implemented")
+                   + "Opera mobile/Safari - not implemented, "
+                   + "test for QTWEBKIT implemented in qtwebkit/hybridtests")
   @NeedsLocalEnvironment
   @Test
   public void canConfigureProxyWithDesiredCapability() {
