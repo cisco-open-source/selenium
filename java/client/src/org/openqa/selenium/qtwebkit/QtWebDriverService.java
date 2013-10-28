@@ -161,6 +161,13 @@ public class QtWebDriverService extends DriverService {
                 ImmutableList.Builder<String> argsBuilder = ImmutableList.builder();
                 argsBuilder.add(String.format("--port=%d", port));
 
+                String args = System.getProperty(QtWebDriverService.QT_DRIVER_COMMAND_LINE_ARGS);
+                if (args != null) {
+                    for(String substring: args.split(" ")){
+                        argsBuilder.add(substring);
+                    }
+                }
+
                 return new QtWebDriverService(exe, port, argsBuilder.build(), environment);
 
             } catch (IOException e) {
