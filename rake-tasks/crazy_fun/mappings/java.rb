@@ -513,6 +513,10 @@ module CrazyFunJava
                 ant.sysproperty :key => 'webdriver.chrome.driver', :value => chromedriver
               end
 
+              if qtwebdriver
+                ant.sysproperty :key => 'webdriver.qtwebdriver.driver', :value => qtwebdriver
+              end
+
               if safaridriver
                 ant.sysproperty :key => 'webdriver.safari.driver', :value => safaridriver
               end
@@ -598,6 +602,10 @@ module CrazyFunJava
 
     def chromedriver
       return ENV['chromedriver']
+    end
+
+    def qtwebdriver
+      return ENV['qtwebdriver']
     end
 
     def safaridriver
