@@ -7,6 +7,7 @@ import org.openqa.selenium.remote.CommandInfo;
 import org.openqa.selenium.remote.HttpCommandExecutor;
 import org.openqa.selenium.remote.HttpVerb;
 import org.openqa.selenium.remote.Response;
+import org.openqa.selenium.remote.service.DriverCommandExecutor;
 
 import java.io.IOException;
 import java.net.URL;

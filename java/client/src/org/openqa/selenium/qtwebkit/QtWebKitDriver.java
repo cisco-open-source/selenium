@@ -17,6 +17,7 @@ limitations under the License.
 
 package org.openqa.selenium.qtwebkit;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.google.common.collect.ImmutableMap;
@@ -74,7 +75,7 @@ public class QtWebKitDriver extends RemoteWebDriver
     }
 
     public QtWebKitDriver(Capabilities desiredCapabilities) {
-        this(QtWebKitDriverService.getCommandExecutor(), desiredCapabilities);
+        this(createDefaultExecutor(), desiredCapabilities);
     }
 
     public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities,
@@ -139,6 +140,18 @@ public class QtWebKitDriver extends RemoteWebDriver
 	@Override
     public MultiTouchScreen getMultiTouch() {
         return multiTouchScreen;
+    }
+
+
+    public static QtWebDriverExecutor createDefaultExecutor() {
+        try{
+            String ip = System.getProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY);
+            URL url = new URL(ip);
+            return new QtWebDriverExecutor(url);
+        }
+        catch (MalformedURLException e) {
+            return new QtWebDriverServiceExecutor(QtWebDriverService.createDefaultService());
+        }
     }
 
 }
