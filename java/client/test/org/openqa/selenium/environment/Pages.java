@@ -73,6 +73,7 @@ public class Pages {
   public String unicodeLtrPage;
   public String uploadPage;
   public String veryLargeCanvas;
+  public String visualizerPage;
   public String xhtmlFormPage;
   public String xhtmlTestPage;
   public String html5VideoTest;
@@ -155,6 +156,7 @@ public class Pages {
     unicodeLtrPage = appServer.whereIs("utf8/unicode_ltr.html");
     uploadPage = appServer.whereIs("upload.html");
     veryLargeCanvas = appServer.whereIs("veryLargeCanvas.html");
+    visualizerPage = appServer.whereIs("visualizer.html");
     xhtmlTestPage = appServer.whereIs("xhtmlTest.html");
     notExist = appServer.whereIs("temp.txt");
     html5VideoTest = appServer.whereIs("HTML5_Video_Test.html");
