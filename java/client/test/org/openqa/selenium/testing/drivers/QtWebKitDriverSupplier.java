@@ -5,6 +5,7 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
+import org.openqa.selenium.qtwebkit.QtWebDriverService;
 import org.openqa.selenium.qtwebkit.QtWebKitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
@@ -14,10 +15,6 @@ import java.net.MalformedURLException;
 
 public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
 
-    /**
-     * System property that defines the IP of the launched WebDriver.
-     */
-    public static final String REMOTE_IP_PROPERTY = "RemoteIP";
 
     private Capabilities desiredCapabilities;
     private Capabilities requiredCapabilities;
@@ -37,24 +34,14 @@ public class QtWebKitDriverSupplier implements Supplier<WebDriver>{
             return null;
         }
 
-        String ip = System.getProperty(REMOTE_IP_PROPERTY);
-        if (ip == null)
-        {
+        String ip = System.getProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY);
+        if (ip == null) {
             ip = "http://localhost:9517";
-            System.setProperty(REMOTE_IP_PROPERTY, ip);
-
+            System.setProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY, ip);
         }
 
-        URL url;
-
-        try {
-            url = new URL(ip);
-        }
-        catch (MalformedURLException e) {
-            throw new WebDriverException("The Node was run with wrong RemoteIP parameter!", e);
-        }
-
-        RemoteWebDriver driver = new QtWebKitDriver(new QtWebDriverExecutor(url), desiredCapabilities, requiredCapabilities);
+        QtWebDriverExecutor executor = QtWebKitDriver.createDefaultExecutor();
+        RemoteWebDriver driver = new QtWebKitDriver(executor, desiredCapabilities, requiredCapabilities);
 		driver.setFileDetector(new LocalFileDetector());
 
         return driver;

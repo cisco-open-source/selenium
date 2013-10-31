@@ -17,6 +17,7 @@ limitations under the License.
 
 package org.openqa.selenium.qtwebkit;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.google.common.collect.ImmutableMap;
@@ -46,7 +47,7 @@ import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 public class QtWebKitDriver extends RemoteWebDriver
 
     implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache,
-               BrowserConnection, HasMultiTouchScreen {
+               BrowserConnection, HasMultiTouchScreen, Visualizer {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
@@ -74,7 +75,7 @@ public class QtWebKitDriver extends RemoteWebDriver
     }
 
     public QtWebKitDriver(Capabilities desiredCapabilities) {
-        this(QtWebKitDriverService.getCommandExecutor(), desiredCapabilities);
+        this(createDefaultExecutor(), desiredCapabilities);
     }
 
     public QtWebKitDriver(URL remoteAddress, Capabilities desiredCapabilities,
@@ -135,10 +136,26 @@ public class QtWebKitDriver extends RemoteWebDriver
     public void setOnline(boolean online) throws WebDriverException {
         execute(DriverCommand.SET_BROWSER_ONLINE, ImmutableMap.of("state", online));
     }
-	
-	@Override
+
+    @Override
     public MultiTouchScreen getMultiTouch() {
         return multiTouchScreen;
+    }
+
+    @Override
+    public String getVisualizerSource() {
+        return (String) execute(QtWebKitDriverCommand.GET_VISUALIZER_SOURCE).getValue();
+    }
+
+    public static QtWebDriverExecutor createDefaultExecutor() {
+        try{
+            String ip = System.getProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY);
+            URL url = new URL(ip);
+            return new QtWebDriverExecutor(url);
+        }
+        catch (MalformedURLException e) {
+            return new QtWebDriverServiceExecutor(QtWebDriverService.createDefaultService());
+        }
     }
 
 }

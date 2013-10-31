@@ -82,4 +82,18 @@ public class ProxySettingTest extends JUnit4TestBase {
     desiredProxyServer.destroy();
   }
 
+  @Test
+  public void canConfigureProxyWithDesiredCapability() {
+    Proxy proxyToUse = proxyServer.asProxy();
+    DesiredCapabilities caps = new DesiredCapabilities();
+    caps.setCapability(PROXY, proxyToUse);
+
+    WebDriver driver = new WebDriverBuilder().setDesiredCapabilities(caps).get();
+    driver.get("http://www.diveintopython.net/toc/index.html");
+    driver.quit();
+
+    assertTrue("Proxy should have been called", proxyServer.hasBeenCalled("index.html"));
+  }
+
+
 }

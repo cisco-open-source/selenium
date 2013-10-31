@@ -41,15 +41,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
         capabilities.setCapability("windowposition", arg);
 
-        try {
-            hostURL = new URL("http://localhost:9517");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            return;
-        }
-        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
-        driver = new RemoteWebDriver(
-                executor, capabilities);
+        driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
 
         driver.get(pages.colorPage);
         WebDriver.Window window = driver.manage().window();
@@ -73,15 +65,8 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         String arg = "" + size.getWidth() + ", " + size.getHeight();
         DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
         capabilities.setCapability("windowsize", arg);
-        try {
-            hostURL = new URL("http://localhost:9517");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            return;
-        }
-        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
-        driver = new RemoteWebDriver(
-                executor, capabilities);
+
+        driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
 
         driver.get(pages.colorPage);
 
@@ -102,15 +87,8 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         URL hostURL;
         DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
         capabilities.setCapability("maximize", true);
-        try {
-            hostURL = new URL("http://localhost:9517");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            return;
-        }
-        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
-        driver = new RemoteWebDriver(
-                executor, capabilities);
+
+        driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
 
         driver.get(pages.colorPage);
 
