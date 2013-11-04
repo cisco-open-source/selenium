@@ -15,4 +15,5 @@ public interface QtWebKitDriverCommand extends DriverCommand {
   String GET_PLAYBACK_SPEED = "getPlaybackSpeed";
   String SET_PLAYBACK_SPEED = "setPlaybackSpeed";
   String GET_VISUALIZER_SOURCE = "getVisualizerSource";
+  String  GET_VISUALIZER_SHOW_POINT = "getVisualizerShowPoint";
 }
