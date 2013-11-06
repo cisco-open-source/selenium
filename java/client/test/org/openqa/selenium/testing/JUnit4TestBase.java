@@ -78,6 +78,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
   public TestRule traceMethodName = new TestWatcher() {
     @Override
     protected void starting(Description description) {
+      QtWebDriverExecutor.clearExecutedList();
       super.starting(description);
       logger.info(">>> Starting " + description);
 
@@ -99,9 +100,6 @@ public abstract class JUnit4TestBase implements WrapsDriver {
             ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
         }
 
-        if(description.toString().contains("org.openqa.selenium.html5"))
-            logger.info("####[JUnit4TestBase] Finished and have commands: " + commands.size());
-
         QtWebDriverExecutor.clearExecutedList();
     }
 
@@ -113,9 +111,6 @@ public abstract class JUnit4TestBase implements WrapsDriver {
         {
             ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
         }
-
-        if(description.toString().contains("org.openqa.selenium.html5"))
-            logger.info("####[JUnit4TestBase] Succeded and have commands: " + commands.size());
 
         QtWebDriverExecutor.clearExecutedList();
     }
