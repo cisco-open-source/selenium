@@ -28,6 +28,7 @@ import java.util.logging.Logger;
         GraphicsWebSanityTest.class,
         TouchTests.class,
         QtWebDriverSwitchesTest.class,
+        QtWebDriverVisualizerTest.class,
         HTML5VideoTagTest.class,
         HTML5AudioTagTest.class,
         VisualizerTest.class
