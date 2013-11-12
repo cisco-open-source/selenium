@@ -1,0 +1,11 @@
+java_test(name = "test_wd_visualizer",
+  srcs = [ "*.java" ],
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit" },
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/qtwebkit",
+    "//java/client/test/org/openqa/selenium:tests",
+    "//third_party/java/junit",
+  ]
+)

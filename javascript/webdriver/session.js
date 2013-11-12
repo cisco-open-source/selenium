@@ -36,6 +36,29 @@ webdriver.Session = function(id, capabilities) {
 
 
 /**
+ * Returns a list of the currently active sessions.
+ * @param {!webdriver.CommandExecutor} executor
+ * @return {!webdriver.promise.Promise} A promise that will be resolved with an
+ *     array of sessions.
+ */
+webdriver.Session.getSessions = function(executor) {
+  var command = new webdriver.Command(webdriver.CommandName.GET_SESSIONS);
+  var fn = goog.bind(executor.execute, executor, command);
+  return webdriver.promise.controlFlow().execute(function() {
+    return webdriver.promise.checkedNodeCall(fn).then(function(response) {
+      bot.response.checkResponse(response);
+      var sessions = [];
+      for (var session in response['value']) {
+        session = response['value'][session];
+        sessions.push(new webdriver.Session(session['id'], session['capabilities']));
+      }
+      return sessions;
+    });
+  }, 'Session.getSessions()');
+};
+
+
+/**
  * @return {string} This session's ID.
  */
 webdriver.Session.prototype.getId = function() {
