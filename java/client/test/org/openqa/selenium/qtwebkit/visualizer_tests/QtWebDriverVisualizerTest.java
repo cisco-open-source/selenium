@@ -1,5 +1,6 @@
 package org.openqa.selenium.qtwebkit.visualizer_tests;
 
+import com.thoughtworks.selenium.SeleniumException;
 import org.junit.*;
 
 import org.openqa.selenium.*;
@@ -11,14 +12,14 @@ import org.openqa.selenium.testing.NeedsLocalEnvironment;
 
 import java.net.URL;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.elementTextToEqual;
-import static org.openqa.selenium.WaitingConditions.elementValueToEqual;
-import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
+import static org.openqa.selenium.WaitingConditions.*;
+import static org.openqa.selenium.WaitingConditions.windowToBeSwitchedToWithName;
 
 public class QtWebDriverVisualizerTest extends JUnit4TestBase {
 
@@ -66,11 +67,7 @@ public class QtWebDriverVisualizerTest extends JUnit4TestBase {
         webPage.clear();
         webPage.sendKeys(pages.clicksPage);
 
-        WebElement webDriverSession = driver.findElement(By.name("webDriverSession"));
-        webDriverSession.clear();
-        webDriverSession.sendKeys(((RemoteWebDriver)driver2).getSessionId().toString());
-
-        String current = driver.getWindowHandle();
+        String currentHandle = driver.getWindowHandle();
         Set<String> currentWindowHandles = driver.getWindowHandles();
 
         driver.findElement(By.xpath("//input[@value='Source']")).click();
@@ -80,20 +77,26 @@ public class QtWebDriverVisualizerTest extends JUnit4TestBase {
         waitFor(WaitingConditions.pageTitleToBe(driver2, "XHTML Test Page"));
 
         driver.findElement(By.xpath("//input[@value='Source']")).click();
-        waitFor(newWindowIsOpened(driver, currentWindowHandles));
+        waitFor(windowHandleCountToBe(driver, 2));
 
         Set<String> allWindowHandles = driver.getWindowHandles();
-
-        // There should be two windows. We should also see each of the window titles at least once.
         assertEquals(2, allWindowHandles.size());
-        String handle1 = (String)allWindowHandles.toArray()[1];
-        driver.switchTo().window(handle1);
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        String handle = (String)allWindowHandles.toArray()[1];
+
+        if (currentHandle.equalsIgnoreCase(handle))
+        {
+            handle = (String)allWindowHandles.toArray()[0];
+        }
+
+        driver.switchTo().window(handle);
+        waitFor(windowToBeSwitchedToWithName(driver, handle));
 
         String typingText = "TheTypingText";
         String expectedText = "change" + typingText;
 
+        waitFor(elementToExist(driver, "username"));
         WebElement inputField = driver.findElement(By.id("username"));
+
         inputField.click();
         inputField.sendKeys(typingText);
         inputField.click();
@@ -101,8 +104,6 @@ public class QtWebDriverVisualizerTest extends JUnit4TestBase {
         WebElement inputField2 = driver2.findElement(By.id("username"));
         waitFor(elementValueToEqual(inputField2, expectedText));
         assertThat(inputField2.getAttribute("value"), equalTo(expectedText));
-
-        //sleep(10);
     }
 
     private void sleep(int sec) {
