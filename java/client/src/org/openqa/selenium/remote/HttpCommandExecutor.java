@@ -58,6 +58,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.http.protocol.ExecutionContext.HTTP_TARGET_HOST;
@@ -507,6 +508,10 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
 
   private static CommandInfo delete(String url) {
     return new CommandInfo(url, HttpVerb.DELETE);
+  }
+
+  public Map<String, CommandInfo> getSupportedCommandMap() {
+    return Collections.unmodifiableMap(nameToUrl);
   }
 
 }
