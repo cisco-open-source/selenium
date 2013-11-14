@@ -119,6 +119,12 @@ public class ElementAttributeTest extends JUnit4TestBase {
     }
 
     @Test
+    public void testGetColorAttr() {
+        WebElement element = driver.findElement(By.id("displayedLabel"));
+        assertThat(element.getAttribute("color"), is("#a9a9a9"));
+    }
+
+    @Test
     public void testReturnTextOfLabel() {
         WebElement element = driver.findElement(By.id("displayedLabel"));
         assertThat(element.getAttribute("text"), is("Visible Label"));

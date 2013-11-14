@@ -252,7 +252,7 @@ public class Jetty7AppServer implements AppServer {
     WebAppContext app = new WebAppContext();
     app.setContextPath(contextPath);
     app.setWar(absolutePath);
-    app.getMimeTypes().addMimeMapping("qml", "application/qml");
+    app.getMimeTypes().addMimeMapping("qml", "text/x-qml");
     handlers.addHandler(app);
     return app;
   }
