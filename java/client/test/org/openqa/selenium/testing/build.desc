@@ -62,7 +62,6 @@ java_library(name = "junit_4",
     "JUnit4TestBase.java",
     "ParallelSuite.java",
     "SeleniumTestRunner.java",
-    "ReportSupplier.java",
   ],
   deps = [
     ":junit",
