@@ -6,7 +6,7 @@ import org.openqa.selenium.interactions.internal.Coordinates;
  * Interface to use for testing multitouch event
  *
  */
-public interface MultiTouchScreen {
+public interface MultiTouchScreen extends TouchScreen {
     /**
      * Allows the execution of pinch zoom action.
      *

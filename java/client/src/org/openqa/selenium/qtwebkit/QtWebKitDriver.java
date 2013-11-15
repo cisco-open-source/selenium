@@ -46,12 +46,11 @@ import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 
 public class QtWebKitDriver extends RemoteWebDriver
 
-    implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable, ApplicationCache,
+    implements TakesScreenshot, WebStorage, Rotatable, ApplicationCache,
                BrowserConnection, HasMultiTouchScreen, Visualizer {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
-    private TouchScreen touchScreen;
     private MultiTouchScreen multiTouchScreen;
 
     /**
@@ -66,7 +65,6 @@ public class QtWebKitDriver extends RemoteWebDriver
         super(executor, desiredCapabilities, requiredCapabilities);
         localStorage = new RemoteLocalStorage(getExecuteMethod());
         sessionStorage = new RemoteSessionStorage(getExecuteMethod());
-        touchScreen = new RemoteTouchScreen(getExecuteMethod());
         multiTouchScreen = new RemoteMultiTouchScreen(getExecuteMethod());
     }
 
@@ -105,11 +103,6 @@ public class QtWebKitDriver extends RemoteWebDriver
     }
 
     @Override
-    public TouchScreen getTouch() {
-        return touchScreen;
-    }
-
-    @Override
     public void rotate(ScreenOrientation orientation) {
         execute(DriverCommand.SET_SCREEN_ORIENTATION, ImmutableMap.of("orientation", orientation));
     }
@@ -139,6 +132,11 @@ public class QtWebKitDriver extends RemoteWebDriver
 
     @Override
     public MultiTouchScreen getMultiTouch() {
+        return multiTouchScreen;
+    }
+
+    @Override
+    public TouchScreen getTouch() {
         return multiTouchScreen;
     }
 
