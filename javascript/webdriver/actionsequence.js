@@ -348,3 +348,206 @@ webdriver.ActionSequence.prototype.sendKeys = function(var_args) {
   var keys = goog.array.flatten(goog.array.slice(arguments, 0));
   return this.scheduleKeyboardAction_('sendKeys', keys);
 };
+
+
+/**
+ * Single tap on the touch enabled device.
+ * @param {!webdriver.WebElement} element The element to tap on.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchSingleTap = function(element) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_SINGLE_TAP);
+
+  var id = element.toWireValue().then(function(value) {
+      return value['ELEMENT'];
+    });
+  command.setParameter('element', id);
+
+  this.schedule_(webdriver.CommandName.TOUCH_SINGLE_TAP, command);
+  return this;
+};
+
+
+/**
+ * Finger down on the screen.
+ * @param {number} x X coordinate on the screen
+ * @param {number} y Y coordinate on the screen
+ */
+webdriver.ActionSequence.prototype.touchDown = function(x, y) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_DOWN);
+
+  command.setParameter('x', x);
+  command.setParameter('y', y);
+
+  this.schedule_(webdriver.CommandName.TOUCH_DOWN, command);
+  return this;
+};
+
+
+/**
+ * Finger up on the screen.
+ * @param {number} x X coordinate on the screen
+ * @param {number} y Y coordinate on the screen
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchUp = function(x, y) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_UP);
+
+  command.setParameter('x', x);
+  command.setParameter('y', y);
+
+  this.schedule_(webdriver.CommandName.TOUCH_UP, command);
+  return this;
+};
+
+
+/**
+ * Finger move on the screen.
+ * @param {number} x X coordinate on the screen
+ * @param {number} y Y coordinate on the screen
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchMove = function(x, y) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_MOVE);
+
+  command.setParameter('x', x);
+  command.setParameter('y', y);
+
+  this.schedule_(webdriver.CommandName.TOUCH_MOVE, command);
+  return this;
+};
+
+
+/**
+ * Scroll on the touch screen using finger based motion events.
+ * @param {(!webdriver.WebElement|{x: number, y: number})} elementOrOffset Either
+ *     the element where scrolls starts or offset in pixels to scroll by.
+ * @param {({x: number, y: number})=} opt_offset The offset in pixels to scroll by
+ *     if the first argument is the element.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchScroll = function(elementOrOffset, opt_offset) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_SCROLL);
+
+  if (opt_offset != undefined) {
+    var id = elementOrOffset.toWireValue().then(function(value) {
+        return value['ELEMENT'];
+      });
+    command.setParameter('element', id);
+    command.setParameter('xoffset', opt_offset.x);
+    command.setParameter('yoffset', opt_offset.y);
+  } else {
+    command.setParameter('xoffset', elementOrOffset.x);
+    command.setParameter('yoffset', elementOrOffset.y);
+  }
+
+  this.schedule_(webdriver.CommandName.TOUCH_SCROLL, command);
+  return this;
+};
+
+
+/**
+ * Double tap on the touch screen using finger motion events.
+ * @param {!webdriver.WebElement} element The element to double tap on.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchDoubleTap = function(element) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_DOUBLE_TAP);
+
+  var id = element.toWireValue().then(function(value) {
+      return value['ELEMENT'];
+    });
+  command.setParameter('element', id);
+
+  this.schedule_(webdriver.CommandName.TOUCH_DOUBLE_TAP, command);
+  return this;
+};
+
+
+/**
+ * Long press on the touch screen using finger motion events.
+ * @param {!webdriver.WebElement} element The element to long press on.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchLongPress = function(element) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_LONG_PRESS);
+
+  var id = element.toWireValue().then(function(value) {
+      return value['ELEMENT'];
+    });
+  command.setParameter('element', id);
+
+  this.schedule_(webdriver.CommandName.TOUCH_LONG_PRESS, command);
+  return this;
+};
+
+
+/**
+ * Flick on the touch screen using finger motion events.
+ * @param {(!webdriver.WebElement|{x: number, y: number})} elementOrSpeed Either
+ *     the element where flick starts or speed in pixels per second.
+ * @param {({x: number, y: number})=} opt_offset The offset in pixels to flick by
+ *     if the first argument is the element.
+ * @param {number=} opt_speed The speed in pixels per seconds if the first argument
+ *     is the element.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchFlick = function(elementOrSpeed, opt_offset, opt_speed) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_FLICK);
+
+  if (arguments.length == 3) {
+    var id = elementOrSpeed.toWireValue().then(function(value) {
+        return value['ELEMENT'];
+      });
+    command.setParameter('element', id);
+    command.setParameter('xoffset', opt_offset.x);
+    command.setParameter('yoffset', opt_offset.y);
+    command.setParameter('speed', opt_speed);
+  } else {
+    command.setParameter('xspeed', elementOrSpeed.x);
+    command.setParameter('yspeed', elementOrSpeed.y);
+  }
+
+  this.schedule_(webdriver.CommandName.TOUCH_FLICK, command);
+  return this;
+};
+
+
+/**
+ * Pinch and rotate on the touch screen using finger motion events.
+ * @param {!webdriver.WebElement} element The element to rotate.
+ * @param {!number} angle The angle by which to rotate.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchPinchRotate = function(element, angle) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_PINCH_ROTATE);
+
+  var id = element.toWireValue().then(function(value) {
+      return value['ELEMENT'];
+    });
+  command.setParameter('element', id);
+  command.setParameter('angle', angle);
+
+  this.schedule_(webdriver.CommandName.TOUCH_PINCH_ROTATE, command);
+  return this;
+};
+
+
+/**
+ * Pinch and zoom on the touch screen using finger motion events.
+ * @param {!webdriver.WebElement} element The element to zoom.
+ * @param {!number} scale The scale by which to zoom.
+ * @return {!webdriver.ActionSequence} A self reference.
+ */
+webdriver.ActionSequence.prototype.touchPinchZoom = function(element, scale) {
+  var command = new webdriver.Command(webdriver.CommandName.TOUCH_PINCH_ZOOM);
+
+  var id = element.toWireValue().then(function(value) {
+      return value['ELEMENT'];
+    });
+  command.setParameter('element', id);
+  command.setParameter('scale', scale);
+
+  this.schedule_(webdriver.CommandName.TOUCH_PINCH_ZOOM, command);
+  return this;
+};
