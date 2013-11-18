@@ -8,7 +8,6 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
 
-import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -83,14 +82,14 @@ public class QtWebDriverVisualizerTest extends JUnit4TestBase {
 
     waitFor(elementToExist(driver, "username"));
     WebElement inputField = driver.findElement(By.id("username"));
+    WebElement inputField2 = driver2.findElement(By.id("username"));
 
     inputField.click();
     waitFor(activeElementToBe(driver, inputField));
+    waitFor(activeElementToBe(driver2, inputField2));
 
     inputField.sendKeys(typingText);
-    inputField.click();
 
-    WebElement inputField2 = driver2.findElement(By.id("username"));
     waitFor(elementValueToEqual(inputField2, expectedText));
     assertThat(inputField2.getAttribute("value"), equalTo(expectedText));
   }
