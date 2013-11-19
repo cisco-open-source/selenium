@@ -30,6 +30,7 @@ import java.util.Map;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         WindowTest.class,
+        MenuTest.class,
         ClickTest.class,
         FindingTest.class,
         CoordinatesTest.class,

@@ -34,6 +34,7 @@ import javax.xml.transform.stream.StreamResult;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         WindowTest.class,
+        MenuTest.class,
         ClickTest.class,
         FindingTest.class,
         CoordinatesTest.class,
@@ -58,7 +59,7 @@ public class NativeWebDriverQt4Tests {
 
     @AfterClass
     public static void cleanUpDriver() {
-        JUnit4TestBase.removeDriver();
+        //JUnit4TestBase.removeDriver();
 
         try
         {
