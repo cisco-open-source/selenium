@@ -59,7 +59,7 @@ public class NativeWebDriverQt4Tests {
 
     @AfterClass
     public static void cleanUpDriver() {
-        //JUnit4TestBase.removeDriver();
+        JUnit4TestBase.removeDriver();
 
         try
         {
