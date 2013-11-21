@@ -13,7 +13,6 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -140,6 +139,35 @@ public class CapabilitiesTest extends JUnit4TestBase {
         try {
             driver = CreateWebDriver();
             driver.get(pages.rectanglesPage);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            fail("Should not to be here ...");
+        }
+    }
+
+    @Test
+    public void testRetainedSize() {
+        desiredCapabilities.setCapability("windowsize", "1000, 600");
+        desiredCapabilities.setCapability("browserClass", "TypingTestWidget");
+        try {
+            driver = CreateWebDriver();
+            assertEquals(driver.manage().window().getSize().getWidth(), 1000);
+            assertEquals(driver.manage().window().getSize().getHeight(), 600);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            fail("Should not to be here ...");
+        }
+    }
+
+    @Test
+    public void testRetainedPosition() {
+        desiredCapabilities.setCapability("windowposition", "50, 70");
+        desiredCapabilities.setCapability("browserClass", "TypingTestWidget");
+
+        try {
+            driver = CreateWebDriver();
+            assertEquals(driver.manage().window().getPosition().getX(), 50);
+            assertEquals(driver.manage().window().getPosition().getY(), 70);
         } catch (RuntimeException e) {
             e.printStackTrace();
             fail("Should not to be here ...");
