@@ -27,6 +27,10 @@ public class HttpProfilerLogEntry extends ProfilerLogEntry {
   public HttpProfilerLogEntry(String commandName, boolean isStart) {
     super(EventType.HTTP_COMMAND, constructMessage(EventType.HTTP_COMMAND, commandName, isStart));
   }
+
+  public HttpProfilerLogEntry(String commandName, String url, String method, boolean isStart) {
+    super(EventType.HTTP_COMMAND, constructMessage(EventType.HTTP_COMMAND, commandName, url, method, isStart));
+  }
   
   private static String constructMessage(EventType eventType, String commandName, boolean isStart) {
     Map<String, ?> map = ImmutableMap.of(
@@ -35,5 +39,16 @@ public class HttpProfilerLogEntry extends ProfilerLogEntry {
       "startorend", isStart ? "start" : "end");
     return new JSONObject(map).toString();
   }
+
+  private static String constructMessage(EventType eventType, String commandName, String url, String method, boolean isStart) {
+    Map<String, ?> map = ImmutableMap.of(
+        "event", eventType.toString(),
+        "command", commandName,
+        "url", url,
+        "method", method,
+        "startorend", isStart ? "start" : "end");
+    return new JSONObject(map).toString();
+  }
+
 
 }

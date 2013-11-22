@@ -296,9 +296,12 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         httpMethod.addHeader("Cache-Control", "no-cache");
       }
 
-      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), true));
+      String commandName = command.getName();
+      String url = nameToUrl.get(commandName).getUrl();
+      String method = nameToUrl.get(commandName).getVerb().toString();
+      log(LogType.PROFILER, new HttpProfilerLogEntry(commandName, url, method, true));
       HttpResponse response = fallBackExecute(context, httpMethod);
-      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), false));
+      log(LogType.PROFILER, new HttpProfilerLogEntry(commandName, url, method, false));
 
       response = followRedirects(client, context, response, /* redirect count */0);
 
@@ -508,10 +511,6 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
 
   private static CommandInfo delete(String url) {
     return new CommandInfo(url, HttpVerb.DELETE);
-  }
-
-  public Map<String, CommandInfo> getSupportedCommandMap() {
-    return Collections.unmodifiableMap(nameToUrl);
   }
 
 }
