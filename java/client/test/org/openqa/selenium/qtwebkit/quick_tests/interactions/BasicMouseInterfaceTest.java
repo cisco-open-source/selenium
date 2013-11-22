@@ -53,7 +53,6 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     }
 
     @Test
-    @Ignore(QTWEBKIT)
     // we cannot simulate drag@drop with pure mouse actions. Need separated mouse command for this
     public void testDraggingElementWithMouseMovesItToAnotherList() {
         performDragAndDropWithMouse();
