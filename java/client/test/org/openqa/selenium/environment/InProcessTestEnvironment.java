@@ -26,6 +26,7 @@ public class InProcessTestEnvironment implements TestEnvironment {
 
   private AppServer appServer;
   private Pages pages;
+  private StatisticCommands statisticCommands = new StatisticCommands();
 
   public InProcessTestEnvironment() {
     String servingHost = getServingHost();
@@ -54,6 +55,15 @@ public class InProcessTestEnvironment implements TestEnvironment {
   public static void main(String[] args) {
     new InProcessTestEnvironment();
   }
+
+
+  public void addTestToCommand(String command, String url, String method,  String[] test) {
+    statisticCommands.addCommand(command, url, method, test);
+  }
+
+  public StatisticCommands getStatisticCommands() {
+    return statisticCommands;
+  }
   
   private String getServingHost() {
     Browser browser = Browser.detect();
@@ -65,4 +75,5 @@ public class InProcessTestEnvironment implements TestEnvironment {
     }
     return null;
   }
+
 }
