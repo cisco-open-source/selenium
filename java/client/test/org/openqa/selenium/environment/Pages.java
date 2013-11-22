@@ -78,6 +78,7 @@ public class Pages {
   public String xhtmlTestPage;
   public String html5VideoTest;
   public String html5AudioTest;
+  public String pinchTouchTest;
 
   public String notExist;
 
@@ -161,5 +162,6 @@ public class Pages {
     notExist = appServer.whereIs("temp.txt");
     html5VideoTest = appServer.whereIs("HTML5_Video_Test.html");
     html5AudioTest = appServer.whereIs("HTML5_Audio_Test.html");
+    pinchTouchTest = appServer.whereIs("pinch.html");
   }
 }

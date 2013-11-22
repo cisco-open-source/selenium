@@ -30,6 +30,7 @@ import java.util.logging.Logger;
         QtWebDriverSwitchesTest.class,
         HTML5VideoTagTest.class,
         HTML5AudioTagTest.class
+        MultitiouchTest.class,
 })
 
 public class QtWebkitDriverTests {
