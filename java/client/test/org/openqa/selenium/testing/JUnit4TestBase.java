@@ -17,9 +17,11 @@ limitations under the License.
 
 package org.openqa.selenium.testing;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -33,8 +35,11 @@ import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.profiler.EventType;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -78,56 +83,42 @@ public abstract class JUnit4TestBase implements WrapsDriver {
   public TestRule traceMethodName = new TestWatcher() {
     @Override
     protected void starting(Description description) {
-      QtWebDriverExecutor.clearExecutedList();
       super.starting(description);
       logger.info(">>> Starting " + description);
 
-        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
-        for (int i=0; i<commands.size(); i++)
-        {
-            ReportSupplier.addCommand(commands.get(i));
-        }
     }
 
     @Override
     protected void finished(Description description) {
       super.finished(description);
       logger.info("<<< Finished " + description);
-
-        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
-        for (int i=0; i<commands.size(); i++)
-        {
-            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
+      if (driver != null && ((RemoteWebDriver) driver).getSessionId() != null) {
+        List<LogEntry> entries;
+        try {
+          entries = driver.manage().logs().get("profiler").getAll();
+        } catch (Exception e) {
+          logger.warning("<<< Error: can't get valid logs...");
+          e.printStackTrace();
+          return;
         }
-
-        QtWebDriverExecutor.clearExecutedList();
-    }
-
-    @Override
-    protected void succeeded(org.junit.runner.Description description)
-    {
-        ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
-        for (int i=0; i<commands.size(); i++)
-        {
-            ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(true));
-        }
-
-        QtWebDriverExecutor.clearExecutedList();
-    }
-
-      @Override
-      protected void failed(java.lang.Throwable e, org.junit.runner.Description description)
-      {
-          ArrayList<String> commands = QtWebDriverExecutor.getExecutedCommands();
-          for (int i=0; i<commands.size(); i++)
-          {
-              ReportSupplier.addTestToCommand(commands.get(i), description.getMethodName(), new Boolean(false));
+        String[] testCase = new String[2];
+        for (LogEntry entry : entries) {
+          try {
+            JSONObject json = new JSONObject(entry.getMessage());
+            if (json.getString("event").equals(EventType.HTTP_COMMAND.toString())) {
+              testCase[0] = description.getClassName();
+              testCase[1] = description.getMethodName();
+              environment.addTestToCommand(json.getString("command"), json.getString("url"),
+                                           json.getString("method"), testCase);
+            }
+          } catch (JSONException e) {
+            e.printStackTrace();
           }
-
-          QtWebDriverExecutor.clearExecutedList();
+        }
       }
+    }
   };
-  
+
   public WebDriver getWrappedDriver() {
     return storedDriver.get();
   }
@@ -136,15 +127,16 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     WebDriver driver = storedDriver.get();
 
     if (driver == null) {
-        DesiredCapabilities caps = new DesiredCapabilities();
-        WebDriverBuilder builder = new WebDriverBuilder();
+      DesiredCapabilities caps = new DesiredCapabilities();
+      caps.setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, true);
+      WebDriverBuilder builder = new WebDriverBuilder();
 
-        String startClass = System.getProperty("webdriver.browserClass");
-        if (null != startClass) {
-            caps.setCapability("browserClass", startClass);
-        }
-        builder.setDesiredCapabilities(caps);
-        driver = builder.get();
+      String startClass = System.getProperty("webdriver.browserClass");
+      if (null != startClass) {
+        caps.setCapability("browserClass", startClass);
+      }
+      builder.setDesiredCapabilities(caps);
+      driver = builder.get();
       storedDriver.set(driver);
     }
     return storedDriver.get();
