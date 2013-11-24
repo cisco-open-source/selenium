@@ -29,8 +29,7 @@ import java.util.logging.Logger;
         TouchTests.class,
         QtWebDriverSwitchesTest.class,
         HTML5VideoTagTest.class,
-        HTML5AudioTagTest.class,
-        VisualizerTest.class
+        HTML5AudioTagTest.class
 })
 
 public class QtWebkitDriverTests {

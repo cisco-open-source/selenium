@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit;
+package org.openqa.selenium.qtwebkit.visualizer_tests;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -11,7 +11,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
-public class VisualizerTest extends JUnit4TestBase {
+public class VisualizerSourceTest extends JUnit4TestBase {
   @Before
   public void setUp() throws Exception {
     driver.get(pages.visualizerPage);
