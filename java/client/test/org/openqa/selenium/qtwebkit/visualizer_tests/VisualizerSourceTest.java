@@ -7,6 +7,16 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.qtwebkit.Visualizer;
 import org.openqa.selenium.testing.JUnit4TestBase;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.logging.Logger;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
@@ -30,6 +40,21 @@ public class VisualizerSourceTest extends JUnit4TestBase {
   public void testSource(){
     String source = ((Visualizer)driver).getVisualizerSource();
     assertNotNull(source);
+
+    try {
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().
+          parse(new InputSource(new StringReader(source)));
+      assertNotNull(doc);
+    } catch (SAXException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } catch (IOException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    }
 
     assertThat("JavaScript removal", source, not(containsString("Script to remove")));
 
