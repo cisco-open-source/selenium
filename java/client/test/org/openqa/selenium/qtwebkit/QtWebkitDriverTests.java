@@ -5,7 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.openqa.selenium.StandardSeleniumTests;
-import org.openqa.selenium.interactions.touch.TouchTests;
+import org.openqa.selenium.qtwebkit.touch.TouchTests;
 import org.openqa.selenium.testing.ReportSupplier;
 import org.w3c.dom.*;
 
@@ -29,8 +29,7 @@ import java.util.logging.Logger;
         TouchTests.class,
         QtWebDriverSwitchesTest.class,
         HTML5VideoTagTest.class,
-        HTML5AudioTagTest.class
-        MultitiouchTest.class,
+        HTML5AudioTagTest.class,
 })
 
 public class QtWebkitDriverTests {

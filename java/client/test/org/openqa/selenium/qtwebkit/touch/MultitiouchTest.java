@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit;
+package org.openqa.selenium.qtwebkit.touch;
 
 import static org.junit.Assert.assertTrue;
 import static org.openqa.selenium.TestWaiter.waitFor;

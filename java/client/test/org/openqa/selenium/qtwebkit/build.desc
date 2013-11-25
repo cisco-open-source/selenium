@@ -1,6 +1,7 @@
 
 java_test(name = "test_qtwebkit",
-  srcs = [ "*.java" ],
+  srcs = [ "*.java",
+            "touch/*.java"],
   sysproperties = [
     { "selenium.browser" : "qtwebkit" },
   ],
