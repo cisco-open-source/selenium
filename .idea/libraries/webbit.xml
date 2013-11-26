@@ -2,10 +2,9 @@
   <library name="webbit">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/third_party/java/webbit/webbit-0.4.14.jar!/" />
+      <root url="jar://$PROJECT_DIR$/third_party/java/webbit/webbit-0.4.14-src.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="jar://$PROJECT_DIR$/third_party/java/webbit/webbit-0.4.14-src.jar!/" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>
