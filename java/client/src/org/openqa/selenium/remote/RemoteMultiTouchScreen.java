@@ -7,11 +7,12 @@ import org.openqa.selenium.remote.CoordinatesUtils;
 
 import java.util.Map;
 
-public class RemoteMultiTouchScreen implements MultiTouchScreen {
+public class RemoteMultiTouchScreen extends RemoteTouchScreen implements MultiTouchScreen {
 
     private final ExecuteMethod executeMethod;
 
     public RemoteMultiTouchScreen(ExecuteMethod executeMethod) {
+        super(executeMethod);
         this.executeMethod = executeMethod;
     }
 

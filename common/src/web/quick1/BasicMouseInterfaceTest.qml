@@ -62,6 +62,8 @@ Rectangle {
                 drag.target: itemToDrag
                 onPressed: console.log("-----------pressed--------------" + itemToDrag.x + " : " + itemToDrag.y)
                 onReleased: console.log("-----------released--------------" + itemToDrag.x + " : " + itemToDrag.y)
+                onPressAndHold: console.log("-----------pressAndHold-------------" + itemToDrag.x + " : " + itemToDrag.y)
+                onPositionChanged: console.log("----- update: (" + mouse.x +":"+ mouse.y+")" + "("+itemToDrag.x+":"+itemToDrag.y+")")
             }
         }
 }

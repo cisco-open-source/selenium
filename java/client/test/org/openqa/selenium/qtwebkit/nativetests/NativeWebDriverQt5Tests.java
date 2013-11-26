@@ -13,6 +13,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         WindowTest.class,
+        MenuTest.class,
         ClickTest.class,
         FindingTest.class,
         CoordinatesTest.class,

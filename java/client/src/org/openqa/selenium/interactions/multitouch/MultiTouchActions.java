@@ -6,13 +6,14 @@ import org.openqa.selenium.interactions.HasInputDevices;
 import org.openqa.selenium.interactions.HasMultiTouchScreen;
 import org.openqa.selenium.interactions.MultiTouchScreen;
 import org.openqa.selenium.interactions.Keyboard;
+import org.openqa.selenium.interactions.touch.TouchActions;
 import org.openqa.selenium.internal.Locatable;
 
 /**
  * Implements actions for multitouch enabled devices, reusing the available composite and builder design
  * patterns from Actions.
  */
-public class MultiTouchActions extends Actions {
+public class MultiTouchActions extends TouchActions {
     protected MultiTouchScreen multiTouchScreen;
 
     public MultiTouchActions(WebDriver driver) {
@@ -21,7 +22,7 @@ public class MultiTouchActions extends Actions {
     }
 
     public MultiTouchActions(Keyboard keyboard, MultiTouchScreen multiTouchScreen) {
-        super(keyboard);
+        super(keyboard, multiTouchScreen);
         this.multiTouchScreen = multiTouchScreen;
     }
 

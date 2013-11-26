@@ -81,10 +81,10 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     } finally {
       drop.perform();
     }
+
   }
 
   @Test
-  @Ignore(QTWEBKIT)
   public void testDraggingElementWithMouseMovesItToAnotherList() {
     performDragAndDropWithMouse();
     WebElement dragInto = driver.findElement(By.id("firstWidget"));
@@ -94,7 +94,6 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
   // This test is very similar to testDraggingElementWithMouse. The only
   // difference is that this test also verifies the correct events were fired.
   @Test
-  @Ignore(QTWEBKIT)
   public void testDraggingElementWithMouseFiresEvents() {
     performDragAndDropWithMouse();
     WebElement dragReporter = driver.findElement(By.id("dragging_reports"));
