@@ -6,9 +6,7 @@ import org.junit.runners.Suite;
 import org.openqa.selenium.StandardSeleniumTests;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
-
 import org.openqa.selenium.qtwebkit.touch.TouchTests;
-
 import java.util.logging.Logger;
 
 @RunWith(Suite.class)

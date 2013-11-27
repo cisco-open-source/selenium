@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>scripty2 demo | Photo fun</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <script src="touch/prototype.js" type="text/javascript"></script>
+    <script src="touch/s2.js" type="text/javascript"></script>
+        <style type="text/css" media="screen">
+      html {
+        height: 100%;
+      }
+      body { 
+        font: 12px/15px Calibri, Verdana;
+        background:#844;
+        height: 100%;
+        overflow:hidden
+      }
+      img.manipulate {
+        border: 20px solid #fff;
+      }
+    </style>
+  </head>   
+  <body id="body">
+    <div id="debug"></div>
+    <div id="colorpicker"></div> 
+    <div id="result_scale">
+      &nbsp;
+    </div>   
+    <div id="result_rotate">
+      &nbsp;
+    </div>  
+    
+    <img id="picture" class="manipulate" src="touch/img.jpg" />
+ 
+    <script type="text/javascript" charset="utf-8">
+      S2.enableMultitouchSupport = true;
+    
+      (function(){     
+        // initial position & rotation
+        var left = 300, top = 200, width = 350,
+          z = 1, FRICTION = 2.5;
+
+        $$('.manipulate').each(function(img,i){
+          img.style.cssText += ';position:absolute;'+
+            'left:'+left+'px;top:'+top+'px;'+
+            'width:'+width+'px;';
+          // img.transform({ rotation: p[i][3] });
+          // img.morph('left:'+p[i][0]+'px;top:'+p[i][1]+'px',{duration:2,delay:i/2});
+           
+           // image rotating and scaling
+           img.observe('manipulate:update', function(event){
+             if(img.full) return;
+             
+             // limit scaling to 0.35 to 10
+             var scale = event.memo.scale < 0.35 ? 0.35 : 
+               event.memo.scale > 10 ? 10 : event.memo.scale;
+
+            console.log("scale ="+scale)
+            document.getElementById('result_scale').innerHTML = (scale).toFixed(1);
+
+               
+             img.style.cssText += 
+               ';z-index:'+(z++)+';left:'+(left+event.memo.panX)+
+               'px;top:'+(top+event.memo.panY)+'px;'+
+               ';';
+              
+             img.transform({ rotation: event.memo.rotation, scale: scale });
+             img._x = left+event.memo.panX;
+             img._y = top+event.memo.panY;
+
+             console.log("rotation ="+event.memo.rotation)
+             document.getElementById('result_rotate').innerHTML = (event.memo.rotation * 180/Math.PI).toFixed();;
+             
+             event.stop();
+           });           
+        });
+      })();
+    </script>
+  </body>
+</html>
