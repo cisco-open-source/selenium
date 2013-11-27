@@ -171,14 +171,7 @@ public class CustomCapabilitiesQt5Test extends JUnit4TestBase {
     private DesiredCapabilities requiredCapabilities;
 
     private WebDriver CreateWebDriver() throws RuntimeException {
-        URL hostURL;
-        try {
-            hostURL = new URL("http://localhost:9517");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        }
-        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
+        QtWebDriverExecutor executor = QtWebKitDriver.createDefaultExecutor();
         return new RemoteWebDriver(executor, desiredCapabilities, requiredCapabilities);
     }
 
