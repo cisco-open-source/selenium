@@ -1,24 +1,41 @@
 package org.openqa.selenium.qtwebkit.hybridtests;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.qtwebkit.QtWebDriverService;
+import org.openqa.selenium.qtwebkit.QtWebKitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.ProxyServer;
 import org.openqa.selenium.testing.TestUtilities;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
 
 public class ProxySettingTest extends JUnit4TestBase {
 
   private ProxyServer proxyServer;
+
+
+  @AfterClass
+  public static void cleanUpExistingDriver() {
+    JUnit4TestBase.removeDriver();
+  }
 
   @Before
   public void newProxyInstance() {
@@ -32,8 +49,10 @@ public class ProxySettingTest extends JUnit4TestBase {
   }
 
   @Before
+  public void createDriver() throws Exception {  }
+
+  @Before
   public void setUp() throws Exception {
-    if (null != driver)
       JUnit4TestBase.removeDriver();
   }
 
@@ -95,5 +114,28 @@ public class ProxySettingTest extends JUnit4TestBase {
     assertTrue("Proxy should have been called", proxyServer.hasBeenCalled("index.html"));
   }
 
+
+  @Test
+  public void testSystemProxy() {
+    Proxy proxyToUse = new Proxy();
+    proxyToUse.setProxyType(Proxy.ProxyType.SYSTEM);
+    DesiredCapabilities caps = new DesiredCapabilities();
+    caps.setCapability(PROXY, proxyToUse);
+
+    Map<String, String> environment = new HashMap<String, String>();
+    environment.put("http_proxy", "localhost:8080");
+    String libraryPath = System.getenv("LD_LIBRARY_PATH");
+    if (libraryPath != null) {
+      environment.put("LD_LIBRARY_PATH", libraryPath);
+    }
+    try {
+      QtWebKitDriver driver = new QtWebKitDriver(QtWebKitDriver.createExecutor(environment), caps);
+      driver.get("http://www.diveintopython.net/toc/index.html");
+      driver.quit();
+    } catch (RuntimeException e) {
+      fail("You should not be here...");
+    }
+
+  }
 
 }
