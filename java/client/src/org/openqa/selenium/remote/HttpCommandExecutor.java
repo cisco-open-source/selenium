@@ -58,6 +58,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.http.protocol.ExecutionContext.HTTP_TARGET_HOST;
@@ -295,9 +296,12 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         httpMethod.addHeader("Cache-Control", "no-cache");
       }
 
-      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), true));
+      String commandName = command.getName();
+      String url = nameToUrl.get(commandName).getUrl();
+      String method = nameToUrl.get(commandName).getVerb().toString();
+      log(LogType.PROFILER, new HttpProfilerLogEntry(commandName, url, method, true));
       HttpResponse response = fallBackExecute(context, httpMethod);
-      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), false));
+      log(LogType.PROFILER, new HttpProfilerLogEntry(commandName, url, method, false));
 
       response = followRedirects(client, context, response, /* redirect count */0);
 

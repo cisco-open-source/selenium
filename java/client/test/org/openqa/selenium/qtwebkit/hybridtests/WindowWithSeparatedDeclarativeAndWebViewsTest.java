@@ -1,8 +1,10 @@
 package org.openqa.selenium.qtwebkit.hybridtests;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WaitingConditions;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -14,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.openqa.selenium.TestWaiter.waitFor;
 
 public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBase {
@@ -26,6 +29,18 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
         buttonToWeb = driver.findElement(By.id("openWebViewButton"));
         inputQmlURL = driver.findElement(By.id("inputQmlURL"));
         buttonToQml = driver.findElement(By.id("openQmlViewButton"));
+        assertEquals(1, driver.getWindowHandles().size());
+    }
+
+    @After
+    public void cleanUp() {
+        for (String winHandle : driver.getWindowHandles()) {
+            if (!currentWindow.equals(winHandle)) {
+                driver.switchTo().window(winHandle);
+                driver.close();
+            }
+        }
+        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -39,8 +54,6 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
                 break;
             }
         }
-        driver.close();
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -66,15 +79,7 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
     public void testCanOpenViewsForEmptyPage() {
         buttonToWeb.click();
         buttonToQml.click();
-
         assertEquals(3, driver.getWindowHandles().size());
-        for (String winHandle : driver.getWindowHandles()) {
-            if (!currentWindow.equals(winHandle)) {
-                driver.switchTo().window(winHandle);
-                driver.close();
-            }
-        }
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -108,14 +113,6 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
 
         driver.switchTo().window(webWindow);
         waitFor(windowUrlContains(driver, "colorPage.html"));
-
-        for (String winHandle : driver.getWindowHandles()) {
-            if (!currentWindow.equals(winHandle)) {
-                driver.switchTo().window(winHandle);
-                driver.close();
-            }
-        }
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -146,13 +143,6 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
             }
         }
 
-        for (String winHandle : driver.getWindowHandles()) {
-            if (!currentWindow.equals(winHandle)) {
-                driver.switchTo().window(winHandle);
-                driver.close();
-            }
-        }
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -212,8 +202,6 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
         }
         driver.get(appServer.whereIs("quick1/FindingTest.qml"));
         waitFor(windowUrlContains(driver, "FindingTest.qml"));
-        driver.close();
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -223,12 +211,15 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
         for (String winHandle : driver.getWindowHandles()) {
             if (!currentWindow.equals(winHandle)) {
                 driver.switchTo().window(winHandle);
-                assertFalse(driver.getCurrentUrl().contains("FindingTest.qml"));
+                try {
+                    driver.findElement(By.id("inputElement"));
+                    fail("You don't have to be here...");
+                } catch (NoSuchElementException e) {
+                    //expected
+                }
                 break;
             }
         }
-        driver.close();
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -242,8 +233,6 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
                 break;
             }
         }
-        driver.close();
-        driver.switchTo().window(currentWindow);
     }
 
     @Test
@@ -256,13 +245,6 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
         buttonToQml.click();
         buttonToQml.click();
         assertEquals(4, driver.getWindowHandles().size());
-        for (String winHandle : driver.getWindowHandles()) {
-            if (!currentWindow.equals(winHandle)) {
-                driver.switchTo().window(winHandle);
-                driver.close();
-            }
-        }
-        driver.switchTo().window(currentWindow);
     }
 
     private String currentWindow;

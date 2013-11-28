@@ -19,6 +19,7 @@ package org.openqa.selenium.qtwebkit;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -148,12 +149,20 @@ public class QtWebKitDriver extends RemoteWebDriver
     public static QtWebDriverExecutor createDefaultExecutor() {
         try{
             String ip = System.getProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY);
+            if (ip == null) {
+              ip = "http://localhost:9517";
+              System.setProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY, ip);
+            }
             URL url = new URL(ip);
             return new QtWebDriverExecutor(url);
         }
         catch (MalformedURLException e) {
             return new QtWebDriverServiceExecutor(QtWebDriverService.createDefaultService());
         }
+    }
+
+    public static QtWebDriverExecutor createExecutor(Map<String, String> environment) {
+        return new QtWebDriverServiceExecutor(QtWebDriverService.createService(environment));
     }
 
 }

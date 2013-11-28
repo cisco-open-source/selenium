@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openqa.selenium.qtwebkit.QtWebDriverService;
+import org.openqa.selenium.qtwebkit.QtWebKitDriver;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
@@ -13,7 +15,6 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -146,18 +147,40 @@ public class CapabilitiesTest extends JUnit4TestBase {
         }
     }
 
+    @Test
+    public void testRetainedSize() {
+        desiredCapabilities.setCapability("windowsize", "1000, 600");
+        desiredCapabilities.setCapability("browserClass", "TypingTestWidget");
+        try {
+            driver = CreateWebDriver();
+            assertEquals(driver.manage().window().getSize().getWidth(), 1000);
+            assertEquals(driver.manage().window().getSize().getHeight(), 600);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            fail("Should not to be here ...");
+        }
+    }
+
+    @Test
+    public void testRetainedPosition() {
+        desiredCapabilities.setCapability("windowposition", "50, 70");
+        desiredCapabilities.setCapability("browserClass", "TypingTestWidget");
+
+        try {
+            driver = CreateWebDriver();
+            assertEquals(driver.manage().window().getPosition().getX(), 50);
+            assertEquals(driver.manage().window().getPosition().getY(), 70);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            fail("Should not to be here ...");
+        }
+    }
+
     private DesiredCapabilities desiredCapabilities;
     private DesiredCapabilities requiredCapabilities;
 
     private WebDriver CreateWebDriver() throws RuntimeException {
-        URL hostURL;
-        try {
-            hostURL = new URL("http://localhost:9517");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        }
-        QtWebDriverExecutor executor = new QtWebDriverExecutor(hostURL);
+      QtWebDriverExecutor executor = QtWebKitDriver.createDefaultExecutor();
         return new RemoteWebDriver(executor, desiredCapabilities, requiredCapabilities);
     }
 

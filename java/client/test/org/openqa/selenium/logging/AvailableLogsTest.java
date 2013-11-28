@@ -97,6 +97,7 @@ public class AvailableLogsTest extends JUnit4TestBase {
   }
 
   @Test
+  @Ignore({QTWEBKIT})
   public void profilerLogShouldBeDisabledByDefault() {
     assumeFalse(isOldChromedriver(driver));
     Set<String> logTypes = driver.manage().logs().getAvailableLogTypes();

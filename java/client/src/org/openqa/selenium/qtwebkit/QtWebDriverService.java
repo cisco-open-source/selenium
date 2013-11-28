@@ -81,6 +81,21 @@ public class QtWebDriverService extends DriverService {
         return new Builder().usingDriverExecutable(exe).usingAnyFreePort().build();
     }
 
+    /**
+     * Configures and returns a new {@link QtWebDriverService} using the specified environment. In
+     * this configuration, the service will use the QtWebDrvier executable identified by the
+     * {@link #QT_DRIVER_EXE_PROPERTY} system property. Each service created by this method will
+     * be configured to use a free port on the current system.
+     *
+     * @return A new QtWebDriverService using the default configuration.
+     */
+    public static QtWebDriverService createService(Map<String, String> environment) {
+
+        File exe = findExecutable("QtWebDriver", QT_DRIVER_EXE_PROPERTY,
+                                  "http://code.google.com/p/selenium/wiki/ChromeDriver",
+                                  "http://code.google.com/p/chromedriver/downloads/list");
+      return new Builder().usingDriverExecutable(exe).usingAnyFreePort().withEnvironment(environment).build();
+    }
 
     /**
      * Builder used to configure new {@link QtWebDriverService} instances.

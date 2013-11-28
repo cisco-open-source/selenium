@@ -55,4 +55,12 @@ public class CommandInfo {
     }
     return null;
   }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public HttpVerb getVerb() {
+    return verb;
+  }
 }
