@@ -16,9 +16,12 @@ limitations under the License.
 
 package org.openqa.selenium;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.remote.QtWebkitAugmenter;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
@@ -150,6 +153,18 @@ public class TakesScreenshotTest extends JUnit4TestBase {
 
     compareColors(expectedColors, actualColors);
   }
+
+    @Test
+    public void testSaveElementScreenshot() throws Exception {
+        driver.get(appServer.whereIs("longContentPage.html"));
+
+        RemoteWebElement findElement = (RemoteWebElement) driver.findElement(By.id("link3"));
+        TakesScreenshot eltShot = (TakesScreenshot) new QtWebkitAugmenter().augment(findElement);
+        tempFile = eltShot.getScreenshotAs(OutputType.FILE);
+
+        assertTrue(tempFile.exists());
+        assertTrue(tempFile.length() > 0);
+    }
 
   @Test
   @Ignore(value = {SAFARI, CHROME, QTWEBKIT},
