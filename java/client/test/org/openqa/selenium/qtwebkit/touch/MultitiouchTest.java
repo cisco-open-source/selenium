@@ -41,9 +41,9 @@ public class MultitiouchTest extends JUnit4TestBase {
     @Test
     public void testCanRotate() {
         driver.get(pages.pinchTouchTest);
-        rotateElement("picture", 75);
+        rotateElement("picture", 35);
         WebElement result = driver.findElement(By.id("result_rotate"));
-        waitFor(WaitingConditions.elementTextToEqual(result, "75"));
+        waitFor(WaitingConditions.elementTextToEqual(result, "35"));
     }
 
     @Test
