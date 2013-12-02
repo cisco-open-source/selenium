@@ -1,7 +1,5 @@
 package org.openqa.selenium.environment;
-//package org.openqa.selenium.testing;
 
-import org.openqa.selenium.remote.CommandInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ProcessingInstruction;
@@ -13,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -24,20 +21,19 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-public class StatisticCommands {//implements Serializable {
+public class StatisticCommands {
 
-//  private HashMap<String, ArrayList<String[]>> executedCommandMap = new HashMap<String, ArrayList<String[]>>();
-  private HashMap<String, CommandData> executedCommandMap;// = new HashMap<String, CommandData>();
+  private HashMap<String, CommandData> executedCommandMap;
+
   public StatisticCommands() {
     executedCommandMap = new HashMap<String, CommandData>();
   }
 
   public void addCommand(String commandName, String url, String method, String[] test) {
     if (!executedCommandMap.containsKey(commandName)) {
-      executedCommandMap.put(commandName, new CommandData(commandName, url, method,test));
+      executedCommandMap.put(commandName, new CommandData(commandName, url, method, test));
     } else {
-    executedCommandMap.get(commandName).addTestCases(test);
-//    testsList.add(test);
+      executedCommandMap.get(commandName).addTestCases(test);
     }
   }
 
@@ -45,8 +41,9 @@ public class StatisticCommands {//implements Serializable {
     try {
       File outFile = new File("build/test_logs/" + testsName + "_CommandReport.xml");
       outFile.mkdirs();
-      if (outFile.exists())
+      if (outFile.exists()) {
         outFile.delete();
+      }
 
       if (outFile.createNewFile()) {
         FileOutputStream outStream = new FileOutputStream(outFile);
@@ -85,44 +82,27 @@ public class StatisticCommands {//implements Serializable {
       Element tableElement = finalReport.createElement("table");
       finalReport.appendChild(tableElement);
 
-//      Map<String, CommandInfo> commandNameToUrl = GlobalTestEnvironment
-//          .get(InProcessTestEnvironment.class).getCommandNameToUrl();
-//
-//      HashMap<String, ArrayList<String[]>> executedCommandsMap = GlobalTestEnvironment
-//          .get(InProcessTestEnvironment.class).getExecutedCommandMap();
-//      Iterator it = executedCommandsMap.keySet().iterator();
       Iterator it = executedCommandMap.keySet().iterator();
 
       // process all commands
       while (it.hasNext()) {
-        String key = (String)it.next();
-//        CommandInfo commandInfo = commandNameToUrl.get(key);
-//        String path = commandInfo.getUrl();
-//        String method = commandInfo.getVerb().toString();
+        String key = (String) it.next();
         CommandData commandData = executedCommandMap.get(key);
-//        String path = command.getUrl();
-//        String method = command.getMethod();
-
-//        if (null != path && null != method) {
-          Element command = finalReport.createElement("command");
-          command.setAttribute("name", key);
-          command.setAttribute("path", commandData.getUrl());
-          command.setAttribute("method", commandData.getMethod());
-//
-//          // add command tests
-//          for(String[] testInfo: executedCommandsMap.get(key)) {
+        Element command = finalReport.createElement("command");
+        command.setAttribute("name", key);
+        command.setAttribute("path", commandData.getUrl());
+        command.setAttribute("method", commandData.getMethod());
 
         Element tests = finalReport.createElement("tests");
         // add tests
-        for(String[] testInfo: commandData.getTestCases()) {
-            Element test = finalReport.createElement("testcase");
-            test.setAttribute("classname", testInfo[0]);
-            test.setAttribute("name", testInfo[1]);
-            tests.appendChild(test);
-          }
+        for (String[] testInfo : commandData.getTestCases()) {
+          Element test = finalReport.createElement("testcase");
+          test.setAttribute("classname", testInfo[0]);
+          test.setAttribute("name", testInfo[1]);
+          tests.appendChild(test);
+        }
         command.appendChild(tests);
-          tableElement.appendChild(command);
- //       }
+        tableElement.appendChild(command);
 
       } // while (it.hasNext())
 
@@ -139,6 +119,7 @@ public class StatisticCommands {//implements Serializable {
   }
 
   class CommandData {
+
     String commandName;
     String url;
     String method;
