@@ -33,7 +33,10 @@ public class StatisticCommands {
     if (!executedCommandMap.containsKey(commandName)) {
       executedCommandMap.put(commandName, new CommandData(commandName, url, method, test));
     } else {
-      executedCommandMap.get(commandName).addTestCases(test);
+      CommandData data = executedCommandMap.get(commandName);
+      if (!data.getTestCases().contains(test)) {
+          data.addTestCases(test);
+        }
     }
   }
 
