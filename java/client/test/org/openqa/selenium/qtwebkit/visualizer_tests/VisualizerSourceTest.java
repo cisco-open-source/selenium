@@ -40,21 +40,7 @@ public class VisualizerSourceTest extends JUnit4TestBase {
   public void testSource(){
     String source = ((Visualizer)driver).getVisualizerSource();
     assertNotNull(source);
-
-    try {
-      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().
-          parse(new InputSource(new StringReader(source)));
-      assertNotNull(doc);
-    } catch (SAXException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    }
+    //System.out.println(source);
 
     assertThat("JavaScript removal", source, not(containsString("Script to remove")));
 
@@ -64,6 +50,7 @@ public class VisualizerSourceTest extends JUnit4TestBase {
     assertThat(source, containsString("background:url('data:image/jpeg;base64,/9j/4AAQ"));
 
     assertThat("Stylesheets assemplying is happening", source, containsString("<style type=\"text/css\">* {"));
+    assertThat(source, not(containsString("<link")));
 
     assertThat("Closing tag persistance", source, containsString("</textarea>"));
   }
