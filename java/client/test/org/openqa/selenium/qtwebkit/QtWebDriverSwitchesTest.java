@@ -61,7 +61,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
     @Test
     public void canStartWebDriverWithSize() {
         URL hostURL;
-        Dimension size = new Dimension(600, 600);
+        Dimension size = new Dimension(600, 400);
         String arg = "" + size.getWidth() + ", " + size.getHeight();
         DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
         capabilities.setCapability("windowsize", arg);
@@ -72,8 +72,42 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
 
         WebDriver.Window window = driver.manage().window();
         Dimension sz = window.getSize();
-        assertEquals(600, sz.getHeight());
+        assertEquals(400, sz.getHeight());
         assertEquals(600, sz.getWidth());
+        waitFor(windowHeightToEqual(driver, size));
+        waitFor(windowWidthToEqual(driver, size));
+
+        sleep(2);
+
+    }
+
+    @NeedsLocalEnvironment
+    @Test
+    public void canStartWebDriverWithPosAndSize() {
+        URL hostURL;
+        Point point = new Point(80, 60);
+        String arg_pos = "" + point.getX() + ", " + point.getY();
+        DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
+        capabilities.setCapability("windowposition", arg_pos);
+
+        Dimension size = new Dimension(640, 480);
+        String arg_sz = "" + size.getWidth() + ", " + size.getHeight();
+        capabilities.setCapability("windowsize", arg_sz);
+
+        driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
+
+        driver.get(pages.colorPage);
+        WebDriver.Window window = driver.manage().window();
+        Point pnt = window.getPosition();
+        assertEquals(80, pnt.getX());
+        assertEquals(60, pnt.getY());
+
+        waitFor(xEqual(driver, point));
+        waitFor(yEqual(driver, point));
+
+        Dimension sz = window.getSize();
+        assertEquals(640, sz.getWidth());
+        assertEquals(480, sz.getHeight());
         waitFor(windowHeightToEqual(driver, size));
         waitFor(windowWidthToEqual(driver, size));
 
