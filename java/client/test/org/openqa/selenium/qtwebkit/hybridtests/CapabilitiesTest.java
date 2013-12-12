@@ -201,6 +201,8 @@ public class CapabilitiesTest extends JUnit4TestBase {
             assertEquals(driver.manage().window().getPosition().getX(), 50);
             assertEquals(driver.manage().window().getPosition().getY(), 70);
             driver.get("qtwidget://XPathElementFindingTestWidget");
+            assertEquals(driver.manage().window().getPosition().getX(), 50);
+            assertEquals(driver.manage().window().getPosition().getY(), 70);
             driver.get(pages.colorPage);
             assertEquals(driver.manage().window().getPosition().getX(), 50);
             assertEquals(driver.manage().window().getPosition().getY(), 70);
