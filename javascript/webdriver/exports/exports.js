@@ -21,6 +21,7 @@ goog.require('bot.Error');
 goog.require('bot.ErrorCode');
 goog.require('bot.response');
 goog.require('webdriver.ActionSequence');
+goog.require('webdriver.AbstractBuilder');
 goog.require('webdriver.Builder');
 goog.require('webdriver.Button');
 goog.require('webdriver.Command');
@@ -41,6 +42,7 @@ goog.require('webdriver.promise');
 goog.require('webdriver.stacktrace');
 
 exports.ActionSequence = webdriver.ActionSequence;
+exports.AbstractBuilder = webdriver.AbstractBuilder;
 exports.Builder = webdriver.Builder;
 exports.Button = webdriver.Button;
 exports.By = webdriver.Locator.Strategy;
