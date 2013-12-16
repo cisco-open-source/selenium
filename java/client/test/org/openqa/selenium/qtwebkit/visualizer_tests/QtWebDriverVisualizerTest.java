@@ -5,6 +5,7 @@ import org.junit.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.qtwebkit.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.service.DriverService;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
 
@@ -19,20 +20,19 @@ import static org.openqa.selenium.WaitingConditions.*;
 
 public class QtWebDriverVisualizerTest extends JUnit4TestBase {
   protected WebDriver driver2;
-  private String wdIP = "http://localhost:9517";
-  private String wd2IP = "http://localhost:9520";
+  private String wd2IP;
 
   @Before
   public void createDriver() throws Exception {
     DesiredCapabilities capabilities = DesiredCapabilities.qtwebkit();
 
-    System.setProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY, wdIP);
     QtWebDriverExecutor webDriverExecutor = QtWebKitDriver.createDefaultExecutor();
     driver = new QtWebKitDriver(webDriverExecutor, capabilities);
 
-    System.setProperty(QtWebDriverService.QT_DRIVER_EXE_PROPERTY, wd2IP);
-    QtWebDriverExecutor webDriver2Executor = QtWebKitDriver.createDefaultExecutor();
+    DriverService webDriver2Service = QtWebDriverService.createDefaultService();
+    QtWebDriverExecutor webDriver2Executor = new QtWebDriverServiceExecutor(webDriver2Service);
     driver2 = new QtWebKitDriver(webDriver2Executor, capabilities);
+    wd2IP = webDriver2Service.getUrl().toExternalForm();
   }
 
   @After
@@ -41,7 +41,6 @@ public class QtWebDriverVisualizerTest extends JUnit4TestBase {
     driver2.quit();
   }
 
-  @NeedsLocalEnvironment
   @Test
   public void canOpenLinkAndTypeText() {
     driver.get(wd2IP + "/WebDriverJsDemo.html");
