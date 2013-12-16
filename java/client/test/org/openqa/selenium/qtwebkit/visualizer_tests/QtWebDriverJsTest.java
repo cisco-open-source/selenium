@@ -4,17 +4,17 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
-import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.elementAttributeToEqual;
+import static org.openqa.selenium.WaitingConditions.*;
+import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.*;
 
 public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
@@ -23,24 +23,24 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     WebElement sourceButton = driver.findElement(By.id("sourceButton"));
     WebElement screenshotButton = driver.findElement(By.id("screenshotButton"));
 
-    assertEquals("true", sourceButton.getAttribute("disabled"));
-    assertEquals("true", screenshotButton.getAttribute("disabled"));
+    assertFalse(sourceButton.isEnabled());
+    assertFalse(screenshotButton.isEnabled());
 
-    setWebPage(pages.clicksPage);
+    page.setWebPage(pages.clicksPage);
 
-    assertNull(sourceButton.getAttribute("disabled"));
-    assertNull(screenshotButton.getAttribute("disabled"));
+    waitFor(elementToBeEnabled(sourceButton));
+    waitFor(elementToBeEnabled(screenshotButton));
 
-    setWebDriverUrl("");
+    page.setWebDriverUrl("");
 
-    waitFor(elementAttributeToEqual(sourceButton, "disabled", "true"));
-    waitFor(elementAttributeToEqual(screenshotButton, "disabled", "true"));
+    waitFor(elementToBeDisabled(sourceButton));
+    waitFor(elementToBeDisabled(screenshotButton));
   }
 
   @Test
   public void canScreenshot() {
     Set<String> originalWindowHandles = driver.getWindowHandles();
-    setWebPage(pages.clicksPage);
+    page.setWebPage(pages.clicksPage);
     driver.findElement(By.id("screenshotButton")).click();
 
     waitFor(newWindowIsOpened(driver, originalWindowHandles));
@@ -51,6 +51,20 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     Dimension dimension = getDimensionFromTitle(driver.getTitle());
     assertTrue("Screenshot has non zero dimension",
                dimension.getWidth() > 0 && dimension.getHeight() > 0);
+  }
+
+  @Test
+  public void canListWindows() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+    page.clickListWindowHandles();
+
+    Set<String> actualWindowHandles = new HashSet<String>();
+    for (WebElement option : page.getWindowListSelect().getOptions()) {
+      actualWindowHandles.add(option.getText());
+    }
+
+    assertEquals(driver2.getWindowHandles(), actualWindowHandles);
   }
 
   /**

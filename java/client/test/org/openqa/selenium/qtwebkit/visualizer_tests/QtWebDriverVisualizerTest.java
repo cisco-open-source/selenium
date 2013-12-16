@@ -21,7 +21,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
   @Test
   public void canOpenLinkAndTypeText() {
     Set<String> currentWindowHandles = driver.getWindowHandles();
-    setWebPage(pages.clicksPage);
+    page.setWebPage(pages.clicksPage);
     source();
     waitFor(newWindowIsOpened(driver, currentWindowHandles));
 
@@ -51,7 +51,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
   @Test
   public void isClickOnLinkCorrect() {
-    setWebPage(pages.clicksPage);
+    page.setWebPage(pages.clicksPage);
     source();
 
     driver.switchTo().window(visualizerWindowHandle);
