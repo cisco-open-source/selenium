@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.*;
@@ -43,12 +44,12 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.setWebPage(pages.clicksPage);
     driver.findElement(By.id("screenshotButton")).click();
 
-    waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    waitFor(newWindowIsOpened(driver, originalWindowHandles), 20, SECONDS);
     Set<String> windowHandles = driver.getWindowHandles();
     windowHandles.removeAll(originalWindowHandles);
 
     driver.switchTo().window(windowHandles.iterator().next());
-    Dimension dimension = getDimensionFromTitle(driver.getTitle());
+    Dimension dimension = VisualizerUtils.getDimensionFromTitle(driver.getTitle());
     assertTrue("Screenshot has non zero dimension",
                dimension.getWidth() > 0 && dimension.getHeight() > 0);
   }
@@ -57,6 +58,11 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
   public void canListWindows() {
     page.setWebPage(pages.clicksPage);
     page.clickGet();
+
+    Set<String> currentWindowHandles = driver2.getWindowHandles();
+    driver2.findElement(By.id("new-window")).click();
+    waitFor(newWindowIsOpened(driver2, currentWindowHandles));
+
     page.clickListWindowHandles();
 
     Set<String> actualWindowHandles = new HashSet<String>();
@@ -65,15 +71,11 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     }
 
     assertEquals(driver2.getWindowHandles(), actualWindowHandles);
-  }
 
-  /**
-   * Get dimension from title like 'be2a1340-3141-4d5b-a829-8d77cc57add4 (800x512 pixels)'
-   */
-  private static Dimension getDimensionFromTitle(String title) {
-    Matcher m = Pattern.compile(".*\\((?<width>\\d+)x(?<height>\\d+) pixels\\)").matcher(title);
-    if (!m.matches())
-      return null;
-    return new Dimension(Integer.valueOf(m.group("width")), Integer.valueOf(m.group("height")));
+    String currentActiveWindow = driver2.getWindowHandle();
+    String expectedActiveWindow = VisualizerUtils.findNotEqualsIgnoreCase(driver2.getWindowHandles(), currentActiveWindow);
+    page.getWindowListSelect().selectByValue(expectedActiveWindow);
+    page.clickChooseWindow();
+    waitFor(activeWindowToBe(driver2, expectedActiveWindow));
   }
 }

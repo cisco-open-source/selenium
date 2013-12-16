@@ -114,4 +114,25 @@ public class WaitingConditions {
       }
     };
   }
+
+  public static Callable<String> activeWindowToBe(
+      final WebDriver driver, final String expectedActiveWindow) {
+    return new Callable<String>() {
+
+      public String call() throws Exception {
+        String actualActiveWindow = driver.getWindowHandle();
+
+        if (expectedActiveWindow.equalsIgnoreCase(actualActiveWindow)) {
+          return actualActiveWindow;
+        }
+
+        return null;
+      }
+
+      @Override
+      public String toString() {
+        return "active window to be: " + expectedActiveWindow;
+      }
+    };
+  }
 }

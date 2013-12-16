@@ -2,7 +2,6 @@ package org.openqa.selenium.qtwebkit.visualizer_tests;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
 import static org.openqa.selenium.TestWaiter.waitFor;
@@ -16,13 +15,11 @@ public class QtWebDriverJsPage {
   private WebElement webPage;
   private String webPageValue;
 
-  @FindBy(xpath = "//input[@value='GET']")
   private WebElement getButton;
 
-  @FindBy(xpath = "//input[@value='List window handles']")
-  private WebElement listWindowHandlesButton;
-
+  private WebElement listWindowButton;
   private WebElement windowList;
+  private WebElement chooseWindow;
 
   public void setDriver2(WebDriver driver2) {
     this.driver2 = driver2;
@@ -39,17 +36,21 @@ public class QtWebDriverJsPage {
     webPageValue = webPage;
   }
 
-  public Select getWindowListSelect() {
-    return new Select(windowList);
-  }
-
   public void clickGet() {
     getButton.click();
     waitFor(pageUrlToBe(driver2, webPageValue));
   }
 
   public void clickListWindowHandles() {
-    listWindowHandlesButton.click();
+    listWindowButton.click();
     waitFor(elementToBeDisplayed(windowList));
+  }
+
+  public Select getWindowListSelect() {
+    return new Select(windowList);
+  }
+
+  public void clickChooseWindow() {
+    chooseWindow.click();
   }
 }

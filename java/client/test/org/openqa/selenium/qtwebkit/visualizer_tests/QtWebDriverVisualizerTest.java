@@ -72,12 +72,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     Set<String> allWindowHandles = driver.getWindowHandles();
     assertEquals(2, allWindowHandles.size());
 
-    visualizerWindowHandle = null;
-    for (String handle : allWindowHandles) {
-      if (!handle.equalsIgnoreCase(getWebDriverJsWindowHandle())) {
-        visualizerWindowHandle = handle;
-      }
-    }
+    visualizerWindowHandle = VisualizerUtils.findNotEqualsIgnoreCase(allWindowHandles, getWebDriverJsWindowHandle());
     assertNotNull(visualizerWindowHandle);
   }
 }
