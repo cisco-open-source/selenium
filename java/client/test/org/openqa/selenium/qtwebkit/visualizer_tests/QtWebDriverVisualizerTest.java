@@ -91,6 +91,22 @@ public class QtWebDriverVisualizerTest extends JUnit4TestBase {
     assertThat(inputField2.getAttribute("value"), equalTo(expectedText));
   }
 
+  @Test
+  public void isClickOnLinkCorrect() {
+    setWebPage(pages.clicksPage);
+    source();
+
+    driver.switchTo().window(visualizerWindowHandle);
+    assertEquals(driver.getWindowHandle(), visualizerWindowHandle);
+
+    String visualizerTitle = driver.getTitle();
+
+    driver.findElement(By.id("normal")).click();
+    waitFor(pageTitleToBe(driver2, "XHTML Test Page"));
+
+    assertEquals("We do not proceed by links in visualizer", visualizerTitle, driver.getTitle());
+  }
+
   private void setWebPage(String webPage) {
     WebElement webPageUrl = driver.findElement(By.name("webPage"));
     webPageUrl.clear();
