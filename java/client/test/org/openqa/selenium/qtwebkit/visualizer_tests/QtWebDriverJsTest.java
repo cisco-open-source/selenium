@@ -97,7 +97,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     Set<String> actualWindowHandles = new HashSet<String>();
     for (WebElement option : page.getWindowListSelect().getOptions()) {
-      actualWindowHandles.add(option.getText());
+      actualWindowHandles.add(VisualizerUtils.trimString(option.getText(), "(active)").trim());
     }
 
     assertEquals(targetDriver.getWindowHandles(), actualWindowHandles);
