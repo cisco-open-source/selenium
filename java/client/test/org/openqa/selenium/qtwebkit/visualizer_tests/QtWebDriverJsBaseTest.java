@@ -12,7 +12,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 public class QtWebDriverJsBaseTest extends JUnit4TestBase {
 
   protected QtWebDriverJsPage page;
-  protected WebDriver driver2;
+  protected WebDriver targetDriver;
   private String webDriverJsWindowHandle;
 
   @Before
@@ -25,8 +25,8 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
 
     DriverService webDriver2Service = QtWebDriverService.createDefaultService();
     QtWebDriverExecutor webDriver2Executor = new QtWebDriverServiceExecutor(webDriver2Service);
-    driver2 = new QtWebKitDriver(webDriver2Executor, capabilities);
-    page.setDriver2(driver2);
+    targetDriver = new QtWebKitDriver(webDriver2Executor, capabilities);
+    page.setTargetDriver(targetDriver);
 
     String realWebDriverUrl = webDriver2Service.getUrl().toExternalForm();
     driver.get(realWebDriverUrl + "/WebDriverJsDemo.html");
@@ -38,7 +38,7 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
   @After
   public void tearDown() throws Exception {
     driver.quit();
-    driver2.quit();
+    targetDriver.quit();
   }
 
   public String getWebDriverJsWindowHandle() {

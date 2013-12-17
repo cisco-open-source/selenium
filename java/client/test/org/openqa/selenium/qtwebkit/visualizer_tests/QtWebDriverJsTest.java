@@ -1,15 +1,10 @@
 package org.openqa.selenium.qtwebkit.visualizer_tests;
 
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
@@ -42,16 +37,51 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
   public void canScreenshot() {
     Set<String> originalWindowHandles = driver.getWindowHandles();
     page.setWebPage(pages.clicksPage);
-    driver.findElement(By.id("screenshotButton")).click();
+    page.clickScreenshotButton();
 
-    waitFor(newWindowIsOpened(driver, originalWindowHandles), 20, SECONDS);
-    Set<String> windowHandles = driver.getWindowHandles();
-    windowHandles.removeAll(originalWindowHandles);
-
-    driver.switchTo().window(windowHandles.iterator().next());
+    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles), 20, SECONDS);
+    driver.switchTo().window(newWindow);
     Dimension dimension = VisualizerUtils.getDimensionFromTitle(driver.getTitle());
     assertTrue("Screenshot has non zero dimension",
                dimension.getWidth() > 0 && dimension.getHeight() > 0);
+  }
+
+  @Test
+  public void canLogDriver() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+
+    Set<String> originalWindowHandles = driver.getWindowHandles();
+    page.clickLogsSelect("driver");
+    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    driver.switchTo().window(newWindow);
+    assertTrue(driver.getPageSource().contains("ALL"));
+    assertTrue(driver.getPageSource().contains("INFO"));
+  }
+
+  @Test
+  public void canLogBrowser() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+
+    ((JavascriptExecutor) targetDriver).executeScript("console.log('Fingerprint...');");
+
+    Set<String> originalWindowHandles = driver.getWindowHandles();
+    driver.switchTo().window(getWebDriverJsWindowHandle());
+    page.clickLogsSelect("browser");
+    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    driver.switchTo().window(newWindow);
+    assertTrue(driver.getPageSource().contains("Fingerprint"));
+  }
+
+  @Test
+  public void canFindElement() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+
+    String wdcByTagName = page.findElement("tagName", "h1");
+    String wdcByXPath = page.findElement("xpath", "//h1");
+    assertEquals(wdcByTagName, wdcByXPath);
   }
 
   @Test
@@ -59,9 +89,9 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.setWebPage(pages.clicksPage);
     page.clickGet();
 
-    Set<String> currentWindowHandles = driver2.getWindowHandles();
-    driver2.findElement(By.id("new-window")).click();
-    waitFor(newWindowIsOpened(driver2, currentWindowHandles));
+    Set<String> originalWindowHandles = targetDriver.getWindowHandles();
+    targetDriver.findElement(By.id("new-window")).click();
+    waitFor(newWindowIsOpened(targetDriver, originalWindowHandles));
 
     page.clickListWindowHandles();
 
@@ -70,12 +100,12 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
       actualWindowHandles.add(option.getText());
     }
 
-    assertEquals(driver2.getWindowHandles(), actualWindowHandles);
+    assertEquals(targetDriver.getWindowHandles(), actualWindowHandles);
 
-    String currentActiveWindow = driver2.getWindowHandle();
-    String expectedActiveWindow = VisualizerUtils.findNotEqualsIgnoreCase(driver2.getWindowHandles(), currentActiveWindow);
+    String currentActiveWindow = targetDriver.getWindowHandle();
+    String expectedActiveWindow = VisualizerUtils.findNotEqualsIgnoreCase(targetDriver.getWindowHandles(), currentActiveWindow);
     page.getWindowListSelect().selectByValue(expectedActiveWindow);
     page.clickChooseWindow();
-    waitFor(activeWindowToBe(driver2, expectedActiveWindow));
+    waitFor(activeWindowToBe(targetDriver, expectedActiveWindow));
   }
 }

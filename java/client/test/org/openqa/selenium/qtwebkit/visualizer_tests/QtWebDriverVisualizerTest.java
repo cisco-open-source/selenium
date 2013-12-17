@@ -20,13 +20,13 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
   @Test
   public void canOpenLinkAndTypeText() {
-    Set<String> currentWindowHandles = driver.getWindowHandles();
+    Set<String> originalWindowHandles = driver.getWindowHandles();
     page.setWebPage(pages.clicksPage);
     source();
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    waitFor(newWindowIsOpened(driver, originalWindowHandles));
 
-    driver2.findElement(By.id("normal")).click();
-    waitFor(pageTitleToBe(driver2, "XHTML Test Page"));
+    targetDriver.findElement(By.id("normal")).click();
+    waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
 
     source();
     driver.switchTo().window(visualizerWindowHandle);
@@ -37,11 +37,11 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     waitFor(elementToExist(driver, "username"));
     WebElement inputField = driver.findElement(By.id("username"));
-    WebElement inputField2 = driver2.findElement(By.id("username"));
+    WebElement inputField2 = targetDriver.findElement(By.id("username"));
 
     inputField.click();
     waitFor(activeElementToBe(driver, inputField));
-    waitFor(activeElementToBe(driver2, inputField2));
+    waitFor(activeElementToBe(targetDriver, inputField2));
 
     inputField.sendKeys(typingText);
 
@@ -60,7 +60,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     String visualizerTitle = driver.getTitle();
 
     driver.findElement(By.id("normal")).click();
-    waitFor(pageTitleToBe(driver2, "XHTML Test Page"));
+    waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
 
     assertEquals("We do not proceed by links in visualizer", visualizerTitle, driver.getTitle());
   }
