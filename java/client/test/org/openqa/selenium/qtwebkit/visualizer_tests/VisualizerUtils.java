@@ -8,14 +8,6 @@ import java.util.regex.Pattern;
 
 public class VisualizerUtils {
 
-  public static String trimString(String str, String pattern) {
-    if (str.startsWith(pattern))
-      str = str.substring(pattern.length());
-    if (str.endsWith(pattern))
-      str = str.substring(0, str.length() - pattern.length());
-    return str;
-  }
-
   /**
    * Get dimension from title like 'be2a1340-3141-4d5b-a829-8d77cc57add4 (800x512 pixels)'
    */

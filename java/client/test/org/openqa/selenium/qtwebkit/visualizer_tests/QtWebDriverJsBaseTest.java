@@ -22,6 +22,7 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
     QtWebDriverExecutor webDriverExecutor = QtWebKitDriver.createDefaultExecutor();
     driver = new QtWebKitDriver(webDriverExecutor, capabilities);
     page = PageFactory.initElements(driver, QtWebDriverJsPage.class);
+    page.setDriver(driver);
 
     DriverService webDriver2Service = QtWebDriverService.createDefaultService();
     QtWebDriverExecutor webDriver2Executor = new QtWebDriverServiceExecutor(webDriver2Service);
