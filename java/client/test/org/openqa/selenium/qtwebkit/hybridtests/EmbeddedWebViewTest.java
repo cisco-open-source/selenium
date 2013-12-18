@@ -1,4 +1,4 @@
-package org.openqa.selenium.qtwebkit.quick_tests;
+package org.openqa.selenium.qtwebkit.hybridtests;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Action;

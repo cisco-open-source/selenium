@@ -17,7 +17,8 @@ import org.openqa.selenium.testing.JUnit4TestBase;
     ProxySettingTest.class,
     WindowWithDeclarativeViewTest.class,
     WindowWithSeparatedDeclarativeAndWebViewsTest.class,
-    CustomCapabilitiesQt4Test.class
+    CustomCapabilitiesQt4Test.class,
+    EmbeddedWebViewTest.class
 })
 public class HybridWebDriverQt4Tests {
 

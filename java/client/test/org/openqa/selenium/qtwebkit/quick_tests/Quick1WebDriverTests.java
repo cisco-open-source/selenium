@@ -25,8 +25,7 @@ import org.openqa.selenium.testing.JUnit4TestBase;
         StaleElementReferenceTest.class,
         VisibilityTest.class,
         InteractionTests.class,
-        ExecutingJavascriptTest.class,
-        EmbeddedWebViewTest.class,
+        ExecutingJavascriptTest.class
 })
 public class Quick1WebDriverTests {
     @BeforeClass

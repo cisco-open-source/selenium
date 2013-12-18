@@ -11,7 +11,8 @@ java_test(name = "hybrid_tests_qt4",
     "ProxySettingTest.java",
     "WindowWithDeclarativeViewTest.java",
     "WindowWithSeparatedDeclarativeAndWebViewsTest.java",
-    "CustomCapabilitiesQt4Test.java"
+    "CustomCapabilitiesQt4Test.java",
+    "EmbeddedWebViewTest.java",
   ],
 
   deps = [
