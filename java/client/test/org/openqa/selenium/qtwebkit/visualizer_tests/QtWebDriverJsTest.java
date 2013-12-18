@@ -5,6 +5,7 @@ import org.openqa.selenium.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
@@ -85,6 +86,71 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
   }
 
   @Test
+  public void canGetFoundElementTagNameAndText() {
+    page.setWebPage(pages.simpleTestPage);
+    page.clickGet();
+    page.findElement("xpath", "//h1");
+    assertEquals(targetDriver.findElement(By.xpath("//h1")).getTagName(), page.getFoundElementTagName());
+    assertEquals(targetDriver.findElement(By.xpath("//h1")).getText(), page.getFoundElementText());
+  }
+
+
+  @Test
+  public void canGetLocation() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+    page.findElement("id", "normal");
+
+    Point expectedLocation = targetDriver.findElement(By.id("normal")).getLocation();
+    assertEquals(expectedLocation, page.getFoundElementLocation());
+  }
+
+  @Test
+  public void canGetSize() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+    page.findElement("id", "normal");
+
+    Dimension expectedDimension = targetDriver.findElement(By.id("normal")).getSize();
+    assertEquals(expectedDimension, page.getFoundElementSize());
+  }
+
+  @Test
+  public void canClickAndCheckFoundElementSelected() {
+    page.setWebPage(pages.simpleTestPage);
+    page.clickGet();
+    page.findElement("id", "checkbox1");
+
+    assertFalse(page.isFoundElementSelected());
+    page.clickElementClick();
+    assertTrue(page.isFoundElementSelected());
+  }
+
+  @Test
+  public void canCheckFoundElementEnabled() {
+    page.setWebPage(pages.readOnlyPage);
+    page.clickGet();
+
+    page.findElement("id", "textInputnotenabled");
+    assertFalse(page.isFoundElementEnabled());
+
+    page.findElement("id", "writableTextInput");
+    assertTrue(page.isFoundElementEnabled());
+  }
+
+  @Test
+  public void canCheckFoundElementDisplayed() {
+    page.setWebPage(pages.tables);
+    page.clickGet();
+
+    page.findElement("xpath", "//body");
+    assertTrue(page.isFoundElementDisplayed());
+
+    page.findElement("xpath", "//div[contains(@style, 'display: none;')]");
+    assertFalse(page.isFoundElementDisplayed());
+  }
+
+  @Test
   public void canListWindows() {
     page.setWebPage(pages.clicksPage);
     page.clickGet();
@@ -97,7 +163,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     Set<String> actualWindowHandles = new HashSet<String>();
     for (WebElement option : page.getWindowListSelect().getOptions()) {
-      actualWindowHandles.add(option.getText());
+      actualWindowHandles.add(option.getText().replace("(active)", "").trim());
     }
 
     assertEquals(targetDriver.getWindowHandles(), actualWindowHandles);
@@ -107,5 +173,19 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.getWindowListSelect().selectByValue(expectedActiveWindow);
     page.clickChooseWindow();
     waitFor(activeWindowToBe(targetDriver, expectedActiveWindow));
+  }
+
+  @Test
+  public void canSetWindowSize() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+    final Dimension dimension = new Dimension(200, 100);
+    page.setWindowSize(dimension);
+    waitFor(new Callable<Dimension>() {
+      @Override
+      public Dimension call() throws Exception {
+        return dimension.equals(targetDriver.manage().window().getSize()) ? dimension : null;
+      }
+    });
   }
 }

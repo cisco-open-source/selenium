@@ -1,17 +1,20 @@
 package org.openqa.selenium.qtwebkit.visualizer_tests;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
 import static org.openqa.selenium.TestWaiter.waitFor;
+import static org.openqa.selenium.WaitingConditions.alertToBePresent;
 import static org.openqa.selenium.WaitingConditions.elementTextToContain;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.elementToBeDisplayed;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.pageUrlToBe;
 
 public class QtWebDriverJsPage {
-  protected WebDriver targetDriver;
+  private WebDriver driver;
+  private WebDriver targetDriver;
 
   private WebElement webDriverUrlPort;
   private WebElement webPage;
@@ -21,15 +24,94 @@ public class QtWebDriverJsPage {
   private WebElement screenshotButton;
   private WebElement logsSelect;
 
+  private WebElement error;
+
   private WebElement findElementCriteria;
   private WebElement findElementKey;
   @FindBy(xpath = "//input[@value = 'Find element']")
   private WebElement findElementButton;
   private WebElement foundElement;
 
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Click']")
+  private WebElement foundElementClick;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Submit']")
+  private WebElement foundElementSubmit;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Clear']")
+  private WebElement foundElementClear;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Tag name']")
+  private WebElement foundElementTagName;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Text']")
+  private WebElement foundElementText;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Location']")
+  private WebElement foundElementLocation;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Size']")
+  private WebElement foundElementSize;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Selected?']")
+  private WebElement foundElementSelected;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Enabled?']")
+  private WebElement foundElementEnabled;
+
+  @FindBy(xpath = "//*[@id = 'elementActions']/input[@value = 'Displayed?']")
+  private WebElement foundElementDisplayed;
+
   private WebElement listWindowButton;
   private WebElement windowList;
   private WebElement chooseWindow;
+
+  private WebElement windowSizeWidth;
+  private WebElement windowSizeHeight;
+  @FindBy(xpath = "//input[@value = 'Set window size']")
+  private WebElement windowSizeButton;
+
+  private Point getLocationFromAlert(String caption) {
+    waitFor(alertToBePresent(driver));
+    String value = driver.switchTo().alert().getText().replace(caption, "").trim();
+    driver.switchTo().alert().accept();
+    try {
+      JSONObject json = new JSONObject(value);
+      return new Point(json.getInt("x"), json.getInt("y"));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Dimension getDimensionFromAlert(String caption) {
+    waitFor(alertToBePresent(driver));
+    String value = driver.switchTo().alert().getText().replace(caption, "").trim();
+    driver.switchTo().alert().accept();
+    try {
+      JSONObject json = new JSONObject(value);
+      return new Dimension(json.getInt("width"), json.getInt("height"));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String getStringFromAlert(String caption) {
+    waitFor(alertToBePresent(driver));
+    String value = driver.switchTo().alert().getText().replace(caption, "").trim();
+    driver.switchTo().alert().accept();
+    return value;
+  }
+
+  private boolean getBooleanFromAlert(String caption) {
+    waitFor(alertToBePresent(driver));
+    String value = driver.switchTo().alert().getText().replace(caption, "").trim();
+    driver.switchTo().alert().accept();
+    return Boolean.valueOf(value);
+  }
+
+  public void setDriver(WebDriver driver) {
+    this.driver = driver;
+  }
 
   public void setTargetDriver(WebDriver targetDriver) {
     this.targetDriver = targetDriver;
@@ -63,7 +145,7 @@ public class QtWebDriverJsPage {
     findElementKey.clear();
     findElementKey.sendKeys("c7c3179a38f864a463729657f15871326baccede");
     findElementButton.click();
-    waitFor(elementTextToContain(foundElement, "The element could not be found"));
+    waitFor(elementTextToContain(error, "The element could not be found"));
 
     new Select(findElementCriteria).selectByValue(criteria);
     findElementKey.clear();
@@ -72,6 +154,53 @@ public class QtWebDriverJsPage {
     waitFor(elementTextToContain(foundElement, "Found element"));
 
     return foundElement.getText().substring("Found element".length()).trim();
+  }
+
+  public void clickElementClick() {
+    foundElementClick.click();
+  }
+
+  public void clickElementSubmit() {
+    foundElementSubmit.click();
+  }
+
+  public void clickElementClear() {
+    foundElementClear.click();
+  }
+
+  public String getFoundElementTagName() {
+    foundElementTagName.click();
+    return getStringFromAlert("Element tag name:");
+  }
+
+  public String getFoundElementText() {
+    foundElementText.click();
+    return getStringFromAlert("Element text:");
+  }
+
+  public Point getFoundElementLocation() {
+    foundElementLocation.click();
+    return getLocationFromAlert("Element location:");
+  }
+
+  public Dimension getFoundElementSize() {
+    foundElementSize.click();
+    return getDimensionFromAlert("Element size:");
+  }
+
+  public boolean isFoundElementSelected() {
+    foundElementSelected.click();
+    return getBooleanFromAlert("Element selection:");
+  }
+
+  public boolean isFoundElementEnabled() {
+    foundElementEnabled.click();
+    return getBooleanFromAlert("Element enabled:");
+  }
+
+  public boolean isFoundElementDisplayed() {
+    foundElementDisplayed.click();
+    return getBooleanFromAlert("Element displayed:");
   }
 
   public void clickListWindowHandles() {
@@ -85,5 +214,15 @@ public class QtWebDriverJsPage {
 
   public void clickChooseWindow() {
     chooseWindow.click();
+  }
+
+  public void setWindowSize(Dimension dimension) {
+    windowSizeWidth.clear();
+    windowSizeWidth.sendKeys(Integer.valueOf(dimension.getWidth()).toString());
+
+    windowSizeHeight.clear();
+    windowSizeHeight.sendKeys(Integer.valueOf(dimension.getHeight()).toString());
+
+    windowSizeButton.click();
   }
 }
