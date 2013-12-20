@@ -93,6 +93,7 @@ public class VideoTest extends JUnit4TestBase {
 
         player.seek(1.5);
         assertEquals(1.5, player.getCurrentPlayingPosition(), 0.1);
+        player.setState(Player.PlayerState.stopped);
     }
 
     @Test
@@ -111,6 +112,7 @@ public class VideoTest extends JUnit4TestBase {
         player.setVolume(1.0);
         assertEquals(1.0, player.getVolume(), 0.02);
         assertEquals("1", element.getAttribute("volume"));
+        player.setState(Player.PlayerState.stopped);
     }
 
     @Test
@@ -154,6 +156,7 @@ public class VideoTest extends JUnit4TestBase {
         assertEquals(0.1, player.getSpeed(), 0.01);
 
         player.setState(Player.PlayerState.paused);
+        player.setState(Player.PlayerState.stopped);
     }
 
     public Player getPlayer(RemoteWebElement element) {
