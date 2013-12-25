@@ -1,5 +1,6 @@
 package org.openqa.selenium.qtwebkit.nativetests;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,18 @@ public class VideoTest extends JUnit4TestBase {
     @Before
     public void setUp() throws Exception {
         driver.get("qtwidget://VideoTestWidget");
+        element = driver.findElement(By.id("videoPlayer"));
+        player = getPlayer((RemoteWebElement) element);
+    }
+
+    @After
+    public void stopPlayer() {
+        player.stop();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @AfterClass
@@ -26,8 +39,6 @@ public class VideoTest extends JUnit4TestBase {
 
     @Test
     public void testRemotePlayerState() {
-        WebElement element = driver.findElement(By.id("videoPlayer"));
-        Player player = getPlayer((RemoteWebElement) element);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException ex) {
@@ -53,8 +64,6 @@ public class VideoTest extends JUnit4TestBase {
 
     @Test
     public void testRemotePlayerMute() {
-        WebElement element = driver.findElement(By.id("videoPlayer"));
-        Player player = getPlayer((RemoteWebElement) element);
         player.setMute(true);
         assertEquals(true, player.isMuted());
 
@@ -64,8 +73,6 @@ public class VideoTest extends JUnit4TestBase {
 
     @Test
     public void testRemotePlayerSeek() {
-        WebElement element = driver.findElement(By.id("videoPlayer"));
-        Player player = getPlayer((RemoteWebElement) element);
         assertEquals(player.getCurrentPlayingPosition(), 0, 0);
         player.setState(Player.PlayerState.playing);
 
@@ -82,8 +89,6 @@ public class VideoTest extends JUnit4TestBase {
 
     @Test
     public void testRemotePlayerVolume() {
-        WebElement element = driver.findElement(By.id("videoPlayer"));
-        Player player = getPlayer((RemoteWebElement) element);
         player.setVolume(0.5);
         assertEquals(0.5, player.getVolume(), 0.02);
 
@@ -96,8 +101,6 @@ public class VideoTest extends JUnit4TestBase {
 
     @Test
     public void testRemotePlayerVolumeAndMute() {
-        WebElement element = driver.findElement(By.id("videoPlayer"));
-        Player player = getPlayer((RemoteWebElement) element);
         player.setVolume(0.5);
         player.setMute(true);
         player.setMute(false);
@@ -106,8 +109,6 @@ public class VideoTest extends JUnit4TestBase {
 
     @Test
     public void testRemotePlayerSpeed() {
-        WebElement element = driver.findElement(By.id("videoPlayer"));
-        Player player = getPlayer((RemoteWebElement) element);
         assertEquals(player.getCurrentPlayingPosition(), 0, 0);
 
         player.setState(Player.PlayerState.playing);
@@ -134,5 +135,8 @@ public class VideoTest extends JUnit4TestBase {
     public Player getPlayer(RemoteWebElement element) {
         return (Player) (new QtWebkitAugmenter().augment(element));
     }
+
+    private Player player;
+    private WebElement element;
 
 }
