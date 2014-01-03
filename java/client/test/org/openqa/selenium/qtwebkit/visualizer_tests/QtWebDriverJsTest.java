@@ -68,7 +68,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     ((JavascriptExecutor) targetDriver).executeScript("console.log('Fingerprint...');");
 
     Set<String> originalWindowHandles = driver.getWindowHandles();
-    driver.switchTo().window(getWebDriverJsWindowHandle());
+    driver.switchTo().window(page.getWebDriverJsWindowHandle());
     page.clickLogsSelect("browser");
     String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
     driver.switchTo().window(newWindow);

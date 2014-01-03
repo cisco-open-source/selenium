@@ -8,7 +8,6 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.*;
@@ -16,21 +15,17 @@ import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.ac
 
 public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
-  private String visualizerWindowHandle;
-
   @Test
   public void canOpenLinkAndTypeText() {
     Set<String> originalWindowHandles = driver.getWindowHandles();
     page.setWebPage(pages.clicksPage);
-    source();
+    page.clickSource();
     waitFor(newWindowIsOpened(driver, originalWindowHandles));
 
     targetDriver.findElement(By.id("normal")).click();
     waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
 
-    source();
-    driver.switchTo().window(visualizerWindowHandle);
-    waitFor(windowToBeSwitchedToWithName(driver, visualizerWindowHandle));
+    driver.switchTo().window(page.clickSource());
 
     String typingText = "TheTypingText";
     String expectedText = "change" + typingText;
@@ -52,10 +47,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
   @Test
   public void isClickOnLinkCorrect() {
     page.setWebPage(pages.clicksPage);
-    source();
-
-    driver.switchTo().window(visualizerWindowHandle);
-    assertEquals(driver.getWindowHandle(), visualizerWindowHandle);
+    driver.switchTo().window(page.clickSource());
 
     String visualizerTitle = driver.getTitle();
 
@@ -63,16 +55,5 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
 
     assertEquals("We do not proceed by links in visualizer", visualizerTitle, driver.getTitle());
-  }
-
-  private void source() {
-    driver.findElement(By.xpath("//input[@value='Source']")).click();
-    waitFor(windowHandleCountToBe(driver, 2));
-
-    Set<String> allWindowHandles = driver.getWindowHandles();
-    assertEquals(2, allWindowHandles.size());
-
-    visualizerWindowHandle = VisualizerUtils.findNotEqualsIgnoreCase(allWindowHandles, getWebDriverJsWindowHandle());
-    assertNotNull(visualizerWindowHandle);
   }
 }

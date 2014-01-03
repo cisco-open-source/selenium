@@ -6,6 +6,9 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
+import java.util.concurrent.Callable;
+
+import static org.junit.Assert.assertNotNull;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.alertToBePresent;
 import static org.openqa.selenium.WaitingConditions.elementTextToContain;
@@ -15,6 +18,7 @@ import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.pa
 public class QtWebDriverJsPage {
   private WebDriver driver;
   private WebDriver targetDriver;
+  private String webDriverJsWindowHandle;
 
   private WebElement webDriverUrlPort;
   private WebElement webPage;
@@ -23,6 +27,9 @@ public class QtWebDriverJsPage {
   private WebElement getButton;
   private WebElement screenshotButton;
   private WebElement logsSelect;
+
+  @FindBy(xpath = "//input[@value='Source']")
+  private WebElement sourceButton;
 
   private WebElement error;
 
@@ -109,6 +116,20 @@ public class QtWebDriverJsPage {
     return Boolean.valueOf(value);
   }
 
+  private String getVisualizerWindowHandle() {
+    String currentWindowHandle = driver.getWindowHandle();
+    String visualizerWindowHandle = null;
+    for (String windowHandle : driver.getWindowHandles()) {
+      String title = driver.switchTo().window(windowHandle).getTitle();
+      if (title.endsWith(" - Visualizer")) {
+        visualizerWindowHandle = windowHandle;
+        break;
+      }
+    }
+    driver.switchTo().window(currentWindowHandle);
+    return visualizerWindowHandle;
+  }
+
   public void setDriver(WebDriver driver) {
     this.driver = driver;
   }
@@ -117,7 +138,14 @@ public class QtWebDriverJsPage {
     this.targetDriver = targetDriver;
   }
 
+  public String getWebDriverJsWindowHandle() {
+    return webDriverJsWindowHandle;
+  }
+
   public void setWebDriverUrl(String url) {
+    driver.get(url + "/WebDriverJsDemo.html");
+    webDriverJsWindowHandle = driver.getWindowHandle();
+
     webDriverUrlPort.clear();
     webDriverUrlPort.sendKeys(url);
   }
@@ -131,6 +159,25 @@ public class QtWebDriverJsPage {
   public void clickGet() {
     getButton.click();
     waitFor(pageUrlToBe(targetDriver, webPageValue));
+  }
+
+  public String clickSource() {
+    String visualizerWindow = getVisualizerWindowHandle();
+    if (visualizerWindow != null) {
+      driver.switchTo().window(visualizerWindow).close();
+    }
+
+    driver.switchTo().window(webDriverJsWindowHandle);
+    sourceButton.click();
+    visualizerWindow = waitFor(new Callable<String>() {
+      @Override
+      public String call() throws Exception {
+        return getVisualizerWindowHandle();
+      }
+    });
+
+    assertNotNull(visualizerWindow);
+    return visualizerWindow;
   }
 
   public void clickScreenshotButton() {

@@ -13,7 +13,6 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
 
   protected QtWebDriverJsPage page;
   protected WebDriver targetDriver;
-  private String webDriverJsWindowHandle;
 
   @Before
   public void createDriver() throws Exception {
@@ -29,20 +28,13 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
     targetDriver = new QtWebKitDriver(webDriver2Executor, capabilities);
     page.setTargetDriver(targetDriver);
 
-    String realWebDriverUrl = webDriver2Service.getUrl().toExternalForm();
-    driver.get(realWebDriverUrl + "/WebDriverJsDemo.html");
-    webDriverJsWindowHandle = driver.getWindowHandle();
-
-    page.setWebDriverUrl(realWebDriverUrl);
+    String targetWebDriverUrl = webDriver2Service.getUrl().toExternalForm();
+    page.setWebDriverUrl(targetWebDriverUrl);
   }
 
   @After
   public void tearDown() throws Exception {
     driver.quit();
     targetDriver.quit();
-  }
-
-  public String getWebDriverJsWindowHandle() {
-    return webDriverJsWindowHandle;
   }
 }
