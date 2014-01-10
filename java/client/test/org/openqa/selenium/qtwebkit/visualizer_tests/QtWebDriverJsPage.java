@@ -250,6 +250,11 @@ public class QtWebDriverJsPage {
     return getBooleanFromAlert("Element displayed:");
   }
 
+  public void keyPress(String label) {
+    String xpath = String.format("//div[contains(@class, 'ui-keyboard')]//button/span[normalize-space(text()) = '%s']", label);
+    driver.findElement(By.xpath(xpath)).click();
+  }
+
   public void clickListWindowHandles() {
     listWindowButton.click();
     waitFor(elementToBeDisplayed(windowList));

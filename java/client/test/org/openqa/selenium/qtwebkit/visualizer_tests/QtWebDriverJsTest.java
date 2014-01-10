@@ -94,7 +94,6 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     assertEquals(targetDriver.findElement(By.xpath("//h1")).getText(), page.getFoundElementText());
   }
 
-
   @Test
   public void canGetLocation() {
     page.setWebPage(pages.clicksPage);
@@ -148,6 +147,40 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     page.findElement("xpath", "//div[contains(@style, 'display: none;')]");
     assertFalse(page.isFoundElementDisplayed());
+  }
+
+  @Test
+  public void canKeyPress() {
+    String[] keys = {"q", "w", "e"};
+
+    page.setWebPage(pages.webdriverjsKeypressPage);
+    page.clickGet();
+
+    for (final String key : keys) {
+      page.keyPress(key);
+
+      waitFor(new Callable<String>() {
+        @Override
+        public String call() throws Exception {
+          String actualValue = getActualValue();
+
+          if (key.equals(actualValue)) {
+            return actualValue;
+          }
+
+          return null;
+        }
+
+        private String getActualValue() {
+          return targetDriver.findElement(By.tagName("body")).getText();
+        }
+
+        @Override
+        public String toString() {
+          return "expected actual value '" + getActualValue() + "' is equal to '" + key + "'";
+        }
+      });
+    }
   }
 
   @Test

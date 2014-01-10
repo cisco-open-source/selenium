@@ -79,6 +79,7 @@ public class Pages {
   public String html5VideoTest;
   public String html5AudioTest;
   public String pinchTouchTest;
+  public String webdriverjsKeypressPage;
 
   public String notExist;
 
@@ -163,5 +164,6 @@ public class Pages {
     html5VideoTest = appServer.whereIs("HTML5_Video_Test.html");
     html5AudioTest = appServer.whereIs("HTML5_Audio_Test.html");
     pinchTouchTest = appServer.whereIs("pinch.html");
+    webdriverjsKeypressPage = appServer.whereIs("webdriverjs/keypress.html");
   }
 }
