@@ -149,38 +149,61 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     assertFalse(page.isFoundElementDisplayed());
   }
 
+  private Callable<String> keyPressed(final String key) {
+    return new Callable<String>() {
+      @Override
+      public String call() throws Exception {
+        String actualValue = getActualValue();
+
+        if (key.equals(actualValue)) {
+          return actualValue;
+        }
+
+        return null;
+      }
+
+      private String getActualValue() {
+        return targetDriver.findElement(By.tagName("body")).getText();
+      }
+
+      @Override
+      public String toString() {
+        return "expected actual value '" + getActualValue() + "' is equal to '" + key + "'";
+      }
+    };
+  }
+
   @Test
   public void canKeyPress() {
-    String[] keys = {"q", "w", "e"};
+    String[] keys = {
+        "Esc", "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Bksp",
+        "\u21e5 Tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\",
+        "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "Enter",
+        "z", "x", "c", "v", "b", "n", "m", ",", ".", "/",
+        "\u21d0", "\u21d1", "\u21d3", "\u21d2"};
+
+/*
+    String[] shiftKeys = {
+        "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "+",
+        "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{", "}",
+        "A", "S", "D", "F", "G", "H", "J", "K", "L", ":", "\"",
+        "Z", "X", "C", "V", "B", "N", "M", "<", ">", "?"
+    };
+*/
 
     page.setWebPage(pages.webdriverjsKeypressPage);
     page.clickGet();
 
-    for (final String key : keys) {
+    for (String key : keys) {
       page.keyPress(key);
-
-      waitFor(new Callable<String>() {
-        @Override
-        public String call() throws Exception {
-          String actualValue = getActualValue();
-
-          if (key.equals(actualValue)) {
-            return actualValue;
-          }
-
-          return null;
-        }
-
-        private String getActualValue() {
-          return targetDriver.findElement(By.tagName("body")).getText();
-        }
-
-        @Override
-        public String toString() {
-          return "expected actual value '" + getActualValue() + "' is equal to '" + key + "'";
-        }
-      });
+      waitFor(keyPressed(key));
     }
+
+//    page.keyPress("Shift");
+//    for (String key : shiftKeys) {
+//      page.keyPress(key);
+//      waitFor(keyPressed(key));
+//    }
   }
 
   @Test

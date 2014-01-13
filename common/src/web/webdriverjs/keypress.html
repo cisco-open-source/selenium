@@ -1,8 +1,72 @@
 <html>
 <script>
 function handle(event) {
-  document.body.innerHTML = String.fromCharCode(event.keyCode);
+  var names = {
+    8: 'Bksp',
+    9: '\u21e5 Tab',
+    13: 'Enter',
+    16: 'Shift',
+    27: 'Esc',
+    37: '\u21d0', // left
+    38: '\u21d1', // up
+    39: '\u21d2', // right
+    40: '\u21d3', // down
+    173: '-', // DOM_VK_HYPHEN_MINUS
+    186: ';',
+    187: '=',
+    188: ',',
+    189: '-', // minus
+    190: '.',
+    191: '/',
+    192: '`', // DOM_VK_BACK_QUOTE
+    219: '[',
+    220: '\\',
+    221: ']',
+    222: '\'',
+  };
+
+  var names_shift = {
+    48 : ')',
+    49: '!',
+    50: '@',
+    51 : '#',
+    52 : '$',
+    53 : '%',
+    54 : '^',
+    55 : '&',
+    56 : '*',
+    57 : '(',
+    187 : '+',
+    188 : '<',
+    189 : '_',
+    190 : '>',
+    191 : '?',
+    192: '~',
+    219 : '{',
+    220 : '|',
+    221 : '}',
+  };
+
+  var key;
+
+  if (event.shiftKey) {
+    key = names_shift[event.keyCode];
+  } else {
+    key = names[event.keyCode];
+  }
+
+  if (key === undefined) {
+    key = String.fromCharCode(event.keyCode);
+
+    if (event.shiftKey) {
+      key = key.toUpperCase();
+    } else {
+      key = key.toLowerCase();
+    }
+  }
+
+  document.body.innerHTML = key;
 }
 </script>
-<body onkeypress="handle(event)"></body>
+<body onkeyup="handle(event)"></body>
 </html>

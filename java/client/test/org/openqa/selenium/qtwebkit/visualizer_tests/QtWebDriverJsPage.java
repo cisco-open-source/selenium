@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.Select;
 
 import java.util.concurrent.Callable;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertNotNull;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.alertToBePresent;
@@ -16,6 +17,8 @@ import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.el
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.pageUrlToBe;
 
 public class QtWebDriverJsPage {
+  private static final long TIME_OUT = 20;
+
   private WebDriver driver;
   private WebDriver targetDriver;
   private String webDriverJsWindowHandle;
@@ -158,7 +161,7 @@ public class QtWebDriverJsPage {
 
   public void clickGet() {
     getButton.click();
-    waitFor(pageUrlToBe(targetDriver, webPageValue));
+    waitFor(pageUrlToBe(targetDriver, webPageValue), TIME_OUT, SECONDS);
   }
 
   public String clickSource() {
@@ -251,8 +254,25 @@ public class QtWebDriverJsPage {
   }
 
   public void keyPress(String label) {
-    String xpath = String.format("//div[contains(@class, 'ui-keyboard')]//button/span[normalize-space(text()) = '%s']", label);
-    driver.findElement(By.xpath(xpath)).click();
+    driver.findElement(By.xpath(getKeyXPath(label))).click();
+
+    if (label.equals("Shift")) {
+      waitFor(new Callable<WebElement>() {
+        @Override
+        public WebElement call() throws Exception {
+          return driver.findElement(By.xpath(getKeyXPath("A")));
+        }
+      });
+    }
+  }
+
+  private String getKeyXPath(String label) {
+    if (label.equals("'"))
+      label = "\"'\"";
+    else
+      label = "'" + label + "'";
+
+    return String.format("//div[contains(@class, 'ui-keyboard')]//button/span[normalize-space(text()) = %s]", label);
   }
 
   public void clickListWindowHandles() {
