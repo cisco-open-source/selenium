@@ -27,7 +27,7 @@ public class WaitingConditions {
 
       @Override
       public String toString() {
-        return "page url to be: " + expectedUrl;
+        return "page url to be [" + expectedUrl + "] while actual value is [" + driver.getCurrentUrl() + "]";
       }
     };
   }
