@@ -16,7 +16,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
   private static final long TIME_OUT = 20;
 
-  public static <X> X waitFor(Callable<X> until) {
+  private static <X> X waitFor(Callable<X> until) {
     return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
   }
 

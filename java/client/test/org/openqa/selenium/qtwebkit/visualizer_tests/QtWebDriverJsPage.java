@@ -10,7 +10,6 @@ import java.util.concurrent.Callable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertNotNull;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.alertToBePresent;
 import static org.openqa.selenium.WaitingConditions.elementTextToContain;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.elementToBeDisplayed;
@@ -80,6 +79,10 @@ public class QtWebDriverJsPage {
   private WebElement windowSizeHeight;
   @FindBy(xpath = "//input[@value = 'Set window size']")
   private WebElement windowSizeButton;
+
+  private static <X> X waitFor(Callable<X> until) {
+    return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
+  }
 
   private Point getLocationFromAlert(String caption) {
     waitFor(alertToBePresent(driver));
@@ -161,7 +164,7 @@ public class QtWebDriverJsPage {
 
   public void clickGet() {
     getButton.click();
-    waitFor(pageUrlToBe(targetDriver, webPageValue), TIME_OUT, SECONDS);
+    waitFor(pageUrlToBe(targetDriver, webPageValue));
   }
 
   public String clickSource() {
