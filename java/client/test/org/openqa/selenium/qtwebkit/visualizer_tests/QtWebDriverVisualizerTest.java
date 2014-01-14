@@ -2,23 +2,28 @@ package org.openqa.selenium.qtwebkit.visualizer_tests;
 
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TestWaiter;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.multitouch.MultiTouchActions;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.*;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.activeElementToBe;
 
 public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
-  private static final long TOUCH_TIME_OUT = 20;
+  private static final long TIME_OUT = 20;
+
+  public static <X> X waitFor(Callable<X> until) {
+    return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
+  }
 
   private void rotateElement(String elementId, int angle) {
     WebElement toRotate = driver.findElement(By.id(elementId));
@@ -81,7 +86,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     rotateElement("picture", 35);
     WebElement result = targetDriver.findElement(By.id("result_rotate"));
-    waitFor(elementTextToEqual(result, "35"), TOUCH_TIME_OUT, SECONDS);
+    waitFor(elementTextToEqual(result, "35"));
   }
 
   @Test
@@ -91,7 +96,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     rotateElement("picture", -35);
     WebElement result = targetDriver.findElement(By.id("result_rotate"));
-    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "-35"), TOUCH_TIME_OUT, SECONDS);
+    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "-35"));
   }
 
   @Test
@@ -101,7 +106,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     zoomElement("picture", 2.5);
     WebElement result = targetDriver.findElement(By.id("result_scale"));
-    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "2.5"), TOUCH_TIME_OUT, SECONDS);
+    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "2.5"));
   }
 
   @Test
@@ -111,6 +116,6 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     zoomElement("picture", 0.5);
     WebElement result = targetDriver.findElement(By.id("result_scale"));
-    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "0.5"), TOUCH_TIME_OUT, SECONDS);
+    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "0.5"));
   }
 }

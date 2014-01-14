@@ -9,11 +9,16 @@ import java.util.concurrent.Callable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.*;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.*;
 
 public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
+
+  private static final long TIME_OUT = 20;
+
+  public static <X> X waitFor(Callable<X> until) {
+    return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
+  }
 
   @Test
   public void checkSourceScreenshotButtonsDisabling() {
@@ -40,7 +45,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.setWebPage(pages.clicksPage);
     page.clickScreenshotButton();
 
-    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles), 20, SECONDS);
+    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
     driver.switchTo().window(newWindow);
     Dimension dimension = VisualizerUtils.getDimensionFromTitle(driver.getTitle());
     assertTrue("Screenshot has non zero dimension",
