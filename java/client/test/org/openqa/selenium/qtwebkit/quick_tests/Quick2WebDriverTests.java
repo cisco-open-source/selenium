@@ -12,24 +12,25 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-                        WindowTest.class,
-                        ElementEqualityTest.class,
-                        ClickTest.class,
-                        FindingTest.class,
-                        CoordinatesTest.class,
-                        TakesScreenshotTest.class,
-                        ElementAttributeTest.class,
-                        TypingTest.class,
-                        FormHandlingTest.class,
-                        MiscTest.class,
-                        XPathElementFindingTest.class,
-                        StaleElementReferenceTest.class,
-                        VisibilityTest.class,
-                        InteractionTests.class,
-                        ExecutingJavascriptTest.class,
-                        VideoTest.class,
-                        TouchTests.class,
-                    })
+        WindowTest.class,
+        ElementEqualityTest.class,
+        ClickTest.class,
+        FindingTest.class,
+        CoordinatesTest.class,
+        TakesScreenshotTest.class,
+        ElementAttributeTest.class,
+        TypingTest.class,
+        FormHandlingTest.class,
+        MiscTest.class,
+        XPathElementFindingTest.class,
+        StaleElementReferenceTest.class,
+        VisibilityTest.class,
+        InteractionTests.class,
+        ExecutingJavascriptTest.class,
+        TouchTests.class,
+        VideoTest.class,
+})
+
 public class Quick2WebDriverTests {
     @BeforeClass
     public static void prepareCommonEnvironment() {
