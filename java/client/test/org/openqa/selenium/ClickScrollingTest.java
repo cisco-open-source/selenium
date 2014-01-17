@@ -33,7 +33,6 @@ import static org.junit.Assert.fail;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
@@ -94,7 +93,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, FIREFOX, IPHONE},
+  @Ignore(value = {CHROME, IPHONE},
           reason = "Chrome: failed, iPhone: untested, Firefox: failed with native events")
   @Test
   public void testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow() {
@@ -258,5 +257,20 @@ public class ClickScrollingTest extends JUnit4TestBase {
   private long getScrollTop() {
     return (Long)((JavascriptExecutor)driver).executeScript("return document.body.scrollTop;");
   }
-  
+
+  @Test
+  @Ignore(value = {OPERA, IPHONE, SAFARI, MARIONETTE},
+          reason = "Not tested")
+  public void testShouldBeAbleToClickElementInATallFrame() {
+    try {
+      driver.get(appServer.whereIs("scrolling_tests/page_with_tall_frame.html"));
+      driver.switchTo().frame("tall_frame");
+      WebElement element = driver.findElement(By.name("checkbox"));
+      element.click();
+      assertTrue(element.isSelected());
+    } finally {
+      driver.switchTo().defaultContent();
+    }
+  }
+
 }

@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
+import org.openqa.selenium.testing.NeedsLocalEnvironment;
 
 import java.util.Random;
 
@@ -71,6 +72,25 @@ public class FrameSwitchingTest extends JUnit4TestBase {
   public void testShouldNotAutomaticallySwitchFocusToAnIFrameWhenAPageContainingThemIsLoaded() {
     driver.get(pages.iframePage);
     driver.findElement(By.id("iframe_page_heading"));
+  }
+
+  @Test(timeout = 10000)
+  @NeedsLocalEnvironment(reason = "it hangs at IE9 and event Test.timeout doesn't help")
+  public void testShouldOpenPageWithBrokenFrameset() {
+    driver.get(appServer.whereIs("framesetPage3.html"));
+
+    WebElement frame1 = driver.findElement(By.id("first"));
+    driver.switchTo().frame(frame1);
+
+    driver.switchTo().defaultContent();
+
+    WebElement frame2 = driver.findElement(By.id("second"));
+
+    try {
+      driver.switchTo().frame(frame2);
+    } catch (WebDriverException e) {
+      // IE9 can not switch to this broken frame - it has no window.
+    }
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -338,7 +358,7 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     driver.switchTo().frame("search");
     driver.findElement(By.id("submit")).click();
     driver.switchTo().defaultContent();
-    waitFor(pageTitleToBe(driver, "Google"));
+    waitFor(pageTitleToBe(driver, "Target page for issue 5237"));
   }
 
   @Ignore({OPERA, ANDROID, OPERA_MOBILE, MARIONETTE})
@@ -394,7 +414,7 @@ public class FrameSwitchingTest extends JUnit4TestBase {
   @JavascriptEnabled
   @Test
   public void testShouldBeAbleToSwitchToTheTopIfTheFrameIsDeletedFromUnderUs() {
-    driver.get(pages.deletingFrame);
+    driver.get(appServer.whereIs("frame_switching_tests/deletingFrame.html"));
 
     driver.switchTo().frame("iframe1");
 
@@ -411,7 +431,7 @@ public class FrameSwitchingTest extends JUnit4TestBase {
     driver.switchTo().frame("iframe1");
 
     try {
-      waitFor(elementToExist(driver, "checkbox"));
+      waitFor(elementToExist(driver, "success"));
     } catch (WebDriverException web) {
       fail("Could not find element after switching frame");
     }
@@ -421,7 +441,7 @@ public class FrameSwitchingTest extends JUnit4TestBase {
   @JavascriptEnabled
   @Test
   public void testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs() {
-    driver.get(pages.deletingFrame);
+    driver.get(appServer.whereIs("frame_switching_tests/deletingFrame.html"));
 
     driver.switchTo().frame("iframe1");
 

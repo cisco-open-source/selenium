@@ -702,6 +702,9 @@ nsCommandProcessor.prototype.newSession = function(response, parameters) {
 
     session = session.wrappedJSObject;  // XPConnect...
     session.setChromeWindow(win);
+    if ('elementScrollBehavior' in desiredCapabilities) {
+      session.elementScrollBehavior = desiredCapabilities['elementScrollBehavior'];
+    }
 
     response.session = session;
     response.sessionId = session.getId();
@@ -739,6 +742,7 @@ nsCommandProcessor.prototype.getSessionCapabilities = function(response) {
   var prefStore = fxdriver.moz.getService('@mozilla.org/preferences-service;1',
       'nsIPrefService');
   for (var cap in wdSessionStoreService.CAPABILITY_PREFERENCE_MAPPING) {
+    if (cap == 'nativeEvents') continue;
     var pref = wdSessionStoreService.CAPABILITY_PREFERENCE_MAPPING[cap];
     try {
       response.value[cap] = prefStore.getBoolPref(pref);

@@ -29,8 +29,10 @@ public class GetLocalStorageKeys extends ResponseAwareWebDriverHandler {
     super(session);
   }
 
+  @Override
   public ResultType call() throws Exception {
-    Set<String> keys = ((WebStorage) getUnwrappedDriver()).getLocalStorage().keySet();
+    Set<String> keys = Utils.getWebStorage(getUnwrappedDriver())
+        .getLocalStorage().keySet();
     response.setValue(keys);
     return ResultType.SUCCESS;
   }

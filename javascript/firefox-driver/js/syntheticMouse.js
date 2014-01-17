@@ -125,20 +125,6 @@ SyntheticMouse.prototype.move = function(target, xOffset, yOffset) {
   var doc = goog.dom.getOwnerDocument(element);
   bot.setWindow(goog.dom.getWindow(doc));
 
-  //var inViewAfterScroll = bot.action.scrollIntoView(
-  //    element,
-  //    new goog.math.Coordinate(xOffset, yOffset));
-  // Check to see if the given positions and offsets are outside of the window
-  // Are we about to be dragged out of the window?
-
-  //var isOption = bot.dom.isElement(element, goog.dom.TagName.OPTION);
-  //var isSVG = Utils.isSVG(element.ownerDocument);
-
-  //if (!isOption && !isSVG && !inViewAfterScroll) {
-  //  return SyntheticMouse.newResponse(bot.ErrorCode.MOVE_TARGET_OUT_OF_BOUNDS,
-  //      'Element cannot be scrolled into view:' + element);
-  //}
-
   var xCompensate = 0;
   var yCompensate = 0;
   if (this.isButtonPressed) {
@@ -408,7 +394,13 @@ SyntheticMouse.EventEmitter.prototype.fireMouseEvent = function(target, type, ar
   var wind = goog.dom.getWindow(doc);
   var utils = this._getDOMWindowUtils(wind);
   var modifiers = this._parseModifiers(args);
-  utils.sendMouseEventToWindow(type, Math.round(args.clientX), Math.round(args.clientY), args.button, 1, modifiers);
+  if (utils.sendMouseEventToWindow) {
+    // Firefox 4+
+    utils.sendMouseEventToWindow(type, Math.round(args.clientX), Math.round(args.clientY), args.button, 1, modifiers);
+  } else {
+    // Firefox 3
+    utils.sendMouseEvent(type, Math.round(args.clientX), Math.round(args.clientY), args.button, 1, modifiers);
+  }
   fxdriver.logging.info('Called fireMouseEvent ' + type + ' ' + args.clientX + ', ' + args.clientY + ', ' + target);
   return true;
 };

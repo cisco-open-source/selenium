@@ -125,11 +125,7 @@ public class DefaultRemoteProxy extends BaseRemoteProxy
 
   public boolean isAlive() {
     try {
-      JSONObject o = getStatus();
-      return o.getString("state").equals("success");
-    } catch (JSONException e) {
-      // suppose that if json exception is raised
-      // it's selenium RC case
+      getStatus();
       return true;
     } catch (Exception e) {
       log.warning("Failed to check status of node: " + e.getMessage());
@@ -236,6 +232,7 @@ public class DefaultRemoteProxy extends BaseRemoteProxy
   public void beforeSession(TestSession session) {
     if (session.getSlot().getProtocol() == SeleniumProtocol.WebDriver) {
       Map<String, Object> cap = session.getRequestedCapabilities();
+
       if (BrowserType.FIREFOX.equals(cap.get(CapabilityType.BROWSER_NAME))) {
         if (session.getSlot().getCapabilities().get(FirefoxDriver.BINARY) != null
             && cap.get(FirefoxDriver.BINARY) == null) {
@@ -243,6 +240,7 @@ public class DefaultRemoteProxy extends BaseRemoteProxy
               session.getSlot().getCapabilities().get(FirefoxDriver.BINARY));
         }
       }
+
       if (BrowserType.CHROME.equals(cap.get(CapabilityType.BROWSER_NAME))) {
         if (session.getSlot().getCapabilities().get("chrome_binary") != null) {
           JSONObject options = (JSONObject) cap.get(ChromeOptions.CAPABILITY);
@@ -257,6 +255,15 @@ public class DefaultRemoteProxy extends BaseRemoteProxy
           cap.put(ChromeOptions.CAPABILITY, options);
         }
       }
+
+      if (BrowserType.OPERA.equals(cap.get(CapabilityType.BROWSER_NAME))) {
+        if (session.getSlot().getCapabilities().get("opera_binary") != null
+            && cap.get("opera.binary") == null) {
+          session.getRequestedCapabilities().put("opera.binary",
+                                                 session.getSlot().getCapabilities().get("opera_binary"));
+        }
+      }
+
     }
   }
 

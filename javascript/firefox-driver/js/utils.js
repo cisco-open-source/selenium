@@ -597,26 +597,36 @@ Utils.type = function(doc, element, text, opt_useNativeEvents, jsTimer, releaseM
 Utils.keyEvent = function(doc, element, type, keyCode, charCode,
                           controlState, shiftState, altState, metaState,
                           shouldPreventDefault) {
-  var preventDefault = shouldPreventDefault == undefined ? false
-      : shouldPreventDefault;
+  // Silently bail out if the element is no longer attached to the DOM.
+  var isAttachedToDom = goog.dom.getAncestor(element, function(node) {
+    return node === element.ownerDocument.documentElement;
+  }, true);
 
-  var modsMask = 0;
-  if (altState) {
-    modsMask = modsMask | 0x01;
+  if (!isAttachedToDom) {
+    return false;
   }
-  if (controlState) {
-    modsMask = modsMask | 0x02;
+
+  var keyboardEvent = doc.createEvent('KeyEvents');
+  keyboardEvent.initKeyEvent(
+      type,             // in DOMString typeArg,
+      true,             // in boolean canBubbleArg
+      true,             // in boolean cancelableArg
+      doc.defaultView,  // in nsIDOMAbstractView viewArg
+      controlState,     // in boolean ctrlKeyArg
+      altState,         // in boolean altKeyArg
+      shiftState,       // in boolean shiftKeyArg
+      metaState,        // in boolean metaKeyArg
+      keyCode,          // in unsigned long keyCodeArg
+      charCode);        // in unsigned long charCodeArg
+
+  if (shouldPreventDefault) {
+    keyboardEvent.preventDefault();
   }
-  if (shiftState) {
-    modsMask = modsMask | 0x04;
-  }
-  if (metaState)  {
-    modsMask = modsMask | 0x08;
-  }
-  var win = doc.defaultView;
-  var domUtil = win.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-      .getInterface(Components.interfaces.nsIDOMWindowUtils);
-  return domUtil.sendKeyEvent(type, keyCode, charCode, modsMask, preventDefault);
+
+  return doc.defaultView
+      .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+      .getInterface(Components.interfaces.nsIDOMWindowUtils)
+      .dispatchDOMEventViaPresShell(element, keyboardEvent, true);
 };
 
 
@@ -646,146 +656,27 @@ Utils.triggerMouseEvent = function(element, eventType, clientX, clientY) {
 };
 
 
-Utils.getElementLocation = function(element) {
-  var rect = element.getBoundingClientRect()
-
-  var location = new Object();
-  location.x = rect.left;
-  location.y = rect.top;
-  return location;
-};
-
-
-Utils.getLocationViaAccessibilityInterface = function(element) {
-  var retrieval = Utils.newInstance(
-    '@mozilla.org/accessibleRetrieval;1', 'nsIAccessibleRetrieval');
-  var accessible = retrieval.getAccessibleFor(element);
-
-  if (! accessible) {
-    return;
-  }
-
-  var x = {}, y = {}, width = {}, height = {};
-  accessible.getBounds(x, y, width, height);
-
-  return {
-    x: x.value,
-    y: y.value,
-    width: width.value,
-    height: height.value
-  };
-};
-
 Utils.getLocation = function(element, opt_onlyFirstRect) {
-  try {
-    element = element.wrappedJSObject ? element.wrappedJSObject : element;
-    var clientRect = undefined;
-    if (opt_onlyFirstRect && element.getClientRects().length > 1) {
-      for (var i = 0; i < element.getClientRects().length; i++) {
-        var candidate = element.getClientRects()[i];
-        if (candidate.width != 0 && candidate.height != 0) {
-          clientRect = candidate;
-          break;
-        }
+  element = element.wrappedJSObject ? element.wrappedJSObject : element;
+  var rect = undefined;
+  if (opt_onlyFirstRect && element.getClientRects().length > 1) {
+    for (var i = 0; i < element.getClientRects().length; i++) {
+      var candidate = element.getClientRects()[i];
+      if (candidate.width != 0 && candidate.height != 0) {
+        rect = candidate;
+        break;
       }
-      if (!clientRect) {
-        clientRect = element.getBoundingClientRect();
-      }
-    } else {
-      clientRect = element.getBoundingClientRect();
     }
-
-    // Firefox 3.5
-    if (clientRect['width']) {
-      if ('area' == element.tagName.toLowerCase()) {
-        // TODO: implement coordinates specified in percents
-        var coords = element.coords.split(',');
-        if (element.shape == 'rect') {
-          var leftX = Number(coords[0]);
-          var topY = Number(coords[1]);
-          var rightX = Number(coords[2]);
-          var bottomY = Number(coords[3]);
-          return {
-            x: clientRect.left + leftX,
-            y: clientRect.top + topY,
-            width: rightX - leftX,
-            height: bottomY - topY
-          };
-        } else if (element.shape == 'circle') {
-          var centerX = Number(coords[0]);
-          var centerY = Number(coords[1]);
-          var radius = Number(coords[2]);
-          return {
-            x: clientRect.left + centerX - radius,
-            y: clientRect.top + centerY - radius,
-            width: 2*radius,
-            height: 2*radius
-          };
-        } else if (element.shape == 'poly') {
-          var minX = Number(coords[0]);
-          var minY = Number(coords[1]);
-          var maxX = minX;
-          var maxY = minY;
-          for (i = 0; i < coords.length / 2; i++) {
-            var xi = Number(coords[i*2]);
-            var yi = Number(coords[i*2 + 1]);
-            minX = Math.min(minX, xi);
-            minY = Math.min(minY, yi);
-            maxX = Math.max(maxX, xi);
-            maxY = Math.max(maxY, yi);
-          }
-
-          return {
-            x: clientRect.left + minX,
-            y: clientRect.top + minY,
-            width: maxX - minX,
-            height: maxY - minY
-          };
-        }
-      }
-      
-      return {
-        x: clientRect.left,
-        y: clientRect.top,
-        width: clientRect.width,
-        height: clientRect.height
-      };
-    }
-
-    // Firefox 3.0.14 seems to have top, bottom attributes.
-    if (clientRect['top'] !== undefined) {
-      var retWidth = clientRect.right - clientRect.left;
-      var retHeight = clientRect.bottom - clientRect.top;
-      return {
-        x: clientRect.left,
-        y: clientRect.top,
-        width: retWidth,
-        height: retHeight
-      };
-    }
-
-    // Firefox 3.0, but lacking client rect
-    fxdriver.logging.info('Falling back to firefox3 mechanism');
-    var accessibleLocation = Utils.getLocationViaAccessibilityInterface(element);
-    accessibleLocation.x = clientRect.left;
-    accessibleLocation.y = clientRect.top;
-    return accessibleLocation;
-  } catch (e) {
-    // Element doesn't have an accessibility node
-    fxdriver.logging.warning('Falling back to using closure to find the location of the element');
-    fxdriver.logging.warning(e);
-
-    var position = goog.style.getClientPosition(element);
-    var size = goog.style.getBorderBoxSize(element);
-    var shown = bot.dom.isShown(element, /*ignoreOpacity=*/true);
-
-    return {
-      x: position.x,
-      y: position.y,
-      width: shown ? size.width : 0,
-      height: shown ? size.height : 0
-    };
   }
+  if (!rect) {
+    rect = bot.dom.getClientRect(element);
+  }
+  return {
+    x: rect.left,
+    y: rect.top,
+    width: rect.width,
+    height: rect.height
+  };
 };
 
 
@@ -832,17 +723,44 @@ Utils.getBrowserSpecificOffset = function(inBrowser) {
 };
 
 
-Utils.getLocationOnceScrolledIntoView = function(element, opt_onlyFirstRect) {
-  // Some elements may not a scrollIntoView function - for example,
-  // elements under an SVG element. Call those only if they exist.
-  if (typeof element.scrollIntoView == 'function') {
-    // This method does the scrolling as a side-effect. This is less than
-    // ideal, which is why I document it here.
-    //TODO: Fix bot.dom.getLocationInView(element) so that it scrolls elements
-    // which are in iframes as well. See issue 2497.
-    element.scrollIntoView();
+Utils.scrollIntoView = function(element, opt_elementScrollBehavior, opt_coords) {
+  if (!Utils.isInView(element, opt_coords)) {
+    element.scrollIntoView(opt_elementScrollBehavior);
+  }
+  return bot.action.scrollIntoView(element, opt_coords);
+};
+
+
+Utils.isInView = function(element, opt_coords) {
+  var location = Utils.getLocation(element, element.tagName == 'A');
+  var coords = opt_coords || new goog.math.Coordinate(0, 0);
+  location.x = location.x + coords.x;
+  location.y = location.y + coords.y;
+
+  var win = goog.dom.getWindow(goog.dom.getOwnerDocument(element));
+  for (var frame = win.frameElement; frame; frame = win.frameElement) {
+    var frameLocation = Utils.getLocation(frame);
+    if (location.x < frameLocation.x || location.x > frameLocation.x + frameLocation.width
+        || location.y < frameLocation.y || location.y > frameLocation.y + frameLocation.height)
+    {
+      return false;
+    }
+    win = goog.dom.getWindow(goog.dom.getOwnerDocument(frame));
   }
 
+  var viewportSize = goog.dom.getViewportSize(win);
+  if (location.x < 0 || location.x > viewportSize.width
+      || location.y < 0 || location.y > viewportSize.height)
+  {
+    return false;
+  }
+
+  return true;
+};
+
+
+Utils.getLocationOnceScrolledIntoView = function(element, opt_elementScrollBehavior, opt_onlyFirstRect) {
+  Utils.scrollIntoView(element, opt_elementScrollBehavior);
   return Utils.getLocationRelativeToWindowHandle(element, opt_onlyFirstRect);
 };
 
@@ -910,6 +828,10 @@ Utils.wrapResult = function(result, doc) {
       // There's got to be a more intelligent way of detecting this.
       if (result['tagName']) {
         return {'ELEMENT': Utils.addToKnownElements(result)};
+      }
+
+      if (typeof result.getMonth === 'function') {
+        return result.toJSON();
       }
 
       if (typeof result.length === 'number' &&
@@ -1040,7 +962,7 @@ Utils.installClickListener = function(respond, WebLoadingListener) {
     } catch(e) {
       // dead object
       currentWindowGone = true;
-    };
+    }
 
     if (currentWindowGone) {
      fxdriver.logging.info('Detected page load in top window; changing session focus from ' +

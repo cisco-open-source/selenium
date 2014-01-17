@@ -136,6 +136,15 @@ wdSession.prototype.mousePosition_ = {
 wdSession.prototype.scriptTimeout_ = 0;
 
 
+/**
+ * Allows the user to specify whether elements are scrolled into the viewport
+ * for interaction to align with the top (0) or bottom (1) of the viewport.
+ * The default value is to align with the top of the viewport.
+ * @private {number}
+ */
+wdSession.prototype.elementScrollBehavior = 0;
+
+
 /** @see nsISupports.QueryInterface */
 wdSession.prototype.QueryInterface = function(aIID) {
   if (aIID.equals(Components.interfaces.nsISupports)) {
@@ -215,9 +224,21 @@ wdSession.prototype.getWindow = function() {
 };
 
 
+/** @return @return {?nsIDOMWindow} This session's top window. */
+wdSession.prototype.getTopWindow = function() {
+  return this.getWindow().top;
+};
+
+
 /** @return {nsIDOMDocument} This session's current document. */
 wdSession.prototype.getDocument = function() {
   return this.getWindow().document;
+};
+
+
+/** @return {nsIDOMDocument} The document of the top window for this session. */
+wdSession.prototype.getTopDocument = function() {
+  return this.getTopWindow().document;
 };
 
 

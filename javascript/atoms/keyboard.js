@@ -60,7 +60,7 @@ bot.Keyboard = function(opt_state) {
     // If a state is passed, let's assume we were passed an object with
     // the correct properties.
     goog.array.forEach(opt_state['pressed'], function(key) {
-      this.setKeyPressed_(key, true);
+      this.setKeyPressed_(/** @type {!bot.Keyboard.Key} */ (key), true);
     }, this);
 
     this.currentPos_ = opt_state['currentPos'];
@@ -83,7 +83,8 @@ bot.Keyboard.CHAR_TO_KEY_ = {};
  * character to is in the CHAR_TO_KEY_ map. Using this factory function instead
  * of the new keyword, also helps reduce the size of the compiled Js fragment.
  *
- * @param {?number|{gecko: ?number, ieWebkit: ?number, opera: ?number}} code
+ * @param {null|number|
+ *         {gecko: (?number), ieWebkit: (?number), opera: (?number)}} code
  *     Either a single keycode or a record of per-browser keycodes.
  * @param {string=} opt_char Character when shift is not pressed.
  * @param {string=} opt_shiftChar Character when shift is pressed.
@@ -363,7 +364,7 @@ bot.Keyboard.KEY_TO_MODIFIER_ = (function(modifiersMap) {
 /**
  * Set the modifier state if the provided key is one, otherwise just add
  * to the list of pressed keys.
- * @param {bot.Keyboard.Key} key The key to update.
+ * @param {!bot.Keyboard.Key} key The key to update.
  * @param {boolean} isPressed Whether the key is pressed.
  * @private
  */
@@ -396,7 +397,7 @@ bot.Keyboard.NEW_LINE_ =
 /**
  * Returns whether the key is currently pressed.
  *
- * @param {bot.Keyboard.Key} key Key.
+ * @param {!bot.Keyboard.Key} key Key.
  * @return {boolean} Whether the key is pressed.
  */
 bot.Keyboard.prototype.isPressed = function(key) {
@@ -444,7 +445,7 @@ bot.Keyboard.prototype.pressKey = function(key) {
 
 /**
  * Whether the given key currently requires a keypress.
- * TODO(user): Make this dependent on the state of the modifier keys.
+ * TODO: Make this dependent on the state of the modifier keys.
  *
  * @param {bot.Keyboard.Key} key Key.
  * @return {boolean} Whether it requires a keypress event.
