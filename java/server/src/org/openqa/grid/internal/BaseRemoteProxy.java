@@ -336,12 +336,7 @@ public class BaseRemoteProxy implements RemoteProxy {
 
   public TestSession getNewSession(Map<String, Object> requestedCapability) {
     log.info("Trying to create a new session on node " + this);
-    try {
-      getStatus();
-    } catch (GridException ex) {
-      log.info("Node " + this + " is down or doesn't recognize the /wd/hub/status request");
-      return null;
-    }
+
     if (!hasCapability(requestedCapability)) {
       log.info("Node " + this + " has no matching capability");
       return null;
@@ -472,7 +467,7 @@ public class BaseRemoteProxy implements RemoteProxy {
 
   @Override
   public String toString() {
-    return "host :" + getRemoteHost() + (timeOutMs != -1 ? " time out : " + timeOutMs : "");
+    return "host :" + getRemoteHost();
   }
 
   private final HtmlRenderer renderer = new DefaultHtmlRenderer(this);
@@ -507,11 +502,17 @@ public class BaseRemoteProxy implements RemoteProxy {
       int code = response.getStatusLine().getStatusCode();
 
       if (code == 200) {
-        JSONObject status = extractObject(response);
+        JSONObject status = new JSONObject();
+        try {
+          status = extractObject(response);
+        } catch (Exception e) {
+          // ignored due it's not required from node to return anything. Just 200 code is enough.
+        }
         EntityUtils.consume(response.getEntity());
         return status;
       } else if (code == 404) { // selenium RC case
         JSONObject status = new JSONObject();
+        EntityUtils.consume(response.getEntity());
         return status;
       } else {
         EntityUtils.consume(response.getEntity());

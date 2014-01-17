@@ -30,7 +30,7 @@ BROWSERS = {
     },
     :java => {
       :class => "org.openqa.selenium.ie.InternetExplorerDriver",
-      :deps => [ "//java/client/src/org/openqa/selenium/ie:ie", "//cpp:ie_win32_exe" ]
+      :deps => [ "//java/client/src/org/openqa/selenium/ie:ie", "//cpp/iedriverserver:win32" ]
     },
     :browser_name => "internet explorer",
     :available => windows?
@@ -85,6 +85,12 @@ BROWSERS = {
     }
   },
   "safari" => {
+    :python => {
+      :ignore => "safari",
+      :dir => "safari",
+      :file_string => "safari",
+      :class => "Safari"
+    },
     :java => {
       :class => "org.openqa.selenium.safari.SafariDriver",
       :deps => [ "//java/client/src/org/openqa/selenium/safari:safari" ]

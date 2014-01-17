@@ -25,7 +25,6 @@ import org.openqa.selenium.testing.SeleniumTestRunner;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
@@ -58,8 +57,7 @@ public class SessionHandlingTest {
   }
 
   @Test
-  @Ignore(value = {CHROME, PHANTOMJS, QTWEBKIT},
-        reason = "QtWebkit delete sessionId from session_manager so can't quit not existing session")
+  @Ignore(value = {PHANTOMJS, QTWEBKIT})
   public void callingQuitAfterClosingTheLastWindowIsANoOp() {
     WebDriver driver = new WebDriverBuilder().get();
 
@@ -85,9 +83,8 @@ public class SessionHandlingTest {
   }
 
   @Test(expected = SessionNotFoundException.class)
-  @Ignore(value = {FIREFOX, CHROME, OPERA, PHANTOMJS, SAFARI, QTWEBKIT}, reason =
-      "Chrome: throws generic WebDriverException,"
-      + "Firefox: can perform an operation after closing the last window,"
+  @Ignore(value = {FIREFOX, OPERA, PHANTOMJS, SAFARI, QTWEBKIT}, reason =
+      "Firefox: can perform an operation after closing the last window,"
       + "Opera: throws Opera-specific exception,"
       + "PhantomJS: throws NoSuchWindowException,"
       + "Safari: throws NullPointerException,"

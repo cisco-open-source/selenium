@@ -28,6 +28,7 @@ test.suite(function(env) {
   var driver;
   beforeEach(function() { driver = env.driver; });
 
+  test.ignore(env.browsers(Browser.SAFARI)).  // Cookie handling is broken.
   describe('Cookie Management;', function() {
 
     test.beforeEach(function() {
@@ -176,9 +177,12 @@ test.suite(function(env) {
   }
 
   function assertHasCookies(var_args) {
-    var expected = arguments;
+    var expected = Array.prototype.slice.call(arguments, 0);
     driver.manage().getCookies().then(function(cookies) {
-      assert.equal(cookies.length, expected.length);
+      assert.equal(cookies.length, expected.length,
+          'Wrong # of cookies.' +
+          '\n  Expected: ' + JSON.stringify(expected) +
+          '\n  Was     : ' + JSON.stringify(cookies));
 
       var map = buildCookieMap(cookies);
       for (var i = 0; i < expected.length; ++i) {

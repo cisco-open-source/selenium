@@ -62,15 +62,16 @@ public class GridLauncher {
     }
     Logger.getLogger("").setLevel(logLevel);
 
-    for (Handler handler : Logger.getLogger("").getHandlers()) {
-      Logger.getLogger("").removeHandler(handler);
-    }
-
     String logFilename =
         helper.isParamPresent("-log")
         ? helper.getParamValue("-log")
         : LoggingOptions.getDefaultLogOutFile();
     if (logFilename != null) {
+      for (Handler handler : Logger.getLogger("").getHandlers()) {
+        if (handler instanceof ConsoleHandler) {
+          Logger.getLogger("").removeHandler(handler);
+        }
+      }
       try {
         Handler logFile = new FileHandler(new File(logFilename).getAbsolutePath(), true);
         logFile.setFormatter(new TerseFormatter(true));
@@ -80,9 +81,11 @@ public class GridLauncher {
         throw new RuntimeException(e);
       }
     } else {
-      Handler console = new ConsoleHandler();
-      console.setLevel(logLevel);
-      Logger.getLogger("").addHandler(console);
+      for (Handler handler : Logger.getLogger("").getHandlers()) {
+        if (handler instanceof ConsoleHandler) {
+          handler.setLevel(logLevel);
+        }
+      }
     }
 
     GridRole role = GridRole.find(args);

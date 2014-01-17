@@ -32,14 +32,10 @@ goog.require('bot.Touchscreen');
 goog.require('bot.dom');
 goog.require('bot.events');
 goog.require('bot.events.EventType');
-goog.require('bot.userAgent');
 goog.require('goog.array');
-goog.require('goog.dom');
 goog.require('goog.math.Coordinate');
-goog.require('goog.math.Rect');
 goog.require('goog.math.Vec2');
 goog.require('goog.style');
-goog.require('goog.userAgent');
 
 
 /**
@@ -137,8 +133,16 @@ bot.action.focusOnElement = function(element) {
  */
 bot.action.type = function(
     element, values, opt_keyboard, opt_persistModifiers) {
-  bot.action.checkShown_(element);
-  bot.action.checkInteractable_(element);
+  // If the element has already been brought into focus somewhow, typing is
+  // always allowed to proceed. Otherwise, we require the element be in an
+  // "interactable" state. For example, an element that is hidden by overflow
+  // can be typed on, so long as the user first tabs to it or the app calls
+  // focus() on the element first.
+  if (element != bot.dom.getActiveElement(element)) {
+    bot.action.checkInteractable_(element);
+    bot.action.scrollIntoView(element);
+  }
+
   var keyboard = opt_keyboard || new bot.Keyboard();
   keyboard.moveCursor(element);
 
@@ -157,7 +161,7 @@ bot.action.type = function(
         }
       });
     } else if (goog.array.contains(bot.Keyboard.MODIFIERS, value)) {
-      if (keyboard.isPressed(value)) {
+      if (keyboard.isPressed(/** @type {!bot.Keyboard.Key} */ (value))) {
         keyboard.releaseKey(value);
       } else {
         keyboard.pressKey(value);
@@ -552,14 +556,9 @@ bot.action.multiTouchAction_ = function(element, transformStart, transformHalf,
  */
 bot.action.prepareToInteractWith_ = function(element, opt_coords) {
   bot.action.checkShown_(element);
+  bot.action.scrollIntoView(element, opt_coords || undefined);
 
-  // Unlike element.scrollIntoView(), this scrolls the minimal amount
-  // necessary, not scrolling at all if the element is already in view.
-  var doc = goog.dom.getOwnerDocument(element);
-  goog.style.scrollIntoContainerView(element,
-      goog.userAgent.WEBKIT ? doc.body : doc.documentElement);
-
-  // NOTE(user): Ideally, we would check that any provided coordinates fall
+  // NOTE: Ideally, we would check that any provided coordinates fall
   // within the bounds of the element, but this has proven difficult, because:
   // (1) Browsers sometimes lie about the true size of elements, e.g. when text
   // overflows the bounding box of an element, browsers report the size of the
@@ -644,55 +643,59 @@ bot.action.LegacyDevice_.findAncestorForm = function(element) {
  * Scrolls the given {@code element} in to the current viewport. Aims to do the
  * minimum scrolling necessary, but prefers too much scrolling to too little.
  *
+ * If an optional coordinate or rectangle region is provided, scrolls that
+ * region relative to the element into view. A coordinate is treated as a 1x1
+ * region whose top-left corner is positioned at that coordinate.
+ *
  * @param {!Element} element The element to scroll in to view.
- * @param {!goog.math.Coordinate=} opt_coords Offset relative to the top-left
- *     corner of the element, to ensure is scrolled in to view.
+ * @param {!(goog.math.Coordinate|goog.math.Rect)=} opt_region
+ *     Region relative to the top-left corner of the element.
  * @return {boolean} Whether the element is in view after scrolling.
  */
-bot.action.scrollIntoView = function(element, opt_coords) {
-  if (!bot.dom.isScrolledIntoView(element, opt_coords)) {
-    // Some elements may not have a scrollIntoView function - for example,
-    // elements under an SVG element. Call those only if they exist.
-    if (element.scrollIntoView) {
-      element.scrollIntoView();
-    }
-    // In Opera 10, scrollIntoView only scrolls the element into the viewport of
-    // its immediate parent window, so we explicitly scroll the ancestor frames
-    // into view of their respective windows. Note that scrolling the top frame
-    // first --- and so on down to the element itself --- does not work, because
-    // Opera 10 apparently treats element.scrollIntoView() as a noop when it
-    // immediately follows a scrollIntoView() call on its parent frame.
-    if (goog.userAgent.OPERA && !bot.userAgent.isEngineVersion(11)) {
-      var win = goog.dom.getWindow(goog.dom.getOwnerDocument(element));
-      for (var frame = win.frameElement; frame; frame = win.frameElement) {
-        frame.scrollIntoView();
-        win = goog.dom.getWindow(goog.dom.getOwnerDocument(frame));
-      }
-    }
+bot.action.scrollIntoView = function(element, opt_region) {
+  // If the element is already in view, return true; if hidden, return false.
+  var overflow = bot.dom.getOverflowState(element, opt_region);
+  if (overflow != bot.dom.OverflowState.SCROLL) {
+    return overflow == bot.dom.OverflowState.NONE;
   }
-  if (opt_coords) {
-    var rect = new goog.math.Rect(opt_coords.x, opt_coords.y, 1, 1);
-    bot.dom.scrollElementRegionIntoClientView(element, rect);
-  }
-  var isInView = bot.dom.isScrolledIntoView(element, opt_coords);
-  if (!isInView && opt_coords) {
-    // It's possible that the element has been scrolled in to view, but the
-    // coords passed aren't in view; if this is the case, scroll those
-    // coordinates into view.
-    var elementRect = bot.dom.getClientRect(element);
-    var desiredPointInViewport = goog.math.Coordinate.sum(
-        new goog.math.Coordinate(elementRect.left, elementRect.top),
-        opt_coords);
-    try {
-      bot.dom.getInViewLocation(
-          desiredPointInViewport,
-          goog.dom.getWindow(goog.dom.getOwnerDocument(element)));
-      isInView = true;
-    } catch (ex) {
-      // Point couldn't be scrolled into view.
-      isInView = false;
+
+  // Some elements may not have a scrollIntoView function - for example,
+  // elements under an SVG element. Call those only if they exist.
+  if (element.scrollIntoView) {
+    element.scrollIntoView();
+    if (bot.dom.OverflowState.NONE ==
+        bot.dom.getOverflowState(element, opt_region)) {
+      return true;
     }
   }
 
-  return isInView;
+  // There may have not been a scrollIntoView function, or the specified
+  // coordinate may not be in view, so scroll "manually".
+  var region = bot.dom.getClientRegion(element, opt_region);
+  for (var container = bot.dom.getParentElement(element);
+       container;
+       container = bot.dom.getParentElement(container)) {
+    scrollClientRegionIntoContainerView(container);
+  }
+  return bot.dom.OverflowState.NONE ==
+      bot.dom.getOverflowState(element, opt_region);
+
+  function scrollClientRegionIntoContainerView(container) {
+    // Based largely from goog.style.scrollIntoContainerView.
+    var containerRect = bot.dom.getClientRect(container);
+    var containerBorder = goog.style.getBorderBox(container);
+
+    // Relative position of the region to the container's content box.
+    var relX = region.left - containerRect.left - containerBorder.left;
+    var relY = region.top - containerRect.top - containerBorder.top;
+
+    // How much the region can move in the container. Use the container's
+    // clientWidth/Height, not containerRect, to account for the scrollbar.
+    var spaceX = container.clientWidth + region.left - region.right;
+    var spaceY = container.clientHeight + region.top - region.bottom;
+
+    // Scroll the element into view of the container.
+    container.scrollLeft += Math.min(relX, Math.max(relX - spaceX, 0));
+    container.scrollTop += Math.min(relY, Math.max(relY - spaceY, 0));
+  }
 };

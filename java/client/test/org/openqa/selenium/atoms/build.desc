@@ -1,8 +1,19 @@
+rename(
+    name = "execute_script",
+    out = "execute_script.js",
+    deps = [
+        "//javascript/atoms/fragments:execute_script.js",
+    ])
+
+
 java_test(name = "test",
   srcs = [ "*.java" ],
   test_suite = "org.openqa.selenium.atoms.CompiledAtomsNotLeakingTest",
+  embedded = [
+    ":execute_script",
+  ],
   deps = [
-    "//javascript/webdriver/atoms:execute_script",
+    "//javascript/atoms/fragments:execute_script",
     "//java/client/test/org/openqa/selenium:build",
     "//java/client/test/org/openqa/selenium/testing:util",
     "//third_party/java/guava-libraries",

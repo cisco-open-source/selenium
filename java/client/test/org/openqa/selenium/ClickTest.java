@@ -26,7 +26,6 @@ import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
-import org.openqa.selenium.testing.TestUtilities;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -34,7 +33,20 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
-import static org.openqa.selenium.testing.Ignore.Driver.*;
+import static org.openqa.selenium.WaitingConditions.pageSourceToContain;
+import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
+import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
+import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
+import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
+import static org.openqa.selenium.testing.Ignore.Driver.IE;
+import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
+import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
+import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
+import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.TestUtilities.isFirefox;
+import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
 
 public class ClickTest extends JUnit4TestBase {
 
@@ -52,7 +64,7 @@ public class ClickTest extends JUnit4TestBase {
   public void testCanClickOnALinkAndFollowIt() {
     driver.findElement(By.id("normal")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @Ignore(value = {OPERA, MARIONETTE}, reason = "Not tested.")
@@ -60,7 +72,7 @@ public class ClickTest extends JUnit4TestBase {
   public void testCanClickOnALinkThatOverflowsAndFollowIt() {
     driver.findElement(By.id("overflowLink")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @JavascriptEnabled
@@ -87,7 +99,7 @@ public class ClickTest extends JUnit4TestBase {
     driver.findElement(By.id("otherframe")).click();
     driver.switchTo().defaultContent().switchTo().frame("target");
 
-    waitFor(WaitingConditions.pageSourceToContain(driver, "Hello WebDriver"));
+    waitFor(pageSourceToContain(driver, "Hello WebDriver"));
   }
 
   @JavascriptEnabled
@@ -104,8 +116,7 @@ public class ClickTest extends JUnit4TestBase {
     toClick.click();
     driver.switchTo().defaultContent().switchTo().frame("target");
 
-    assertTrue("Target did not reload",
-            driver.getPageSource().contains("Hello WebDriver"));
+    waitFor(pageSourceToContain(driver, "Hello WebDriver"));
   }
 
   @JavascriptEnabled
@@ -125,8 +136,7 @@ public class ClickTest extends JUnit4TestBase {
     toClick.click();
     driver.switchTo().defaultContent().switchTo().frame("target");
 
-    assertTrue("Target did not reload",
-               driver.getPageSource().contains("Hello WebDriver"));
+    waitFor(pageSourceToContain(driver, "Hello WebDriver"));
   }
 
   @JavascriptEnabled
@@ -142,11 +152,11 @@ public class ClickTest extends JUnit4TestBase {
     assertEquals("click", log);
   }
 
-  @Ignore(value = {ANDROID, IPHONE, SAFARI, OPERA_MOBILE}, reason = "Not tested")
+  @Ignore(value = {ANDROID, CHROME, IPHONE, SAFARI, OPERA_MOBILE}, reason = "Not tested")
   @Test
   public void testShouldClickOnFirstBoundingClientRectWithNonZeroSize() {
     driver.findElement(By.id("twoClientRects")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @JavascriptEnabled
@@ -162,7 +172,7 @@ public class ClickTest extends JUnit4TestBase {
     // Note: It is not guaranteed that the relatedTarget property of the mouseover
     // event will be the parent, when using native events. Only check that the mouse
     // has moved to this element, not that the parent element was the related target.
-    if (TestUtilities.isNativeEventsEnabled(driver)) {
+    if (isNativeEventsEnabled(driver)) {
       assertTrue("Should have moved to this element.", log.startsWith("parent matches?"));
     } else {
       assertEquals("parent matches? true", log);
@@ -209,34 +219,34 @@ public class ClickTest extends JUnit4TestBase {
   public void testCanClickOnALinkWithEnclosedImage() {
     driver.findElement(By.id("link-with-enclosed-image")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @Test
   public void testCanClickOnAnImageEnclosedInALink() {
     driver.findElement(By.id("link-with-enclosed-image")).findElement(By.tagName("img")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @Test
   public void testCanClickOnALinkThatContainsTextWrappedInASpan() {
     driver.findElement(By.id("link-with-enclosed-span")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @Test
   public void testCanClickOnALinkThatContainsEmbeddedBlockElements() {
     driver.findElement(By.id("embeddedBlock")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @Test
   public void testCanClickOnAnElementEnclosedInALink() {
     driver.findElement(By.id("link-with-enclosed-span")).findElement(By.tagName("span")).click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   // See http://code.google.com/p/selenium/issues/attachmentText?id=2700
@@ -258,24 +268,24 @@ public class ClickTest extends JUnit4TestBase {
   public void testClicksASurroundingStrongTag() {
     driver.get(appServer.whereIs("ClickTest_testClicksASurroundingStrongTag.html"));
     driver.findElement(By.tagName("a")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
   }
 
   @Test
-  @Ignore(value = {CHROME, IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE, QTWEBKIT}, reason
-      = "Chrome: element is not clickable, Opera, IE: failed, others: not tested")
+  @Ignore(value = {IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
+      = "Opera, IE: failed, others: not tested")
   public void testCanClickAnImageMapArea() {
     driver.get(appServer.whereIs("click_tests/google_map.html"));
     driver.findElement(By.id("rectG")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "Target Page 1"));
+    waitFor(pageTitleToBe(driver, "Target Page 1"));
 
     driver.get(appServer.whereIs("click_tests/google_map.html"));
     driver.findElement(By.id("circleO")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "Target Page 2"));
+    waitFor(pageTitleToBe(driver, "Target Page 2"));
 
     driver.get(appServer.whereIs("click_tests/google_map.html"));
     driver.findElement(By.id("polyLE")).click();
-    waitFor(WaitingConditions.pageTitleToBe(driver, "Target Page 3"));
+    waitFor(pageTitleToBe(driver, "Target Page 3"));
   }
 
   @Test
@@ -289,14 +299,14 @@ public class ClickTest extends JUnit4TestBase {
 
     element.click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+    waitFor(pageTitleToBe(driver, "clicks"));
   }
 
   @Test
   @Ignore(value = {CHROME, HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
       = "Chrome: failed, Firefox: failed with native events, others: not tested")
   public void testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports() {
-    assumeFalse(TestUtilities.isFirefox(driver) && TestUtilities.isNativeEventsEnabled(driver));
+    assumeFalse(isFirefox(driver) && isNativeEventsEnabled(driver));
 
     String url = appServer.whereIs("click_too_big_in_frame.html");
     driver.get(url);
@@ -307,7 +317,7 @@ public class ClickTest extends JUnit4TestBase {
     WebElement element = driver.findElement(By.id("click"));
     element.click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+    waitFor(pageTitleToBe(driver, "clicks"));
   }
 
   @Test
@@ -319,7 +329,69 @@ public class ClickTest extends JUnit4TestBase {
     WebElement element = driver.findElement(By.id("ar_link"));
     element.click();
 
-    waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+    waitFor(pageTitleToBe(driver, "clicks"));
+  }
+
+  @Test
+  @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
+      = "not tested")
+  public void testShouldBeAbleToClickOnLinkInAbsolutelyPositionedFooter() {
+    String url = appServer.whereIs("fixedFooterNoScroll.html");
+    driver.get(url);
+
+    WebElement element = driver.findElement(By.id("link"));
+    element.click();
+
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
+  }
+
+  @Test
+  @Ignore(value = {HTMLUNIT, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
+      = "not tested")
+  public void testShouldBeAbleToClickOnLinkInAbsolutelyPositionedFooterInQuirksMode() {
+    String url = appServer.whereIs("fixedFooterNoScrollQuirksMode.html");
+    driver.get(url);
+
+    WebElement element = driver.findElement(By.id("link"));
+    element.click();
+
+    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
+  }
+
+  @JavascriptEnabled
+  @Test
+  public void testShouldBeAbleToClickOnLinksWithNoHrefAttribute() {
+    driver.get(pages.javascriptPage);
+
+    WebElement element = driver.findElement(By.linkText("No href"));
+    element.click();
+
+    waitFor(pageTitleToBe(driver, "Changed"));
+  }
+
+  @JavascriptEnabled
+  @Test
+  @Ignore(value = {OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE},
+          reason = "Opera: fails, others: not tested")
+  public void testShouldBeAbleToClickOnALinkThatWrapsToTheNextLine() {
+    driver.get(appServer.whereIs("click_tests/link_that_wraps.html"));
+
+    driver.findElement(By.id("link")).click();
+
+    waitFor(pageTitleToBe(driver, "Submitted Successfully!"));
+  }
+
+  @JavascriptEnabled
+  @Test
+  @Ignore(value = {OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE},
+          reason = "Opera: fails, others: not tested")
+  public void testShouldBeAbleToClickOnASpanThatWrapsToTheNextLine() {
+    assumeFalse(isFirefox(driver) && isNativeEventsEnabled(driver));
+    driver.get(appServer.whereIs("click_tests/span_that_wraps.html"));
+
+    driver.findElement(By.id("span")).click();
+
+    waitFor(pageTitleToBe(driver, "Submitted Successfully!"));
   }
 
 }

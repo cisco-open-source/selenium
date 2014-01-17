@@ -208,6 +208,8 @@ public class CookieImplementationTest extends JUnit4TestBase {
   @Test
   //TODO: Fails because of secon hostname isn't tranformed from domain name to ipv4 adrres,
   public void testShouldNotGetCookieOnDifferentDomain() {
+    assumeTrue(domainHelper.checkHasValidAlternateHostname());
+
     String cookieName = "fish";
     driver.manage().addCookie(new Cookie.Builder(cookieName, "cod").build());
     assertCookieIsPresentWithName(cookieName);
