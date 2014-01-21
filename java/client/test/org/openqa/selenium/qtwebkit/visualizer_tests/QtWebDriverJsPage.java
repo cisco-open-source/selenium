@@ -150,6 +150,18 @@ public class QtWebDriverJsPage {
 
   public void setWebDriverUrl(String url) {
     driver.get(url + "/WebDriverJsDemo.html");
+    waitFor(new Callable<Object>() {
+      @Override
+      public Object call() throws Exception {
+        return ((JavascriptExecutor)driver).executeScript("return window.wd;");
+      }
+
+      @Override
+      public String toString() {
+        return "WebDriverJsController to be created";
+      }
+    });
+
     webDriverJsWindowHandle = driver.getWindowHandle();
 
     webDriverUrlPort.clear();
