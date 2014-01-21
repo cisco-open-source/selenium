@@ -8,7 +8,6 @@ java_test(name = "quick1_tests",
     ":tests",
     "//third_party/java/junit",
     "//java/client/test/org/openqa/selenium/testing:junit_4",
-    "//third_party/java/jmock",
     "//third_party/java/junit"
   ])
 
@@ -22,7 +21,6 @@ java_test(name = "quick2_tests",
     ":tests",
     "//third_party/java/junit",
     "//java/client/test/org/openqa/selenium/testing:junit_4",
-    "//third_party/java/jmock",
     "//third_party/java/junit"
   ])
 
@@ -47,7 +45,5 @@ java_library(name = "tests",
     "//java/client/test/org/openqa/selenium/testing:util",
     "//java/client/test/org/openqa/selenium/v1:small_tests",
     "//third_party/java/commons-io",
-    "//third_party/java/easymock",
-    "//third_party/java/jmock",
     "//third_party/java/junit",
   ])
