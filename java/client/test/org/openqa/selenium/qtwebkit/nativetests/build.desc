@@ -7,7 +7,7 @@ java_test(name = "nativetests_qt4",
   deps = [
     ":tests",
     "//java/client/test/org/openqa/selenium/testing:junit_4",
-    "//third_party/java/jmock",
+    "//third_party/java/mockito",
     "//third_party/java/junit"
   ])
 
@@ -20,7 +20,7 @@ java_test(name = "nativetests_qt5",
   deps = [
     ":tests",
     "//java/client/test/org/openqa/selenium/testing:junit_4",
-    "//third_party/java/jmock",
+    "//third_party/java/mockito",
     "//third_party/java/junit"
   ])
 
@@ -43,7 +43,6 @@ java_library(name = "tests",
     "//java/client/test/org/openqa/selenium/testing:util",
     "//java/client/test/org/openqa/selenium/v1:small_tests",
     "//third_party/java/commons-io",
-    "//third_party/java/easymock",
-    "//third_party/java/jmock",
+    "//third_party/java/mockito",
     "//third_party/java/junit",
   ])
