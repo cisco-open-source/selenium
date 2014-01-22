@@ -262,6 +262,7 @@ public class AlertsTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
+  @Ignore(value = {CHROME, QTWEBKIT}, issues = {2764})
   @Test
   public void testSwitchingToMissingAlertInAClosedWindowThrows() throws Exception {
     assumeFalse("This test does not fail on itself, but it causes the subsequent tests to fail",
