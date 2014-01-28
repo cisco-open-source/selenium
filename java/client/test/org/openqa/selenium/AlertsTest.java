@@ -424,6 +424,9 @@ public class AlertsTest extends JUnit4TestBase {
 
   @NoDriverAfterTest
   @Test
+  @Ignore( value = {QTWEBKIT},
+           reason = "QtWebKit bug https://bugreports.qt-project.org/browse/QTBUG-33250",
+           issues = 746)
   public void testShouldHandleAlertOnPageBeforeUnloadAtQuit() {
     driver.get(appServer.whereIs("pageWithOnBeforeUnloadMessage.html"));
 

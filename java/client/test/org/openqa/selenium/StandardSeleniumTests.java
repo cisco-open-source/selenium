@@ -36,7 +36,7 @@ import org.openqa.selenium.testing.ParallelSuite;
 
 @RunWith(ParallelSuite.class)
 @Suite.SuiteClasses({
-    //AlertsTest.class, //ignore temporary, TODO: fix regresion MHA-863
+    AlertsTest.class,
     AtomsInjectionTest.class,
     AuthenticatedPageLoadingTest.class,
     AvailableLogsTest.class,
