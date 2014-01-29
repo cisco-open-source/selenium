@@ -91,10 +91,11 @@ public class I18nTest extends JUnit4TestBase {
 
   @Test
   @Ignore(
-      value = {MARIONETTE, CHROME, OPERA},
+      value = {MARIONETTE, CHROME, OPERA, QTWEBKIT},
       reason = "MAIONETTE: not checked, "
                + "CHROME: ChromeDriver only supports characters in the BMP"
                + "OPERA: doesn't work - see issue 5069"
+               + "QTWEBKIT: WebDriver only supports characters in the BMP"
   )
   public void testEnteringSupplementaryCharacters() {
     assumeFalse("IE: versions less thank 10 have issue 5069",
