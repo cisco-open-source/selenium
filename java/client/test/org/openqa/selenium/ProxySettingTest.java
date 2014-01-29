@@ -106,9 +106,10 @@ public class ProxySettingTest extends JUnit4TestBase {
     assertTrue("Proxy should have been called", proxyServer.hasBeenCalled("simpleTest.html"));
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT},
+  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
-                   + "Opera mobile/Safari - not implemented")
+                   + "Opera mobile/Safari - not implemented"
+                   + ", WD doesn't support proxy configuring by PAC")
   @NeedsLocalEnvironment
   @Test
   public void canConfigureProxyThroughPACFile() {
@@ -133,9 +134,10 @@ public class ProxySettingTest extends JUnit4TestBase {
         "Hello, world!", driver.findElement(By.tagName("h3")).getText());
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT},
+  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
-                   + "Opera mobile/Safari - not implemented")
+                   + "Opera mobile/Safari - not implemented"
+                   + ", WD doesn't support proxy configuring by PAC")
   @NeedsLocalEnvironment
   @Test
   public void canUsePACThatOnlyProxiesCertainHosts() throws Exception {
