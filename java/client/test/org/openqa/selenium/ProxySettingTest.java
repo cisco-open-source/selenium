@@ -109,7 +109,7 @@ public class ProxySettingTest extends JUnit4TestBase {
   @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
                    + "Opera mobile/Safari - not implemented"
-                   + ", WD doesn't support proxy configuring by PAC")
+                   + "QtWebKit: WebDriver doesn't support proxy configuring by PAC")
   @NeedsLocalEnvironment
   @Test
   public void canConfigureProxyThroughPACFile() {
@@ -137,7 +137,7 @@ public class ProxySettingTest extends JUnit4TestBase {
   @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
                    + "Opera mobile/Safari - not implemented"
-                   + ", WD doesn't support proxy configuring by PAC")
+                   + "QtWebkit: WebDriver doesn't support proxy configuring by PAC")
   @NeedsLocalEnvironment
   @Test
   public void canUsePACThatOnlyProxiesCertainHosts() throws Exception {
