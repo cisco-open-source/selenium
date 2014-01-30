@@ -249,13 +249,14 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {PHANTOMJS, OPERA, SAFARI, CHROME, IE, FIREFOX},
+  @Ignore(value = {PHANTOMJS, OPERA, SAFARI, CHROME, IE, FIREFOX, QTWEBKIT},
           reason = " IE: returns null." +
                    " FF: failed due NS_ERROR_FAILURE at context.drawWindow." +
                    " SAFARI: takes only visible viewport." +
                    " CHROME: takes only visible viewport." +
                    " PHANTOMJS: takes empty data of byte[], no errors. " +
-                   " OPERA: takes only visible viewport."
+                   " OPERA: takes only visible viewport." +
+                   " QTWEBKIT: takes only visible viewport."
   )
   public void testShouldCaptureScreenshotOfPageWithTooLongXandY() throws Exception {
     driver.get(appServer.whereIs("screen/screen_too_long.html"));

@@ -30,6 +30,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.InProject.locate;
 
@@ -122,6 +123,8 @@ public class ReferrerTest extends JUnit4TestBase {
    */
   @Test
   @NeedsLocalEnvironment
+  @Ignore(value = {QTWEBKIT},
+          reason = "QtWebKit does additional requests upon history.go calls caused by performNavigation")
   public void basicHistoryNavigationWithoutAProxy() {
     testServer1.start();
 
@@ -145,6 +148,8 @@ public class ReferrerTest extends JUnit4TestBase {
    */
   @Test
   @NeedsLocalEnvironment
+  @Ignore(value = {QTWEBKIT},
+          reason = "QtWebKit does additional requests upon history.go calls caused by performNavigation")
   public void crossDomainHistoryNavigationWithoutAProxy() {
 
     testServer1.start();
@@ -175,6 +180,8 @@ public class ReferrerTest extends JUnit4TestBase {
    */
   @Test
   @NeedsLocalEnvironment
+  @Ignore(value = {QTWEBKIT},
+          reason = "Qt issue https://bugreports.qt-project.org/browse/QTBUG-2069")
   public void basicHistoryNavigationWithADirectProxy() {
     testServer1.start();
 
@@ -204,6 +211,8 @@ public class ReferrerTest extends JUnit4TestBase {
    */
   @Test
   @NeedsLocalEnvironment
+  @Ignore(value = {QTWEBKIT},
+          reason = "Qt issue https://bugreports.qt-project.org/browse/QTBUG-2069")
   public void crossDomainHistoryNavigationWithADirectProxy() {
     testServer1.start();
     testServer2.start();
@@ -238,6 +247,8 @@ public class ReferrerTest extends JUnit4TestBase {
    */
   @Test
   @NeedsLocalEnvironment
+  @Ignore(value = {QTWEBKIT},
+          reason = "Qt issue https://bugreports.qt-project.org/browse/QTBUG-2069")
   public void crossDomainHistoryNavigationWithAProxiedHost() {
     testServer1.start();
     testServer2.start();
@@ -278,6 +289,8 @@ public class ReferrerTest extends JUnit4TestBase {
    */
   @Test
   @NeedsLocalEnvironment
+  @Ignore(value = {QTWEBKIT},
+          reason = "Qt issue https://bugreports.qt-project.org/browse/QTBUG-2069")
   public void crossDomainHistoryNavigationWhenProxyInterceptsHostRequests() {
     testServer1.start();
     proxyServer.start();
@@ -314,8 +327,9 @@ public class ReferrerTest extends JUnit4TestBase {
    * intercepts requests for page 2.
    */
   @Ignore(
-      value = IE,
-      reason = "IEDriver does not disable automatic proxy caching, causing this test to fail.",
+      value = {IE, QTWEBKIT},
+      reason = " IEDriver: does not disable automatic proxy caching, causing this test to fail." +
+               " QTWEBKIT: Qt issue https://bugreports.qt-project.org/browse/QTBUG-2069.",
       issues = 6629)
   @Test
   @NeedsLocalEnvironment
