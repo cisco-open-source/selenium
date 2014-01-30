@@ -406,7 +406,7 @@ public class AlertsTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test
-  @Ignore(value = {QTWEBKIT})    // TODO temporary ignore
+  //@Ignore(value = {QTWEBKIT})    // TODO temporary ignore
   public void testShouldHandleAlertOnPageBeforeUnload() {
     driver.get(appServer.whereIs("pageWithOnBeforeUnloadMessage.html"));
 
