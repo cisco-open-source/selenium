@@ -34,7 +34,13 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
 
   @After
   public void tearDown() throws Exception {
-    driver.quit();
-    targetDriver.quit();
+    if (driver != null) {
+      driver.quit();
+      driver = null;
+    }
+    if (targetDriver != null) {
+      targetDriver.quit();
+      targetDriver = null;
+    }
   }
 }
