@@ -272,8 +272,8 @@ public class ClickTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
-      = "Opera, IE: failed, others: not tested")
+  @Ignore(value = {IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE, QTWEBKIT}, reason
+      = "QtWebkit: element is not clickable, Opera, IE: failed, others: not tested")
   public void testCanClickAnImageMapArea() {
     driver.get(appServer.whereIs("click_tests/google_map.html"));
     driver.findElement(By.id("rectG")).click();
