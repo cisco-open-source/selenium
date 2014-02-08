@@ -212,7 +212,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
   }
 
   @Test
-  public void canListWindows() {
+  public void canListAndChooseWindows() {
     page.setWebPage(pages.clicksPage);
     page.clickGet();
 
@@ -234,6 +234,24 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.getWindowListSelect().selectByValue(expectedActiveWindow);
     page.clickChooseWindow();
     waitFor(activeWindowToBe(targetDriver, expectedActiveWindow));
+
+    // Upon choose window, input field 'Web page' shall be update, MHA-879
+    waitFor(new Callable<String>() {
+      @Override
+      public String call() throws Exception {
+        if (pages.xhtmlTestPage.equals(page.getWebPage())) {
+          return page.getWebPage();
+        }
+
+        return null;
+      }
+
+      @Override
+      public String toString() {
+        return "expected web page to be '" + pages.xhtmlTestPage +
+               "' while actual web page is '" + page.getWebPage() + "'";
+      }
+    });
   }
 
   @Test

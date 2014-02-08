@@ -168,6 +168,10 @@ public class QtWebDriverJsPage {
     webDriverUrlPort.sendKeys(url);
   }
 
+  public String getWebPage() {
+    return webPage.getAttribute("value");
+  }
+
   public void setWebPage(String webPage) {
     this.webPage.clear();
     this.webPage.sendKeys(webPage);
