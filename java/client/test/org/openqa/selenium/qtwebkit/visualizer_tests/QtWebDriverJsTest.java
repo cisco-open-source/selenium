@@ -2,6 +2,10 @@ package org.openqa.selenium.qtwebkit.visualizer_tests;
 
 import org.junit.Test;
 import org.openqa.selenium.*;
+import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
+import org.openqa.selenium.qtwebkit.QtWebKitDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.PageFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +22,30 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
   private static <X> X waitFor(Callable<X> until) {
     return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
+  }
+
+  @Test
+  public void checkWebPageUpdateOnSessionReuse() {
+    page.setWebPage(pages.clicksPage);
+    page.clickGet();
+
+    String webDriverUrlPort = page.getWebDriverUrlPort();
+    WebDriver originalDriver = driver;
+    try {
+      QtWebDriverExecutor webDriverExecutor = QtWebKitDriver.createDefaultExecutor();
+      driver = new QtWebKitDriver(webDriverExecutor, DesiredCapabilities.qtwebkit());
+      page = PageFactory.initElements(driver, QtWebDriverJsPage.class);
+      page.setDriver(driver);
+      page.setTargetDriver(targetDriver);
+      page.setWebDriverUrl(webDriverUrlPort);
+
+      driver.findElement(By.id("getButton")).click();
+
+      // shall retrieve web page url from previous session according to MHA-879
+      waitFor(page.webPageIs(pages.clicksPage));
+    } finally {
+      originalDriver.quit();
+    }
   }
 
   @Test
@@ -236,22 +264,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     waitFor(activeWindowToBe(targetDriver, expectedActiveWindow));
 
     // Upon choose window, input field 'Web page' shall be update, MHA-879
-    waitFor(new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        if (pages.xhtmlTestPage.equals(page.getWebPage())) {
-          return page.getWebPage();
-        }
-
-        return null;
-      }
-
-      @Override
-      public String toString() {
-        return "expected web page to be '" + pages.xhtmlTestPage +
-               "' while actual web page is '" + page.getWebPage() + "'";
-      }
-    });
+    waitFor(page.webPageIs(pages.xhtmlTestPage));
   }
 
   @Test
