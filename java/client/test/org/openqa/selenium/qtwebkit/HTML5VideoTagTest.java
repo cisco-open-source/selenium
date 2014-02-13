@@ -58,6 +58,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason  = "Segmentation fault GStreamer; bug 997153, https://bugzilla.redhat.com/show_bug.cgi?id=918553")
     public void testRemotePlayerSetMute() {
         WebElement element = driver.findElement(By.id("videoPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
@@ -143,6 +144,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason  = "Segmentation fault GStreamer; bug 997153, https://bugzilla.redhat.com/show_bug.cgi?id=918553")
     public void testRemotePlayerVolumeAndMute() {
         WebElement element = driver.findElement(By.id("videoPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
