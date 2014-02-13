@@ -7,7 +7,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.QtWebkitAugmenter;
 import org.openqa.selenium.remote.RemoteWebElement;
+import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -67,6 +69,7 @@ public class HTML5VideoTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason  = "Segmentation fault GStreamer; bug 683782, https://bugzilla.gnome.org/show_bug.cgi?id=683782")
     public void testRemotePlayerGetMute() {
         WebElement element = driver.findElement(By.id("videoPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
