@@ -148,6 +148,10 @@ public class QtWebDriverJsPage {
     return webDriverJsWindowHandle;
   }
 
+  public String getWebDriverUrlPort() {
+    return webDriverUrlPort.getAttribute("value");
+  }
+
   public void setWebDriverUrl(String url) {
     driver.get(url + "/WebDriverJsDemo.html");
     waitFor(new Callable<Object>() {
@@ -168,10 +172,37 @@ public class QtWebDriverJsPage {
     webDriverUrlPort.sendKeys(url);
   }
 
+  public String getWebPage() {
+    return webPage.getAttribute("value");
+  }
+
   public void setWebPage(String webPage) {
     this.webPage.clear();
     this.webPage.sendKeys(webPage);
     webPageValue = webPage;
+  }
+
+  public Callable<String> webPageIs(final String expectedWebPage) {
+    return new Callable<String>() {
+      private String actualWebPage;
+
+      @Override
+      public String call() throws Exception {
+        actualWebPage = getWebPage();
+
+        if (expectedWebPage.equals(actualWebPage)) {
+          return actualWebPage;
+        }
+
+        return null;
+      }
+
+      @Override
+      public String toString() {
+        return "expected web page to be '" + expectedWebPage +
+               "' while actual web page is '" + actualWebPage + "'";
+      }
+    };
   }
 
   public void clickGet() {

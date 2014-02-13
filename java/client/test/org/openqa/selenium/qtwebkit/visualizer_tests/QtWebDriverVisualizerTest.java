@@ -5,6 +5,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.TestWaiter;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.internal.MouseAction;
 import org.openqa.selenium.interactions.multitouch.MultiTouchActions;
 
 import java.util.Set;
@@ -77,6 +79,15 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
 
     assertEquals("We do not proceed by links in visualizer", visualizerTitle, driver.getTitle());
+  }
+
+  @Test
+  public void canRightClick() {
+    page.setWebPage(pages.javascriptPage);
+    driver.switchTo().window(page.clickSource());
+
+    new Actions(driver).contextClick(driver.findElement(By.id("doubleClickField"))).perform();
+    waitFor(elementValueToEqual(targetDriver.findElement(By.id("doubleClickField")), "ContextClicked"));
   }
 
   @Test
