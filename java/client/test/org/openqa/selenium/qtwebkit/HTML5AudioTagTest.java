@@ -7,10 +7,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.QtWebkitAugmenter;
 import org.openqa.selenium.remote.RemoteWebElement;
+import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 public class HTML5AudioTagTest extends JUnit4TestBase {
     @Before
@@ -50,6 +52,7 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason  = "Segmentation fault GStreamer; bug 997153, https://bugzilla.redhat.com/show_bug.cgi?id=918553")
     public void testRemotePlayerSetMute() {
         WebElement element = driver.findElement(By.id("audioPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
@@ -61,6 +64,7 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason  = "Segmentation fault GStreamer; bug 997153, https://bugzilla.redhat.com/show_bug.cgi?id=918553")
     public void testRemotePlayerGetMute() {
         WebElement element = driver.findElement(By.id("audioPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
@@ -97,6 +101,7 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason  = "Segmentation fault GStreamer; bug 997153, https://bugzilla.redhat.com/show_bug.cgi?id=918553")
     public void testRemotePlayerVolumeAndMute() {
         WebElement element = driver.findElement(By.id("audioPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
