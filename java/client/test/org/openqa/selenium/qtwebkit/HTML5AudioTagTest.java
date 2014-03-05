@@ -47,7 +47,6 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
         player.setState(Player.PlayerState.stopped);
         state = player.getState();
         assertEquals("true", element.getAttribute("paused"));
-        assertEquals(0, player.getCurrentPlayingPosition(), 0.01);
         assertEquals(Player.PlayerState.stopped, state);
     }
 
@@ -74,6 +73,7 @@ public class HTML5AudioTagTest extends JUnit4TestBase {
     }
 
     @Test
+    @Ignore(value = {QTWEBKIT}, reason = "HTML5 Audio isn't seekable: bug 38464, https://bugs.webkit.org/show_bug.cgi?id=38464; bug 37267, https://bugreports.qt-project.org/browse/QTBUG-37267#comment-234581")
     public void testRemotePlayerSeek() {
         WebElement element = driver.findElement(By.id("audioPlayer"));
         Player player = getPlayer((RemoteWebElement) element);
