@@ -305,8 +305,9 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {CHROME},
-          reason = " CHROME: Unknown actual colors are presented at screenshot")
+  @Ignore(value = {CHROME, QTWEBKIT},
+          reason = " CHROME: Unknown actual colors are presented at screenshot" +
+                   " QTWEBKIT: Unknown actual colors are presented at screenshot")
   public void testShouldCaptureScreenshotAtIFramePage() throws Exception {
     driver.get(appServer.whereIs("screen/screen_iframes.html"));
 
@@ -364,10 +365,11 @@ public class TakesScreenshotTest extends JUnit4TestBase {
 
   @Test
   @Ignore(
-      value = {OPERA, IE, CHROME},
+      value = {OPERA, IE, CHROME, QTWEBKIT},
       reason = " OPERA: takes screenshot only of switched-in frame." +
                " IE: v9 takes screesnhot only of switched-in frame area " +
-               " CHROME: Unknown actual colors are presented at screenshot"
+               " CHROME: Unknown actual colors are presented at screenshot" +
+               " QTWEBKIT: Unknown actual colors are presented at screenshot"
   )
   public void testShouldCaptureScreenshotAtIFramePageAfterSwitching() throws Exception {
     driver.get(appServer.whereIs("screen/screen_iframes.html"));
