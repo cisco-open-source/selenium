@@ -120,14 +120,14 @@ public class TouchInteractionTests extends TouchTestBase {
 
     }
 
-    @Test
-    public void testScroll() {
-        driver.get(pages.touchScrollTest);
-        int prewY = getLocationOnScreen(By.id("item6")).getY();
-        scrollElement("item6", 0, -200);
-        int newY = getLocationOnScreen(By.id("item6")).getY();
-        assertTrue("Got: " + newY, newY < prewY);
-    }
+//    @Test
+//    public void testScroll() {
+//        driver.get(pages.touchScrollTest);
+//        int prewY = getLocationOnScreen(By.id("item6")).getY();
+//        scrollElement("item6", 0, -200);
+//        int newY = getLocationOnScreen(By.id("item6")).getY();
+//        assertTrue("Got: " + newY, newY < prewY);
+//    }
 
     @Test
     public void testFlick() {
