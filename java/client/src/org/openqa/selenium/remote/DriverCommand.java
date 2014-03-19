@@ -131,6 +131,7 @@ public interface DriverCommand {
   String CLICK = "mouseClick";
   String DOUBLE_CLICK = "mouseDoubleClick";
   String MOUSE_DOWN = "mouseButtonDown";
+  String WHEEL = "mouseWheel";
   String MOUSE_UP = "mouseButtonUp";
   String MOVE_TO = "mouseMoveTo";
   String SEND_KEYS_TO_SESSION = "sendKeys";

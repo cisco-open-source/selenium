@@ -224,6 +224,7 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
         .put(CLICK, post("/session/:sessionId/click"))
         .put(DOUBLE_CLICK, post("/session/:sessionId/doubleclick"))
         .put(MOUSE_DOWN, post("/session/:sessionId/buttondown"))
+        .put(WHEEL, post("/session/:sessionId/wheel"))
         .put(MOUSE_UP, post("/session/:sessionId/buttonup"))
         .put(MOVE_TO, post("/session/:sessionId/moveto"))
         .put(SEND_KEYS_TO_ACTIVE_ELEMENT, post("/session/:sessionId/keys"))
