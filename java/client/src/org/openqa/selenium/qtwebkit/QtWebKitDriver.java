@@ -60,6 +60,14 @@ public class QtWebKitDriver extends RemoteWebDriver
      */
     public final static String HYBRID = "hybrid";
 
+    /**
+     * Custom capability.
+     * WD checks this caps, if it is not specified,
+     * in case of attempt to create second session we get exception of "one session only",
+     * otherwise prev session will be terminated without closing windows
+     * and new session can reuse those windows
+     */
+    public final static String REUSE_UI = "reuseUI";
 
     public QtWebKitDriver(CommandExecutor executor, Capabilities desiredCapabilities,
                           Capabilities requiredCapabilities) {
