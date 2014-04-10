@@ -12,9 +12,12 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.openqa.selenium.Platform.WINDOWS;
 import static org.openqa.selenium.Platform.LINUX;
@@ -232,6 +235,79 @@ public class CapabilitiesTest extends JUnit4TestBase {
         } catch (RuntimeException e) {
             e.printStackTrace();
             fail("Should not to be here ...");
+        }
+    }
+
+    @Test
+    public void testCanUsedOpenWindowFromPrevSessionIfCapReuseUISetToTrue() {
+
+        WebDriver prevDriver = null;
+        try {
+            DesiredCapabilities caps = DesiredCapabilities.qtwebkit();
+            QtWebDriverExecutor executor = QtWebKitDriver.createDefaultExecutor();
+            prevDriver = new RemoteWebDriver(executor, caps);
+            prevDriver.get("qtwidget://XPathElementFindingTestWidget");
+            assertEquals(prevDriver.getTitle(), "Application Window");
+
+            desiredCapabilities.setCapability(QtWebKitDriver.REUSE_UI, true);
+            driver = CreateWebDriver();
+
+            Set<String> allWindowHandles = driver.getWindowHandles();
+            assertEquals(2, allWindowHandles.size());
+
+            for (String handle : allWindowHandles) {
+                driver.switchTo().window(handle);
+                if (driver.getTitle().equals("Application Window")) {
+                    break;
+                }
+            }
+            assertEquals(driver.getTitle(), "Application Window");
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            fail("Should not to be here ...");
+        } finally {
+            // if this caps set to 'true' prevDriver will be closed when new driver creates
+        }
+    }
+
+    @Test
+    public void testCanNotStartOtherSessionIfCapReuseUISetToFalse() {
+
+        desiredCapabilities.setCapability(QtWebKitDriver.REUSE_UI, false);
+        WebDriver otherDriver = null;
+        try {
+            driver = CreateWebDriver();
+            driver.get("qtwidget://XPathElementFindingTestWidget");
+            assertEquals(driver.getTitle(), "Application Window");
+            DesiredCapabilities caps = DesiredCapabilities.qtwebkit();
+            QtWebDriverExecutor executor = QtWebKitDriver.createDefaultExecutor();
+            otherDriver = new RemoteWebDriver(executor, caps);
+            fail("Should not have success ...");
+        } catch (RuntimeException e) {
+//            expected
+        } finally {
+            if (otherDriver != null)
+                otherDriver.quit();
+        }
+    }
+
+    @Test
+    public void testCanNotStartOtherSessionIfCapReuseUIDoesNotSet() {
+        WebDriver otherDriver = null;
+        try {
+            driver = CreateWebDriver();
+            driver.get("qtwidget://XPathElementFindingTestWidget");
+            assertEquals(driver.getTitle(), "Application Window");
+            DesiredCapabilities caps = DesiredCapabilities.qtwebkit();
+            QtWebDriverExecutor executor = QtWebKitDriver.createDefaultExecutor();
+            otherDriver = new RemoteWebDriver(executor, caps);
+            fail("Should not have success ...");
+        } catch (RuntimeException e) {
+//            expected
+        } finally {
+            if (otherDriver != null)
+                otherDriver.quit();
         }
     }
 
