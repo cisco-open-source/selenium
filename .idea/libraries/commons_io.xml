@@ -2,10 +2,9 @@
   <library name="commons-io">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/third_party/java/commons-io/commons-io-2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/third_party/java/commons-io/commons-io-2.2-src.zip!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="jar://$PROJECT_DIR$/third_party/java/commons-io/commons-io-2.2-src.zip!/commons-io-2.2-src/src/main/java" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>
