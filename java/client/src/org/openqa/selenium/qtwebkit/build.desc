@@ -1,4 +1,3 @@
-
 java_library(name = "qtwebkit",
   srcs = [ "*.java" ],
   deps = [
