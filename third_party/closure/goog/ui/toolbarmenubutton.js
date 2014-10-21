@@ -21,7 +21,6 @@
 
 goog.provide('goog.ui.ToolbarMenuButton');
 
-goog.require('goog.ui.ControlContent');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.ToolbarMenuButtonRenderer');
 goog.require('goog.ui.registry');
@@ -37,7 +36,7 @@ goog.require('goog.ui.registry');
  * @param {goog.ui.ButtonRenderer=} opt_renderer Optional renderer used to
  *     render or decorate the button; defaults to
  *     {@link goog.ui.ToolbarMenuButtonRenderer}.
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM hepler, used for
+ * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
  *     document interaction.
  * @constructor
  * @extends {goog.ui.MenuButton}

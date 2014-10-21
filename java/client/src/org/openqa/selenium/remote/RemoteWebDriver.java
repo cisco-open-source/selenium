@@ -1,5 +1,5 @@
 /*
-Copyright 2007-2012 Selenium committers
+Copyright 2007-2014 Software Freedom Conservancy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,9 +31,11 @@ import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.HasCapabilities;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.UnsupportedCommandException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -48,12 +50,12 @@ import org.openqa.selenium.internal.FindsByLinkText;
 import org.openqa.selenium.internal.FindsByName;
 import org.openqa.selenium.internal.FindsByTagName;
 import org.openqa.selenium.internal.FindsByXPath;
+import org.openqa.selenium.logging.LocalLogs;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingHandler;
 import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.logging.NeedsLocalLogs;
-import org.openqa.selenium.logging.LocalLogs;
 import org.openqa.selenium.logging.Logs;
+import org.openqa.selenium.logging.NeedsLocalLogs;
 import org.openqa.selenium.remote.internal.JsonToWebElementConverter;
 import org.openqa.selenium.remote.internal.WebElementToJsonConverter;
 import org.openqa.selenium.security.Credentials;
@@ -69,17 +71,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Augmentable
 public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     FindsById, FindsByClassName, FindsByLinkText, FindsByName,
     FindsByCssSelector, FindsByTagName, FindsByXPath,
-    HasInputDevices, HasCapabilities {
+    HasInputDevices, HasCapabilities, TakesScreenshot {
 
   // TODO(dawagner): This static logger should be unified with the per-instance localLogs
   private static final Logger logger = Logger.getLogger(RemoteWebDriver.class.getName());
   private Level level = Level.FINE;
 
-  private final ErrorHandler errorHandler = new ErrorHandler();
-
+  private ErrorHandler errorHandler = new ErrorHandler();
   private CommandExecutor executor;
   private Capabilities capabilities;
   private SessionId sessionId;
@@ -107,8 +109,30 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     if (executor instanceof NeedsLocalLogs) {
       ((NeedsLocalLogs)executor).setLocalLogs(localLogs);
     }
-    startClient();
-    startSession(desiredCapabilities, requiredCapabilities);
+
+    try {
+      startClient();
+    } catch (RuntimeException e) {
+      try {
+        stopClient();
+      } catch (Exception ignored) {
+        // Ignore the clean-up exception. We'll propagate the original failure.
+      }
+
+      throw e;
+    }
+
+    try {
+      startSession(desiredCapabilities, requiredCapabilities);
+    } catch (RuntimeException e) {
+      try {
+        quit();
+      } catch (Exception ignored) {
+        // Ignore the clean-up exception. We'll propagate the original failure.
+      }
+
+      throw e;
+    }
   }
 
   public RemoteWebDriver(CommandExecutor executor, Capabilities desiredCapabilities) {
@@ -260,6 +284,10 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     return errorHandler;
   }
 
+  public void setErrorHandler(ErrorHandler handler) {
+    this.errorHandler = handler;
+  }
+
   public CommandExecutor getCommandExecutor() {
     return executor;
   }
@@ -289,6 +317,23 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
 
   public String getCurrentUrl() {
     return execute(DriverCommand.GET_CURRENT_URL).getValue().toString();
+  }
+
+  @Override
+  public <X> X getScreenshotAs(OutputType<X> outputType) throws WebDriverException {
+    Response response = execute(DriverCommand.SCREENSHOT);
+    Object result = response.getValue();
+    if (result instanceof String) {
+      String base64EncodedPng = (String) result;
+      return outputType.convertFromBase64Png(base64EncodedPng);
+    } else if (result instanceof byte[]) {
+      String base64EncodedPng = new String((byte[]) result);
+      return outputType.convertFromBase64Png(base64EncodedPng);
+    } else {
+      throw new RuntimeException(String.format("Unexpected result for %s command: %s",
+          DriverCommand.SCREENSHOT,
+          result == null ? "null" : result.getClass().getName() + " instance"));
+    }
   }
 
   public List<WebElement> findElements(By by) {
@@ -624,6 +669,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     }
 
     public void addCookie(Cookie cookie) {
+      cookie.validate();
       execute(DriverCommand.ADD_COOKIE, ImmutableMap.of("cookie", cookie));
     }
 
@@ -824,6 +870,11 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     public WebDriver frame(WebElement frameElement) {
       Object elementAsJson = new WebElementToJsonConverter().apply(frameElement);
       execute(DriverCommand.SWITCH_TO_FRAME, ImmutableMap.of("id", elementAsJson));
+      return RemoteWebDriver.this;
+    }
+
+    public WebDriver parentFrame() {
+      execute(DriverCommand.SWITCH_TO_PARENT_FRAME);
       return RemoteWebDriver.this;
     }
 

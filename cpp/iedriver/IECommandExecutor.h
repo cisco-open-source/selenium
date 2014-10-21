@@ -15,20 +15,17 @@
 #define WEBDRIVER_IE_IECOMMANDEXECUTOR_H_
 
 #include <Objbase.h>
-#include <algorithm>
-#include <ctime>
 #include <map>
 #include <string>
-#include <vector>
 #include <unordered_map>
-#include "Browser.h"
+#include "BrowserFactory.h"
 #include "command.h"
 #include "command_types.h"
+#include "DocumentHost.h"
 #include "IECommandHandler.h"
 #include "Element.h"
 #include "ElementFinder.h"
 #include "ElementRepository.h"
-#include "HtmlDialog.h"
 #include "InputManager.h"
 #include "ProxyManager.h"
 #include "messages.h"
@@ -42,15 +39,7 @@
 #define ACCEPT_UNEXPECTED_ALERTS "accept"
 #define DISMISS_UNEXPECTED_ALERTS "dismiss"
 
-#define EVENT_NAME L"WD_START_EVENT"
-
 namespace webdriver {
-
-// Structure to be used for comunication between threads
-struct IECommandExecutorThreadContext {
-  HWND hwnd;
-  int port;
-};
 
 // We use a CWindowImpl (creating a hidden window) here because we
 // want to synchronize access to the command handler. For that we
@@ -224,6 +213,8 @@ class IECommandExecutor : public CWindowImpl<IECommandExecutor> {
   int port_;
   bool enable_persistent_hover_;
   bool enable_element_cache_cleanup_;
+  bool ignore_zoom_setting_;
+  std::string initial_browser_url_;
   std::string unexpected_alert_behavior_;
 
   Command current_command_;

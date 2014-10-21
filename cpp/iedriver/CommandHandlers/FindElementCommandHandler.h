@@ -31,7 +31,6 @@ class FindElementCommandHandler : public IECommandHandler {
 
  protected:
   void ExecuteInternal(const IECommandExecutor& executor,
-                       const LocatorMap& locator_parameters,
                        const ParametersMap& command_parameters,
                        Response* response) {
     ParametersMap::const_iterator using_parameter_iterator = command_parameters.find("using");
@@ -83,7 +82,7 @@ class FindElementCommandHandler : public IECommandHandler {
       } while (clock() < end);
 
       response->SetErrorResponse(status_code, 
-        "Unable to find element with " + mechanism + " == " + value);
+          "Unable to find element with " + mechanism + " == " + value);
       return;
     }
   }

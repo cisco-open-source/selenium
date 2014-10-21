@@ -31,7 +31,6 @@ class NewSessionCommandHandler : public IECommandHandler {
 
  protected:
   void ExecuteInternal(const IECommandExecutor& executor,
-                       const LocatorMap& locator_parameters,
                        const ParametersMap& command_parameters,
                        Response* response) {
     std::string default_initial_url = "http://localhost:" + std::to_string(static_cast<long long>(executor.port())) + "/";
@@ -49,6 +48,8 @@ class NewSessionCommandHandler : public IECommandHandler {
       factory_settings.initial_browser_url = initial_url.asString();
       Json::Value force_create_process_api = it->second.get(FORCE_CREATE_PROCESS_API_CAPABILITY, false);
       factory_settings.force_create_process_api = force_create_process_api.asBool();
+      Json::Value force_shell_windows_api = it->second.get(FORCE_SHELL_WINDOWS_API_CAPABILITY, false);
+      factory_settings.force_shell_windows_api = force_shell_windows_api.asBool();
       Json::Value browser_command_line_switches = it->second.get(BROWSER_COMMAND_LINE_SWITCHES_CAPABILITY, "");
       factory_settings.browser_command_line_switches = browser_command_line_switches.asString();
       Json::Value ensure_clean_session = it->second.get(ENSURE_CLEAN_SESSION_CAPABILITY, false);

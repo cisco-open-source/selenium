@@ -74,8 +74,9 @@ goog.testing.events.Event = function(type, opt_target) {
 /**
  * Whether to cancel the event in internal capture/bubble processing for IE.
  * @type {boolean}
- * @suppress {underscore} Technically public, but referencing this outside
- *     this package is strongly discouraged.
+ * @public
+ * @suppress {underscore|visibility} Technically public, but referencing this
+ *     outside this package is strongly discouraged.
  */
 goog.testing.events.Event.prototype.propagationStopped_ = false;
 
@@ -87,8 +88,9 @@ goog.testing.events.Event.prototype.defaultPrevented = false;
 /**
  * Return value for in internal capture/bubble processing for IE.
  * @type {boolean}
- * @suppress {underscore} Technically public, but referencing this outside
- *     this package is strongly discouraged.
+ * @public
+ * @suppress {underscore|visibility} Technically public, but referencing this
+ *     outside this package is strongly discouraged.
  */
 goog.testing.events.Event.prototype.returnValue_ = true;
 
@@ -117,7 +119,7 @@ goog.testing.events.Event.prototype.preventDefault = function() {
  * @private
  */
 goog.testing.events.assertEventTarget_ = function(target) {
-  return goog.asserts.assert(target, 'Target should not be defined.');
+  return goog.asserts.assert(target, 'EventTarget should be defined.');
 };
 
 
@@ -259,15 +261,14 @@ goog.testing.events.fireNonAsciiKeySequence = function(
   }
 
   // Fire keydown, keypress, and keyup. Note that if the keydown is
-  // prevent-defaulted, then the keypress will not fire on IE.
+  // prevent-defaulted, then the keypress will not fire.
   var result = true;
   if (!goog.testing.events.isBrokenGeckoMacActionKey_(keydown)) {
     result = goog.testing.events.fireBrowserEvent(keydown);
   }
   if (goog.events.KeyCodes.firesKeyPressEvent(
       keyCode, undefined, keydown.shiftKey, keydown.ctrlKey,
-      keydown.altKey) &&
-      !(goog.userAgent.IE && !result)) {
+      keydown.altKey) && result) {
     result &= goog.testing.events.fireBrowserEvent(keypress);
   }
   return !!(result & goog.testing.events.fireBrowserEvent(keyup));
@@ -541,6 +542,19 @@ goog.testing.events.fireContextMenuSequence = function(target, opt_coords) {
 goog.testing.events.firePopStateEvent = function(target, state) {
   var e = new goog.testing.events.Event(goog.events.EventType.POPSTATE, target);
   e.state = state;
+  return goog.testing.events.fireBrowserEvent(e);
+};
+
+
+/**
+ * Simulate a blur event on the given target.
+ * @param {EventTarget} target The target for the event.
+ * @return {boolean} The value returned by firing the blur browser event,
+ *      which returns false iff 'preventDefault' was invoked.
+ */
+goog.testing.events.fireBlurEvent = function(target) {
+  var e = new goog.testing.events.Event(
+      goog.events.EventType.BLUR, target);
   return goog.testing.events.fireBrowserEvent(e);
 };
 

@@ -27,7 +27,9 @@
 #include "Browser.h"
 #include "Generated/atoms.h"
 #include "interactions.h"
+#include "json.h"
 #include "logging.h"
+#include "Script.h"
 
 namespace webdriver {
 
@@ -92,7 +94,7 @@ int Element::IsDisplayed(bool* result) {
   // N.B., The second argument to the IsDisplayed atom is "ignoreOpacity".
   Script script_wrapper(doc, script_source, 2);
   script_wrapper.AddArgument(this->element_);
-  script_wrapper.AddArgument(true);
+  script_wrapper.AddArgument(false);
   status_code = script_wrapper.Execute();
 
   if (status_code == WD_SUCCESS) {
@@ -378,7 +380,9 @@ bool Element::IsHiddenByOverflow() {
   script_wrapper.AddArgument(this->element_);
   int status_code = script_wrapper.Execute();
   if (status_code == WD_SUCCESS) {
-    isOverflow = script_wrapper.result().boolVal == VARIANT_TRUE;
+    std::string overflow_state = "";
+    script_wrapper.ConvertResultToString(&overflow_state);
+    isOverflow = (overflow_state == "scroll");
   } else {
     LOG(WARN) << "Unable to determine is element hidden by overflow";
   }

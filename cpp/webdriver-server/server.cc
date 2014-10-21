@@ -56,27 +56,12 @@ void Server::Initialize(const int port,
   this->PopulateCommandRepository();
 }
 
-void* Server::OnHttpEvent(enum mg_event event_raised,
-                          struct mg_connection* conn,
-                          const struct mg_request_info* request_info) {
-  LOG(TRACE) << "Entering Server::OnHttpEvent";
-
-  // Mongoose calls method with the following events:
-  // - MG_EVENT_LOG - on crying to log
-  // - MG_NEW_REQUEST - on processing new HTTP request
-  // - MG_HTTP_ERROR - on sending HTTP error
-  // - MG_REQUEST_COMPLETE - on request processing is completed (in last version of code)
-  int handler_result_code = 0;
-  if (event_raised == MG_NEW_REQUEST) {
-    handler_result_code = reinterpret_cast<Server*>(request_info->user_data)->
-        ProcessRequest(conn, request_info);
-  } else if (event_raised == MG_EVENT_LOG) {
-    LOG(WARN) << "Mongoose log event: " << request_info->log_message;
-  } else if (event_raised == MG_HTTP_ERROR) {
-    // do nothing due it will be reported as MG_EVENT_LOG with more info
-  }
-
-  return reinterpret_cast<void*>(handler_result_code);
+int Server::OnNewHttpRequest(struct mg_connection* conn) {
+  mg_context* context = mg_get_context(conn);
+  Server* current_server = reinterpret_cast<Server*>(mg_get_user_data(context));
+  mg_request_info* request_info = mg_get_request_info(conn);
+  int handler_result_code = current_server->ProcessRequest(conn, request_info);
+  return handler_result_code;
 }
 
 bool Server::Start() {
@@ -107,7 +92,9 @@ bool Server::Start() {
                             "access_control_list", acl.c_str(),
                             // "enable_keep_alive", "yes",
                             NULL };
-  context_ = mg_start(&OnHttpEvent, this, options);
+  mg_callbacks callbacks = {};
+  callbacks.begin_request = &OnNewHttpRequest;
+  context_ = mg_start(&callbacks, this, options);
   if (context_ == NULL) {
     LOG(WARN) << "Failed to start Mongoose";
     return false;
@@ -168,15 +155,6 @@ void Server::AddCommand(const std::string& url,
                         const std::string& http_verb,
                         const std::string& command_name) {
   this->commands_[url][http_verb] = command_name;
-}
-
-std::string Server::CreateSession() {
-  LOG(TRACE) << "Entering Server::CreateSession";
-
-  SessionHandle session_handle= this->InitializeSession();
-  std::string session_id = session_handle->session_id();
-  this->sessions_[session_id] = session_handle;
-  return session_id;
 }
 
 void Server::ShutDownSession(const std::string& session_id) {
@@ -264,12 +242,9 @@ std::string Server::DispatchCommand(const std::string& uri,
     // not by the session.
     serialized_response = this->ListSessions();
   } else {
-    if (command == webdriver::CommandType::NewSession) {
-      session_id = this->CreateSession();
-    }
-
     SessionHandle session_handle = NULL;
-    if (!this->LookupSession(session_id, &session_handle)) {
+    if (command != webdriver::CommandType::NewSession &&
+        !this->LookupSession(session_id, &session_handle)) {
       if (command == webdriver::CommandType::Quit) {
         // Calling quit on an invalid session should be a no-op.
         // Hand-code the response for quit on an invalid (already
@@ -291,15 +266,23 @@ std::string Server::DispatchCommand(const std::string& uri,
       }
     } else {
       // Compile the serialized JSON representation of the command by hand.
-      std::string serialized_command = "{ \"command\" : \"" + command + "\"";
+      std::string serialized_command = "{ \"name\" : \"" + command + "\"";
       serialized_command.append(", \"locator\" : ");
       serialized_command.append(locator_parameters);
       serialized_command.append(", \"parameters\" : ");
       serialized_command.append(command_body);
       serialized_command.append(" }");
+      if (command == webdriver::CommandType::NewSession) {
+        session_handle = this->InitializeSession();
+      }
       bool session_is_valid = session_handle->ExecuteCommand(
           serialized_command,
           &serialized_response);
+      if (command == webdriver::CommandType::NewSession) {
+        Response new_session_response;
+        new_session_response.Deserialize(serialized_response);
+        this->sessions_[new_session_response.session_id()] = session_handle;
+      }
       if (!session_is_valid) {
         this->ShutDownSession(session_id);
       }
@@ -314,7 +297,7 @@ std::string Server::ListSessions() {
 
   // Manually construct the serialized command for getting 
   // session capabilities.
-  std::string get_caps_command = "{ \"command\" : \"" + webdriver::CommandType::GetSessionCapabilities + "\"" +
+  std::string get_caps_command = "{ \"name\" : \"" + webdriver::CommandType::GetSessionCapabilities + "\"" +
                                  ", \"locator\" : {}, \"parameters\" : {} }";
 
   Json::Value sessions(Json::arrayValue);
@@ -639,6 +622,7 @@ void Server::PopulateCommandRepository() {
   this->AddCommand("/session/:sessionid/execute_async", "POST",  webdriver::CommandType::ExecuteAsyncScript);
   this->AddCommand("/session/:sessionid/screenshot", "GET",  webdriver::CommandType::Screenshot);
   this->AddCommand("/session/:sessionid/frame", "POST",  webdriver::CommandType::SwitchToFrame);
+  this->AddCommand("/session/:sessionid/frame/parent", "POST",  webdriver::CommandType::SwitchToParentFrame);
   this->AddCommand("/session/:sessionid/window", "POST",  webdriver::CommandType::SwitchToWindow);
   this->AddCommand("/session/:sessionid/window", "DELETE",  webdriver::CommandType::Close);
   this->AddCommand("/session/:sessionid/cookie", "GET",  webdriver::CommandType::GetAllCookies);

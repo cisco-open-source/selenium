@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * @fileoverview Defines functions for configuring a webdriver proxy:
+ * <pre><code>
+ * var webdriver = require('selenium-webdriver'),
+ *     proxy = require('selenium-webdriver/proxy');
+ *
+ * var driver = new webdriver.Builder()
+ *     .withCapabilities(webdriver.Capabilities.chrome())
+ *     .setProxy(proxy.manual({http: 'host:1234'}))
+ *     .build();
+ * </code></pre>
+ */
+
 'use strict';
 
 var util = require('util');
-
-
-/**
- * Proxy configuration object, as defined by the WebDriver wire protocol.
- * @typedef {{
- *     proxyType: string,
- *     ftpProxy: (string|undefined),
- *     httpProxy: (string|undefined),
- *     sslProxy: (string|undefined),
- *     noProxy: (string|undefined),
- *     proxyAutoconfigUrl: (string|undefined)
- * }}
- */
-var ProxyConfig;
 
 
 
@@ -37,7 +36,7 @@ var ProxyConfig;
 
 /**
  * Configures WebDriver to bypass all browser proxies.
- * @return {!ProxyConfig} A new proxy configuration object.
+ * @return {!webdriver.ProxyConfig} A new proxy configuration object.
  */
 exports.direct = function() {
   return {proxyType: 'direct'};
@@ -47,12 +46,14 @@ exports.direct = function() {
 /**
  * Manually configures the browser proxy.  The following options are
  * supported:
- * - ftp: Proxy host to use for FTP requests
- * - http: Proxy host to use for HTTP requests
- * - https: Proxy host to use for HTTPS requests
- * - bypass: A list of hosts requests should directly connect to, bypassing
- *     any other proxies for that request. May be specified as a comma
- *     separated string, or a list of strings.
+ * <ul>
+ * <li>{@code ftp}: Proxy host to use for FTP requests
+ * <li>{@code http}: Proxy host to use for HTTP requests
+ * <li>{@code https}: Proxy host to use for HTTPS requests
+ * <li>{@code bypass}: A list of hosts requests should directly connect to,
+ *     bypassing any other proxies for that request. May be specified as a
+ *     comma separated string, or a list of strings.
+ * </ul>
  *
  * Behavior is undefined for FTP, HTTP, and HTTPS requests if the
  * corresponding key is omitted from the configuration options.
@@ -62,7 +63,7 @@ exports.direct = function() {
  *          https: (string|undefined),
  *          bypass: (string|!Array.<string>|undefined)}} options Proxy
  *     configuration options.
- * @return {!ProxyConfig} A new proxy configuration object.
+ * @return {!webdriver.ProxyConfig} A new proxy configuration object.
  */
 exports.manual = function(options) {
   return {
@@ -80,7 +81,7 @@ exports.manual = function(options) {
  * Configures WebDriver to configure the browser proxy using the PAC file at
  * the given URL.
  * @param {string} url URL for the PAC proxy to use.
- * @return {!ProxyConfig} A new proxy configuration object.
+ * @return {!webdriver.ProxyConfig} A new proxy configuration object.
  */
 exports.pac = function(url) {
   return {
@@ -92,7 +93,7 @@ exports.pac = function(url) {
 
 /**
  * Configures WebDriver to use the current system's proxy.
- * @return {!ProxyConfig} A new proxy configuration object.
+ * @return {!webdriver.ProxyConfig} A new proxy configuration object.
  */
 exports.system = function() {
   return {proxyType: 'system'};

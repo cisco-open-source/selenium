@@ -19,10 +19,9 @@
 
 #include <vector>
 #include <map>
-#include <sstream>
 #include <string>
+#include "civetweb.h"
 #include "command_types.h"
-#include "mongoose.h"
 #include "response.h"
 #include "session.h"
 
@@ -35,9 +34,8 @@ class Server {
   Server(const int port, const std::string& host, const std::string& log_level, const std::string& log_file);
   virtual ~Server(void);
 
-  static void* OnHttpEvent(enum mg_event event_raised,
-                           struct mg_connection* conn,
-                           const struct mg_request_info* request_info);
+  static int OnNewHttpRequest(struct mg_connection* conn);
+
   bool Start(void);
   void Stop(void);
   int ProcessRequest(struct mg_connection* conn,
@@ -75,7 +73,6 @@ class Server {
   std::string DispatchCommand(const std::string& url,
                               const std::string& http_verb,
                               const std::string& command_body);
-  std::string CreateSession(void);
   void ShutDownSession(const std::string& session_id);
   std::string ReadRequestBody(struct mg_connection* conn,
                               const struct mg_request_info* request_info);

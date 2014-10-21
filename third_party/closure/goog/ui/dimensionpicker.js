@@ -25,7 +25,9 @@
 goog.provide('goog.ui.DimensionPicker');
 
 goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
 goog.require('goog.math.Size');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.DimensionPickerRenderer');
 goog.require('goog.ui.registry');
@@ -47,6 +49,7 @@ goog.require('goog.ui.registry');
  *     document interaction.
  * @constructor
  * @extends {goog.ui.Control}
+ * @final
  */
 goog.ui.DimensionPicker = function(opt_renderer, opt_domHelper) {
   goog.ui.Control.call(this, null,
@@ -212,15 +215,28 @@ goog.ui.DimensionPicker.prototype.handleKeyEvent = function(e) {
       rows--;
       break;
     case goog.events.KeyCodes.LEFT:
-      if (columns == 1) {
-        // Delegate to parent.
-        return false;
+      if (this.isRightToLeft()) {
+        columns++;
       } else {
-        columns--;
+        if (columns == 1) {
+          // Delegate to parent.
+          return false;
+        } else {
+          columns--;
+        }
       }
       break;
     case goog.events.KeyCodes.RIGHT:
-      columns++;
+      if (this.isRightToLeft()) {
+        if (columns == 1) {
+          // Delegate to parent.
+          return false;
+        } else {
+          columns--;
+        }
+      } else {
+        columns++;
+      }
       break;
     default:
       return goog.ui.DimensionPicker.superClass_.handleKeyEvent.call(this, e);

@@ -559,6 +559,12 @@ bot.dom.isShown = function(elem, opt_ignoreOpacity) {
     throw new Error('Argument to isShown must be of type Element');
   }
 
+  // By convention, BODY element is always shown: BODY represents the document
+  // and even if there's nothing rendered in there, user can always see there's the document.
+  if (bot.dom.isElement(elem, goog.dom.TagName.BODY)) {
+    return true;
+  }
+
   // Option or optgroup is shown iff enclosing select is shown (ignoring the
   // select's opacity).
   if (bot.dom.isElement(elem, goog.dom.TagName.OPTION) ||
@@ -1247,7 +1253,7 @@ bot.dom.appendVisibleTextLinesFromTextNode_ = function(textNode, lines,
  */
 bot.dom.getOpacity = function(elem) {
   // TODO: Does this need to deal with rgba colors?
-  if (!bot.userAgent.IE_DOC_PRE10) {
+  if (!bot.userAgent.IE_DOC_PRE9) {
     return bot.dom.getOpacityNonIE_(elem);
   } else {
     if (bot.dom.getEffectiveStyle(elem, 'position') == 'relative') {

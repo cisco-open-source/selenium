@@ -134,6 +134,21 @@ class UnixProcess implements OsProcess {
     handler.waitFor();
   }
   
+  public void waitFor(long timeout) throws InterruptedException {
+	  long until = System.currentTimeMillis() + timeout;
+	  boolean timedOut = true;
+      while (System.currentTimeMillis() < until) {
+    	  if(handler.hasResult()){
+    		  timedOut = false;
+    		  break;
+    	  }
+          Thread.sleep(50);
+      }
+	if(timedOut){
+		throw new InterruptedException(String.format("Process timed out after waiting for %d ms.",timeout) );
+	}
+  }
+  
   public boolean isRunning() {
     return !handler.hasResult();
   }
@@ -144,6 +159,12 @@ class UnixProcess implements OsProcess {
           "Cannot get exit code before executing command line: " + cl);
     }
     return handler.getExitValue();
+  }
+
+  public void checkForError() {
+    if (handler.getException() != null) {
+      log.severe(handler.getException().toString());
+    }
   }
 
   public String getStdOut() {

@@ -17,6 +17,8 @@ limitations under the License.
 
 package org.openqa.selenium.htmlunit;
 
+import static org.openqa.selenium.remote.CapabilityType.SUPPORTS_FINDING_BY_CSS;
+
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -29,7 +31,10 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.ProxyConfig;
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.SgmlPage;
+import com.gargoylesoftware.htmlunit.StringWebResponse;
 import com.gargoylesoftware.htmlunit.TopLevelWindow;
+import com.gargoylesoftware.htmlunit.UnexpectedPage;
+import com.gargoylesoftware.htmlunit.Version;
 import com.gargoylesoftware.htmlunit.WaitingRefreshHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebClientOptions;
@@ -47,7 +52,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlHtml;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.gargoylesoftware.htmlunit.javascript.host.Location;
+import com.gargoylesoftware.htmlunit.javascript.host.html.DocumentProxy;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLCollection;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 
@@ -82,10 +89,10 @@ import org.openqa.selenium.UnableToSetCookieException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.browserlaunchers.Proxies;
 import org.openqa.selenium.interactions.HasInputDevices;
 import org.openqa.selenium.interactions.Keyboard;
 import org.openqa.selenium.interactions.Mouse;
+import org.openqa.selenium.internal.FindsByClassName;
 import org.openqa.selenium.internal.FindsByCssSelector;
 import org.openqa.selenium.internal.FindsById;
 import org.openqa.selenium.internal.FindsByLinkText;
@@ -95,9 +102,9 @@ import org.openqa.selenium.internal.FindsByXPath;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.remote.BrowserType;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.SessionNotFoundException;
+import org.w3c.css.sac.CSSException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -115,11 +122,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static org.openqa.selenium.remote.CapabilityType.SUPPORTS_FINDING_BY_CSS;
-
 public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
     FindsById, FindsByLinkText, FindsByXPath, FindsByName, FindsByCssSelector,
-    FindsByTagName, HasCapabilities, HasInputDevices {
+    FindsByTagName, FindsByClassName, HasCapabilities, HasInputDevices {
 
   private WebClient webClient;
   private WebWindow currentWindow;
@@ -202,7 +207,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
 
     setJavascriptEnabled(capabilities.isJavascriptEnabled());
 
-    setProxySettings(Proxies.extractProxy(capabilities));
+    setProxySettings(Proxy.extractFrom(capabilities));
   }
 
   // Package visibility for testing
@@ -228,7 +233,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
     }
 
     if (BrowserType.FIREFOX.equals(browserName)) {
-      return BrowserVersion.FIREFOX_17;
+      return BrowserVersion.FIREFOX_24;
     }
 
     if (BrowserType.CHROME.equals(browserName)) {
@@ -240,19 +245,15 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       try {
         int version = Integer.parseInt(browserVersion);
         switch (version) {
-          case 6:
-            return BrowserVersion.INTERNET_EXPLORER_6;
-          case 7:
-            return BrowserVersion.INTERNET_EXPLORER_7;
           case 8:
             return BrowserVersion.INTERNET_EXPLORER_8;
           case 9:
             return BrowserVersion.INTERNET_EXPLORER_9;
           default:
-            return BrowserVersion.INTERNET_EXPLORER_8;
+            return BrowserVersion.INTERNET_EXPLORER_11;
         }
       } catch (NumberFormatException e) {
-        return BrowserVersion.INTERNET_EXPLORER_8;
+        return BrowserVersion.INTERNET_EXPLORER_11;
       }
     }
 
@@ -441,6 +442,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
 
     capabilities.setPlatform(Platform.getCurrent());
     capabilities.setJavascriptEnabled(isJavascriptEnabled());
+    capabilities.setVersion(Version.getProductVersion());
     capabilities.setCapability(SUPPORTS_FINDING_BY_CSS, true);
 
     return capabilities;
@@ -475,7 +477,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       // A "get" works over the entire page
       currentWindow = getCurrentWindow().getTopWindow();
     } catch (UnknownHostException e) {
-      // This should be fine
+      getCurrentWindow().getTopWindow().setEnclosedPage(new UnexpectedPage(
+          new StringWebResponse("Unknown host", fullUrl),
+          getCurrentWindow().getTopWindow()
+      ));
     } catch (ConnectException e) {
       // This might be expected
     } catch (SocketTimeoutException e) {
@@ -757,6 +762,14 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       return newHtmlUnitWebElement(((HTMLElement) value).getDomNodeOrDie());
     }
 
+    if (value instanceof DocumentProxy) {
+      Element element = ((DocumentProxy) value).getDelegee().getDocumentElement();
+      if (element instanceof HTMLElement) {
+        return newHtmlUnitWebElement(((HTMLElement) element).getDomNodeOrDie());
+      }
+      throw new WebDriverException("Do not know how to coerce to an HTMLElement: " + element);
+    }
+
     if (value instanceof Number) {
       final Number n = (Number) value;
       final String s = n.toString();
@@ -914,12 +927,33 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
     return findElementsByXPath("//*[@id='" + id + "']");
   }
 
+  @Override
+  public WebElement findElementByClassName(String className) {
+    if (className.indexOf(' ') != -1) {
+      throw new NoSuchElementException("Compound class names not permitted");
+    }
+    return findElementByCssSelector("." + className);
+  }
+
+  @Override
+  public List<WebElement> findElementsByClassName(String className) {
+    if (className.indexOf(' ') != -1) {
+      throw new NoSuchElementException("Compound class names not permitted");
+    }
+    return findElementsByCssSelector("." + className);
+  }
+
   public WebElement findElementByCssSelector(String using) {
     if (!(lastPage() instanceof HtmlPage)) {
       throw new NoSuchElementException("Unable to locate element using css: " + lastPage());
     }
 
-    DomNode node = ((HtmlPage) lastPage()).querySelector(using);
+    DomNode node;
+    try {
+      node = ((HtmlPage) lastPage()).querySelector(using);
+    } catch (CSSException ex) {
+      throw new NoSuchElementException("Unable to locate element using css", ex);
+    }
 
     if (node instanceof HtmlElement) {
       return newHtmlUnitWebElement((HtmlElement) node);
@@ -933,7 +967,13 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       throw new NoSuchElementException("Unable to locate element using css: " + lastPage());
     }
 
-    DomNodeList<DomNode> allNodes = ((HtmlPage) lastPage()).querySelectorAll(using);
+    DomNodeList<DomNode> allNodes;
+
+    try {
+      allNodes = ((HtmlPage) lastPage()).querySelectorAll(using);
+    } catch (CSSException ex) {
+      throw new NoSuchElementException("Unable to locate element using css", ex);
+    }
 
     List<WebElement> toReturn = new ArrayList<WebElement>();
 
@@ -1140,6 +1180,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       return HtmlUnitDriver.this;
     }
 
+    public WebDriver parentFrame() {
+      currentWindow = currentWindow.getParentWindow();
+      return HtmlUnitDriver.this;
+    }
+
     public WebDriver window(String windowId) {
       try {
         WebWindow window = getWebClient().getWebWindowByName(windowId);
@@ -1189,6 +1234,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
 
     public Alert alert() {
       throw new UnsupportedOperationException("alert()");
+    }
+
+    public WebDriver context(String name) {
+      throw new UnsupportedOperationException("context(String)");
     }
   }
 
@@ -1280,6 +1329,8 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       if (lastPage() instanceof HtmlPage) {
         try {
           ((HtmlPage) lastPage()).refresh();
+        } catch (SocketTimeoutException e) {
+          throw new TimeoutException(e);
         } catch (IOException e) {
           throw new WebDriverException(e);
         }
@@ -1354,7 +1405,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       CookieManager cookieManager = getWebClient().getCookieManager();
 
       URL url = getRawUrl();
-      Set<com.gargoylesoftware.htmlunit.util.Cookie> rawCookies = cookieManager.getCookies(url);
+      Set<com.gargoylesoftware.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
       for (com.gargoylesoftware.htmlunit.util.Cookie cookie : rawCookies) {
         if (name.equals(cookie.getName())) {
           cookieManager.removeCookie(cookie);
@@ -1363,7 +1414,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
     }
 
     public void deleteCookie(Cookie cookie) {
-      deleteCookieNamed(cookie.getName());
+      getWebClient().getCookieManager().removeCookie(convertSeleniumCookieToHtmlUnit(cookie));
     }
 
     public void deleteAllCookies() {
@@ -1382,8 +1433,20 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor,
       }
 
       return ImmutableSet.copyOf(Collections2.transform(
-          getWebClient().getCookieManager().getCookies(url),
+          getWebClient().getCookies(url),
           htmlUnitCookieToSeleniumCookieTransformer));
+    }
+
+    private com.gargoylesoftware.htmlunit.util.Cookie convertSeleniumCookieToHtmlUnit(Cookie cookie) {
+      return new com.gargoylesoftware.htmlunit.util.Cookie(
+          cookie.getDomain(),
+          cookie.getName(),
+          cookie.getValue(),
+          cookie.getPath(),
+          cookie.getExpiry(),
+          cookie.isSecure(),
+          cookie.isHttpOnly()
+      );
     }
 
     private final com.google.common.base.Function<? super com.gargoylesoftware.htmlunit.util.Cookie, org.openqa.selenium.Cookie> htmlUnitCookieToSeleniumCookieTransformer =

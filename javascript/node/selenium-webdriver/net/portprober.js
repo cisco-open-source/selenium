@@ -51,7 +51,7 @@ function findSystemPortRange() {
   }
   var range = process.platform === 'win32' ?
       findWindowsPortRange() : findUnixPortRange();
-  return systemRange = range.addErrback(function() {
+  return systemRange = range.thenCatch(function() {
     return DEFAULT_IANA_RANGE;
   });
 }
@@ -60,7 +60,7 @@ function findSystemPortRange() {
 /**
  * Executes a command and returns its output if it succeeds.
  * @param {string} cmd The command to execute.
- * @return {!webdriver.promise.Promise<string>} A promise that will resolve
+ * @return {!webdriver.promise.Promise.<string>} A promise that will resolve
  *     with the command's stdout data.
  */
 function execute(cmd) {
@@ -78,7 +78,7 @@ function execute(cmd) {
 
 /**
  * Computes the ephemeral port range for a Unix-like system.
- * @return {!webdriver.promise.Promise<{min: number, max: number}>} A promise
+ * @return {!webdriver.promise.Promise.<{min: number, max: number}>} A promise
  *     that will resolve with the ephemeral port range on the current system.
  */
 function findUnixPortRange() {
@@ -105,7 +105,7 @@ function findUnixPortRange() {
 
 /**
  * Computes the ephemeral port range for a Windows system.
- * @return {!webdriver.promise.Promise<{min: number, max: number}>} A promise
+ * @return {!webdriver.promise.Promise.<{min: number, max: number}>} A promise
  *     that will resolve with the ephemeral port range on the current system.
  */
 function findWindowsPortRange() {
@@ -144,6 +144,8 @@ function findWindowsPortRange() {
 /**
  * Tests if a port is free.
  * @param {number} port The port to test.
+ * @param {string=} opt_host The bound host to test the {@code port} against.
+ *     Defaults to {@code INADDR_ANY}.
  * @return {!webdriver.promise.Promise.<boolean>} A promise that will resolve
  *     with whether the port is free.
  */
@@ -171,6 +173,8 @@ function isFree(port, opt_host) {
 
 
 /**
+ * @param {string=} opt_host The bound host to test the {@code port} against.
+ *     Defaults to {@code INADDR_ANY}.
  * @return {!webdriver.promise.Promise.<number>} A promise that will resolve
  *     to a free port. If a port cannot be found, the promise will be
  *     rejected.

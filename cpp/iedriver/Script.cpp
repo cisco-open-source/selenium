@@ -15,6 +15,7 @@
 #include "AsyncScriptExecutor.h"
 #include "IECommandExecutor.h"
 #include "logging.h"
+#include "VariantUtilities.h"
 
 namespace webdriver {
 

@@ -104,7 +104,7 @@ public class DriverServletTest {
         String.format("/session/%s/url", sessionId),
         new JSONObject().put("url", "http://www.google.com"));
 
-    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
 
     verify(driver).get("http://www.google.com");
   }
@@ -135,7 +135,7 @@ public class DriverServletTest {
 
     verify(driver).get("http://www.google.com");
     assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-    assertEquals("application/json; charset=UTF-8",
+    assertEquals("application/json; charset=utf-8",
         response.getHeader("content-type"));
 
     JSONObject jsonResponse = new JSONObject(response.getBody());
@@ -158,7 +158,7 @@ public class DriverServletTest {
                     .put(CapabilityType.VERSION, true))));
 
     assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-    assertEquals("application/json; charset=UTF-8",
+    assertEquals("application/json; charset=utf-8",
         response.getHeader("content-type"));
 
     JSONObject jsonResponse = new JSONObject(response.getBody());
@@ -170,6 +170,20 @@ public class DriverServletTest {
     assertEquals(3, Iterators.size(value.keys()));
     assertEquals(BrowserType.FIREFOX, value.getString(CapabilityType.BROWSER_NAME));
     assertTrue(value.getBoolean(CapabilityType.VERSION));
+  }
+
+  @Test
+  public void handlesInvalidCommandsToRootOfDriverService()
+      throws IOException, ServletException, JSONException {
+    // Command path will be null in servlet API when request is to the context root (e.g. /wd/hub).
+    FakeHttpServletResponse response = sendCommand("POST", null, new JSONObject());
+    assertEquals(500, response.getStatus());
+
+    JSONObject jsonResponse = new JSONObject(response.getBody());
+    assertEquals(ErrorCodes.UNHANDLED_ERROR, jsonResponse.getInt("status"));
+
+    JSONObject value = jsonResponse.getJSONObject("value");
+    assertTrue(value.getString("message").startsWith("POST /"));
   }
 
   private SessionId createSession() throws IOException, ServletException {

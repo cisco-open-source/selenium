@@ -199,7 +199,7 @@ public class FirefoxBinary {
   /**
    * Waits for the process to execute, returning the command output taken from the profile's
    * execution.
-   * 
+   *
    * @throws InterruptedException if we are interrupted while waiting for the process to launch
    * @throws IOException if there is a problem with reading the input stream of the launching
    *         process
@@ -207,10 +207,24 @@ public class FirefoxBinary {
   public void waitFor() throws InterruptedException, IOException {
     process.waitFor();
   }
+  
+  /**
+   * Waits for the process to execute, returning the command output taken from the profile's
+   * execution.
+   * 
+   * @param timeout the maximum time to wait in milliseconds 
+   * @throws InterruptedException if we are interrupted while waiting for the process to launch
+   * @throws IOException if there is a problem with reading the input stream of the launching
+   *         process
+   */
+  
+  public void waitFor(long timeout) throws InterruptedException, IOException {
+	process.waitFor(timeout);
+  }
 
   /**
    * Gets all console output of the binary. Output retrieval is non-destructive and non-blocking.
-   * 
+   *
    * @return the console output of the executed binary.
    * @throws IOException
    */
@@ -225,8 +239,9 @@ public class FirefoxBinary {
   public void clean(FirefoxProfile profile, File profileDir) throws IOException {
     startProfile(profile, profileDir, "-silent");
     try {
-      waitFor();
+      waitFor(timeout);
     } catch (InterruptedException e) {
+      process.destroy();
       throw new WebDriverException(e);
     }
   }

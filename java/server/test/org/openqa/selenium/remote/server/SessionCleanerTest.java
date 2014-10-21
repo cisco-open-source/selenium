@@ -15,6 +15,9 @@ limitations under the License.
  */
 package org.openqa.selenium.remote.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Platform;
@@ -30,9 +33,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kristian Rosenvold
@@ -154,11 +154,15 @@ public class SessionCleanerTest {
   }
 
   class MyDriverFactory implements DriverFactory {
+    @Override
     public void registerDriver(Capabilities capabilities, Class<? extends WebDriver> implementation) {
-
-
     }
 
+    @Override
+    public void registerDriverProvider(Capabilities capabilities, DriverProvider implementation) {
+    }
+
+    @Override
     public WebDriver newInstance(Capabilities capabilities) {
       return new StubDriver() {
         @Override
@@ -167,6 +171,7 @@ public class SessionCleanerTest {
       };
     }
 
+    @Override
     public boolean hasMappingFor(Capabilities capabilities) {
       return true;
     }

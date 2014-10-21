@@ -55,6 +55,11 @@ public class InternetExplorerDriverService extends DriverService {
   public static final String IE_DRIVER_LOGLEVEL_PROPERTY = "webdriver.ie.driver.loglevel";
 
   /**
+   * System property that defines the implementation of the driver engine to use.
+   */
+  public static final String IE_DRIVER_ENGINE_PROPERTY = "webdriver.ie.driver.engine";
+
+  /**
    * System property that defines host to which will be bound IEDriverServer.
    */
   public final static String IE_DRIVER_HOST_PROPERTY = "webdriver.ie.driver.host";
@@ -104,6 +109,7 @@ public class InternetExplorerDriverService extends DriverService {
     private ImmutableMap<String, String> environment = ImmutableMap.of();
     private File logFile;
     private InternetExplorerDriverLogLevel logLevel;
+	private InternetExplorerDriverEngine engineImplementation;
     private String host = null;
     private File extractPath = null;
     private Boolean silent = null;
@@ -184,6 +190,17 @@ public class InternetExplorerDriverService extends DriverService {
     }
 
     /**
+     * Configures the driver engine implementation for the driver server.
+     *
+     * @param engineImplementation The engine implementation to be used.
+     * @return A self reference.
+     */
+    public Builder withEngineImplementation(InternetExplorerDriverEngine engineImplementation) {
+      this.engineImplementation = engineImplementation;
+      return this;
+    }
+
+    /**
      * Configures the host to which the driver server bound.
      *
      * @param host A host name.
@@ -229,7 +246,7 @@ public class InternetExplorerDriverService extends DriverService {
       if (exe == null) {
         exe = findExecutable("IEDriverServer", IE_DRIVER_EXE_PROPERTY,
                              "http://code.google.com/p/selenium/wiki/InternetExplorerDriver",
-                             "http://code.google.com/p/selenium/downloads/list");
+                             "http://selenium-release.storage.googleapis.com/index.html");
       }
       if (logFile == null) {
         String logFilePath = System.getProperty(IE_DRIVER_LOGFILE_PROPERTY);
@@ -241,6 +258,12 @@ public class InternetExplorerDriverService extends DriverService {
         String level = System.getProperty(IE_DRIVER_LOGLEVEL_PROPERTY);
         if (level != null) {
           logLevel = InternetExplorerDriverLogLevel.valueOf(level);
+        }
+      }
+      if (engineImplementation == null) {
+        String engineToUse = System.getProperty(IE_DRIVER_ENGINE_PROPERTY);
+        if (engineToUse != null) {
+          engineImplementation = InternetExplorerDriverEngine.valueOf(engineToUse);
         }
       }
       if (host == null) {
@@ -270,6 +293,9 @@ public class InternetExplorerDriverService extends DriverService {
         }
         if (logLevel != null) {
           argsBuilder.add(String.format("--log-level=%s", logLevel.toString()));
+        }
+        if (engineImplementation != null) {
+          argsBuilder.add(String.format("--implementation=%s", engineImplementation.toString()));
         }
         if (host != null) {
           argsBuilder.add(String.format("--host=%s", host));

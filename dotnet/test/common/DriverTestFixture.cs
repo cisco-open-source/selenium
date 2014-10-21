@@ -51,7 +51,7 @@ namespace OpenQA.Selenium
         public string svgPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("svgPiechart.xhtml");
         public string dynamicPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("dynamic.html");
         public string tables = EnvironmentManager.Instance.UrlBuilder.WhereIs("tables.html");
-        public string deletingFrame = EnvironmentManager.Instance.UrlBuilder.WhereIs("deletingFrame.htm");
+        public string deletingFrame = EnvironmentManager.Instance.UrlBuilder.WhereIs("frame_switching_tests/deletingFrame.html");
         public string ajaxyPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("ajaxy_page.html");
         public string sleepingPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("sleep");
         public string slowIframes = EnvironmentManager.Instance.UrlBuilder.WhereIs("slow_loading_iframes.html");
@@ -76,6 +76,7 @@ namespace OpenQA.Selenium
         public string svgTestPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("svgTest.svg");
         public string slowLoadingAlertPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("slowLoadingAlert.html");
         public string dragDropOverflowPage = EnvironmentManager.Instance.UrlBuilder.WhereIs("dragDropOverflow.html");
+        public string missedJsReferencePage = EnvironmentManager.Instance.UrlBuilder.WhereIs("missedJsReference.html");
 
         protected IWebDriver driver;
 

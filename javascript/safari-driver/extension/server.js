@@ -18,7 +18,7 @@ goog.provide('safaridriver.extension.Server');
 goog.require('bot.ErrorCode');
 goog.require('bot.response');
 goog.require('goog.Disposable');
-goog.require('goog.debug.Logger');
+goog.require('goog.log');
 goog.require('goog.object');
 goog.require('goog.string');
 goog.require('safaridriver.Command');
@@ -48,8 +48,8 @@ goog.require('webdriver.promise');
 safaridriver.extension.Server = function(session) {
   goog.base(this);
 
-  /** @private {!goog.debug.Logger} */
-  this.log_ = goog.debug.Logger.getLogger('safaridriver.extension.Server');
+  /** @private {goog.log.Logger} */
+  this.log_ = goog.log.getLogger('safaridriver.extension.Server');
 
   /** @private {!safaridriver.extension.Session} */
   this.session_ = session;
@@ -170,7 +170,7 @@ safaridriver.extension.Server.prototype.webSocket_ = null;
 
 /** @override */
 safaridriver.extension.Server.prototype.disposeInternal = function() {
-  this.logMessage_('Disposing of server', goog.debug.Logger.Level.FINE);
+  this.logMessage_('Disposing of server', goog.log.Logger.Level.FINE);
 
   if (this.webSocket_) {
     if (this.ready_.isPending()) {
@@ -304,7 +304,7 @@ safaridriver.extension.Server.prototype.execute = function(
   var handler = safaridriver.extension.Server.COMMAND_MAP_[command.getName()];
   if (!handler) {
     this.logMessage_('Unknown command: ' + command.getName(),
-        goog.debug.Logger.Level.SEVERE);
+        goog.log.Logger.Level.SEVERE);
     return webdriver.promise.rejected(bot.response.createErrorResponse(
         Error('Unknown command: ' + command.getName())));
   }
@@ -314,16 +314,17 @@ safaridriver.extension.Server.prototype.execute = function(
   var flow = webdriver.promise.controlFlow();
   var result = flow.execute(fn, description).
       then(bot.response.createResponse, bot.response.createErrorResponse).
-      addBoth(function(response) {
+      thenFinally(goog.bind(function(response) {
         this.session_.setCurrentCommand(null);
         return response;
-      }, this);
+      }, this));
 
   // If we were given a callback, massage the result to fit the
   // webdriver.CommandExecutor contract.
   if (opt_callback) {
-    result.then(bot.response.checkResponse).
-        then(goog.partial(opt_callback, null), opt_callback);
+    result.then(bot.response.checkResponse).then(
+        goog.partial(opt_callback, null),
+        /** @type {function(*)} */ (opt_callback));
   }
 
   return result;
@@ -354,13 +355,13 @@ safaridriver.extension.Server.prototype.executeCommand_ = function(
 
 /**
  * @param {string} message The message to log.
- * @param {goog.debug.Logger.Level=} opt_level The level to log the message at;
+ * @param {goog.log.Logger.Level=} opt_level The level to log the message at;
  *     Defaults to INFO.
  * @private
  */
 safaridriver.extension.Server.prototype.logMessage_ = function(
     message, opt_level) {
-  this.log_.log(opt_level || goog.debug.Logger.Level.INFO,
+  goog.log.log(this.log_, opt_level || goog.log.Logger.Level.INFO,
       '[' + this.session_.getId() + '] ' + message);
 };
 
@@ -387,7 +388,7 @@ safaridriver.extension.Server.prototype.onOpen_ = function() {
 safaridriver.extension.Server.prototype.onClose_ = function(url) {
   safaridriver.extension.Server.connectedUrls_[url] = false;
   this.logMessage_('WebSocket connection was closed.',
-      goog.debug.Logger.Level.WARNING);
+      goog.log.Logger.Level.WARNING);
   if (!this.isDisposed()) {
     if (this.ready_.isPending()) {
       var message = 'Failed to connect to ' + url;
@@ -408,7 +409,7 @@ safaridriver.extension.Server.prototype.onClose_ = function(url) {
  */
 safaridriver.extension.Server.prototype.onError_ = function(event) {
   this.logMessage_('There was an error in the WebSocket: ' + event.data,
-      goog.debug.Logger.Level.SEVERE);
+      goog.log.Logger.Level.SEVERE);
 };
 
 
@@ -419,7 +420,7 @@ safaridriver.extension.Server.prototype.onError_ = function(event) {
  */
 safaridriver.extension.Server.prototype.onMessage_ = function(event) {
   this.logMessage_('Received a message: ' + event.data,
-      goog.debug.Logger.Level.FINER);
+      goog.log.Logger.Level.FINER);
 
   try {
     var message = safaridriver.message.fromEvent(event);
@@ -434,10 +435,10 @@ safaridriver.extension.Server.prototype.onMessage_ = function(event) {
   var command = message.getCommand();
 
   this.execute(command).
-      addErrback(bot.response.createErrorResponse).
-      addCallback(function(response) {
+      thenCatch(bot.response.createErrorResponse).
+      then(goog.bind(function(response) {
         this.send_(command, response);
-      }, this);
+      }, this));
 };
 
 
@@ -457,7 +458,7 @@ safaridriver.extension.Server.prototype.send_ = function(command, response) {
   this.logMessage_('Sending response: ' + str);
   if (!command && response['status'] === bot.ErrorCode.SUCCESS) {
     this.logMessage_('Sending success response with a null command: ' + str,
-        goog.debug.Logger.Level.WARNING);
+        goog.log.Logger.Level.WARNING);
   }
 
   this.webSocket_.send(str);

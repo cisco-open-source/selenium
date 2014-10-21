@@ -12,10 +12,12 @@
 // limitations under the License.
 
 #include "DocumentHost.h"
+#include "BrowserFactory.h"
 #include "Generated/cookies.h"
 #include "logging.h"
 #include "messages.h"
 #include "RegistryUtilities.h"
+#include "Script.h"
 
 namespace webdriver {
 
@@ -156,6 +158,34 @@ int DocumentHost::SetFocusedFrameByIndex(const int frame_index) {
   return this->SetFocusedFrameByIdentifier(frame_identifier);
 }
 
+void DocumentHost::SetFocusedFrameToParent() {
+  LOG(TRACE) << "Entering DocumentHost::SetFocusedFrameToParent";
+  // Three possible outcomes.
+  // Outcome 1: Already at top-level browsing context. No-op.
+  if (this->focused_frame_window_ != NULL) {
+    CComPtr<IHTMLWindow2> parent_window;
+    HRESULT hr = this->focused_frame_window_->get_parent(&parent_window);
+    if (FAILED(hr)) {
+      LOGHR(WARN, hr) << "IHTMLWindow2::get_parent call failed.";
+    }
+    CComPtr<IHTMLWindow2> top_window;
+    hr = this->focused_frame_window_->get_top(&top_window);
+    if (FAILED(hr)) {
+      LOGHR(WARN, hr) << "IHTMLWindow2::get_top call failed.";
+    }
+    if (top_window.IsEqualObject(parent_window)) {
+      // Outcome 2: Focus is on a frame one level deep, making the
+      // parent the top-level browsing context. Set focused frame
+      // pointer to NULL.
+      this->focused_frame_window_ = NULL;
+    } else {
+      // Outcome 3: Focus is on a frame more than one level deep.
+      // Set focused frame pointer to parent frame.
+      this->focused_frame_window_ = parent_window;
+    }
+  }
+}
+
 int DocumentHost::SetFocusedFrameByIdentifier(VARIANT frame_identifier) {
   LOG(TRACE) << "Entering DocumentHost::SetFocusedFrameByIdentifier";
 
@@ -292,20 +322,21 @@ bool DocumentHost::IsHtmlPage(IHTMLDocument2* doc) {
   LOG(TRACE) << "Entering DocumentHost::IsHtmlPage";
 
   CComBSTR type;
-  if (!SUCCEEDED(doc->get_mimeType(&type))) {
-    LOG(WARN) << "Unable to get mime type for document, call to IHTMLDocument2::get_mimeType failed";
+  HRESULT hr = doc->get_mimeType(&type);
+  if (FAILED(hr)) {
+    LOGHR(WARN, hr) << "Unable to get mime type for document, call to IHTMLDocument2::get_mimeType failed";
     return false;
   }
 
   // Call once to get the required buffer size, then again to fill
   // the buffer.
   DWORD mime_type_name_buffer_size = 0;
-  HRESULT hr = ::AssocQueryString(0,
-                                  ASSOCSTR_FRIENDLYDOCNAME,
-                                  L".htm",
-                                  NULL,
-                                  NULL,
-                                  &mime_type_name_buffer_size);
+  hr = ::AssocQueryString(0,
+                          ASSOCSTR_FRIENDLYDOCNAME,
+                          L".htm",
+                          NULL,
+                          NULL,
+                          &mime_type_name_buffer_size);
 
   std::vector<wchar_t> mime_type_name_buffer(mime_type_name_buffer_size);
   hr = ::AssocQueryString(0,

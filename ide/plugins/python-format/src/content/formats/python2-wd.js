@@ -292,11 +292,13 @@ this.options = {
   rcPort: "4444",
   environment: "*chrome",
   header:
-      'from selenium import webdriver\n' +
+      '# -*- coding: utf-8 -*-\n' +
+          'from selenium import webdriver\n' +
           'from selenium.webdriver.common.by import By\n' +
           'from selenium.webdriver.common.keys import Keys\n' +
           'from selenium.webdriver.support.ui import Select\n' +
           'from selenium.common.exceptions import NoSuchElementException\n' +
+          'from selenium.common.exceptions import NoAlertPresentException\n' +
           'import unittest, time, re\n' +
           '\n' +
           'class ${className}(unittest.TestCase):\n' +

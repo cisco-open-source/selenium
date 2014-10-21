@@ -218,7 +218,7 @@ bot.events.EventFactory_.prototype.create = function(target, opt_args) {
   var doc = goog.dom.getOwnerDocument(target);
   var event;
 
-  if (bot.userAgent.IE_DOC_PRE9) {
+  if (bot.userAgent.IE_DOC_PRE9 && doc.createEventObject) {
     event = doc.createEventObject();
   } else {
     event = doc.createEvent('HTMLEvents');
@@ -351,10 +351,13 @@ bot.events.MouseEventFactory_.prototype.create = function(target, opt_args) {
       detail = args.wheelDelta;
     }
 
+    // For screenX and screenY, we set those to clientX and clientY values.
+    // While not strictly correct, applications under test depend on
+    // accurate relative positioning which is satisfied.
     event.initMouseEvent(this.type_, this.bubbles_, this.cancelable_, view,
-        detail, /*screenX*/ 0, /*screenY*/ 0, args.clientX, args.clientY,
-        args.ctrlKey, args.altKey, args.shiftKey, args.metaKey, args.button,
-        args.relatedTarget);
+        detail, /*screenX*/ args.clientX, /*screenY*/ args.clientY,
+        args.clientX, args.clientY, args.ctrlKey, args.altKey,
+        args.shiftKey, args.metaKey, args.button, args.relatedTarget);
 
     // Trying to modify the properties throws an error,
     // so we define getters to return the correct values.
@@ -740,7 +743,7 @@ bot.events.fire = function(target, type, opt_args) {
     event['isTrusted'] = false;
   }
 
-  if (bot.userAgent.IE_DOC_PRE9) {
+  if (bot.userAgent.IE_DOC_PRE9 && target.fireEvent) {
     return target.fireEvent('on' + factory.type_, event);
   } else {
     return target.dispatchEvent(event);

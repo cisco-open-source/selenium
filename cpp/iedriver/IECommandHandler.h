@@ -17,11 +17,11 @@
 #include <map>
 #include <memory>
 #include <string>
-#include "json.h"
 #include "command_handler.h"
 #include "command.h"
 #include "Element.h"
 #include "response.h"
+#include "Script.h"
 
 #define BROWSER_NAME_CAPABILITY "browserName"
 #define BROWSER_VERSION_CAPABILITY "version"
@@ -45,6 +45,9 @@
 #define FORCE_CREATE_PROCESS_API_CAPABILITY "ie.forceCreateProcessApi"
 #define USE_PER_PROCESS_PROXY_CAPABILITY "ie.usePerProcessProxy"
 #define ENSURE_CLEAN_SESSION_CAPABILITY "ie.ensureCleanSession"
+#define FORCE_SHELL_WINDOWS_API_CAPABILITY "ie.forceShellWindowsApi"
+
+using namespace std;
 
 namespace webdriver {
 
@@ -59,7 +62,6 @@ class IECommandHandler : public CommandHandler<IECommandExecutor> {
 
  protected:
   virtual void ExecuteInternal(const IECommandExecutor& executor,
-                               const LocatorMap& locator_parameters,
                                const ParametersMap& command_parameters,
                                Response* response);
   int GetElement(const IECommandExecutor& executor,

@@ -16,16 +16,17 @@ limitations under the License.
 
 package org.openqa.selenium.remote.server.handler;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.openqa.selenium.logging.SessionLogs;
 import org.openqa.selenium.remote.Response;
 import org.openqa.selenium.remote.SessionId;
-import org.openqa.selenium.remote.server.rest.RestishHandler;
-import org.openqa.selenium.remote.server.rest.ResultType;
 import org.openqa.selenium.remote.server.log.LoggingManager;
+import org.openqa.selenium.remote.server.rest.RestishHandler;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 
-public class GetSessionLogsHandler implements RestishHandler {
+public class GetSessionLogsHandler implements RestishHandler<Map<String, SessionLogs>> {
 
   private final Response response = new Response();
 
@@ -33,15 +34,15 @@ public class GetSessionLogsHandler implements RestishHandler {
     return response;
   }
 
-  public ResultType handle() throws Exception {
+  @Override
+  public Map<String, SessionLogs> handle() throws Exception {
     ImmutableMap.Builder<String, SessionLogs> builder =
         ImmutableMap.<String, SessionLogs>builder();
     for (SessionId sessionId : LoggingManager.perSessionLogHandler().getLoggedSessions()) {
       builder.put(sessionId.toString(),
           LoggingManager.perSessionLogHandler().getAllLogsForSession(sessionId));
     }
-    response.setValue(builder.build());
-    return ResultType.SUCCESS;
+    return builder.build();
   }
 
   @Override

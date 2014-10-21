@@ -17,10 +17,6 @@ limitations under the License.
 package org.openqa.selenium.remote.server;
 
 import static org.junit.Assert.assertTrue;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
-
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
@@ -30,23 +26,20 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import org.openqa.selenium.logging.SessionLogHandler;
 import org.openqa.selenium.logging.SessionLogs;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -57,6 +50,11 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.drivers.Browser;
 import org.openqa.selenium.testing.drivers.BrowserToCapabilities;
 import org.openqa.selenium.testing.drivers.OutOfProcessSeleniumServer;
+
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Map;
+import java.util.Set;
 
 @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, SAFARI})
 public class SessionLogsTest extends JUnit4TestBase {
@@ -110,7 +108,7 @@ public class SessionLogsTest extends JUnit4TestBase {
   
   private static JSONObject getValueForPostRequest(URL serverUrl) throws Exception {
     String postRequest = serverUrl + "/logs";
-    HttpClient client = new DefaultHttpClient();
+    HttpClient client = HttpClientBuilder.create().build();
     HttpPost postCmd = new HttpPost(postRequest);
     HttpResponse response = client.execute(postCmd);
     HttpEntity entity = response.getEntity();

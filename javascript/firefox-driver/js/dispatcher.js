@@ -1,6 +1,5 @@
 /*
- Copyright 2007-2010 WebDriver committers
- Copyright 2007-2010 Google Inc.
+ Copyright 2007-2014 Software Freedom Conservancy
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -24,7 +23,7 @@ goog.require('Response');
 goog.require('Utils');
 goog.require('bot.ErrorCode');
 goog.require('fxdriver.error');
-goog.require('fxdriver.logging');
+goog.require('goog.log');
 
 
 /**
@@ -33,6 +32,7 @@ goog.require('fxdriver.logging');
  */
 Dispatcher = function() {
   this.resources_ = [];
+  this.log_ = goog.log.getLogger('fxdriver.Dispatcher');
   this.init_();
 };
 
@@ -60,9 +60,7 @@ Dispatcher.executeAs = function(name) {
   return function(request, response) {
     var json = {
       'name': name,
-      'sessionId': {
-        'value': request.getAttribute('sessionId')
-      },
+      'sessionId': request.getAttribute('sessionId'),
       'parameters': JSON.parse(request.getBody() || '{}')
     };
 
@@ -207,6 +205,9 @@ Dispatcher.prototype.init_ = function() {
   this.bind_('/session/:sessionId/element/:id/size').
       on(Request.Method.GET, Dispatcher.executeAs('getElementSize'));
 
+  this.bind_('/session/:sessionId/element/:id/rect').
+      on(Request.Method.GET, Dispatcher.executeAs('getElementRect'));
+
   this.bind_('/session/:sessionId/element/:id/css/:propertyName').
       on(Request.Method.GET,
          Dispatcher.executeAs('getElementValueOfCssProperty'));
@@ -225,6 +226,8 @@ Dispatcher.prototype.init_ = function() {
 
   this.bind_('/session/:sessionId/frame').
       on(Request.Method.POST, Dispatcher.executeAs('switchToFrame'));
+  this.bind_('/session/:sessionId/frame/parent').
+      on(Request.Method.POST, Dispatcher.executeAs('switchToParentFrame'));
   this.bind_('/session/:sessionId/window').
       on(Request.Method.POST, Dispatcher.executeAs('switchToWindow')).
       on(Request.Method.DELETE, Dispatcher.executeAs('close'));
@@ -261,11 +264,11 @@ Dispatcher.prototype.init_ = function() {
   this.bind_('/session/:sessionId/element/:id/click').
       on(Request.Method.POST, Dispatcher.executeAs('clickElement'));
   this.bind_('/session/:sessionId/moveto').
-      on(Request.Method.POST, Dispatcher.executeAs('mouseMove'));
+      on(Request.Method.POST, Dispatcher.executeAs('mouseMoveTo'));
   this.bind_('/session/:sessionId/buttondown').
-      on(Request.Method.POST, Dispatcher.executeAs('mouseDown'));
+      on(Request.Method.POST, Dispatcher.executeAs('mouseButtonDown'));
   this.bind_('/session/:sessionId/buttonup').
-      on(Request.Method.POST, Dispatcher.executeAs('mouseUp'));
+      on(Request.Method.POST, Dispatcher.executeAs('mouseButtonUp'));
   this.bind_('/session/:sessionId/click').
       on(Request.Method.POST, Dispatcher.executeAs('mouseClick'));
   this.bind_('/session/:sessionId/doubleclick').
@@ -281,9 +284,6 @@ Dispatcher.prototype.init_ = function() {
       on(Request.Method.GET, Dispatcher.executeAs('getAvailableLogTypes'));
 
   // HTML 5
-  this.bind_('/session/:sessionId/browser_connection').
-      on(Request.Method.GET, Dispatcher.executeAs('isOnline'));
-
   this.bind_('/session/:sessionId/application_cache/status').
       on(Request.Method.GET, Dispatcher.executeAs('getAppCacheStatus'));
 
@@ -341,7 +341,7 @@ Dispatcher.prototype.dispatch = function(request, response) {
       bestMatchResource.setRequestAttributes(request);
       bestMatchResource.handle(request, response);
     } catch (ex) {
-      fxdriver.logging.error(ex);
+      goog.log.error(this.log_, 'Error processing request', ex);
       response.sendError(Response.INTERNAL_ERROR, JSON.stringify({
         status: bot.ErrorCode.UNKNOWN_ERROR,
         value: fxdriver.error.toJSON(ex)
