@@ -22,7 +22,6 @@
 package org.openqa.selenium.qtwebkit.touch;
 
 import static org.junit.Assert.assertTrue;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import org.junit.AfterClass;
 
 import org.junit.Test;
@@ -64,7 +63,7 @@ public class MultitiouchTest extends JUnit4TestBase {
         driver.get(pages.pinchTouchTest);
         rotateElement("picture", 35);
         WebElement result = driver.findElement(By.id("result_rotate"));
-        waitFor(WaitingConditions.elementTextToEqual(result, "35"));
+        wait.until(WaitingConditions.elementTextToEqual(result, "35"));
     }
 
     @Test
@@ -72,7 +71,7 @@ public class MultitiouchTest extends JUnit4TestBase {
         driver.get(pages.pinchTouchTest);
         rotateElement("picture", -35);
         WebElement result = driver.findElement(By.id("result_rotate"));
-        waitFor(WaitingConditions.elementTextToEqual(result, "-35"));
+        wait.until(WaitingConditions.elementTextToEqual(result, "-35"));
     }
 
     @Test
@@ -80,7 +79,7 @@ public class MultitiouchTest extends JUnit4TestBase {
         driver.get(pages.pinchTouchTest);
         zoomElement("picture", 2.5);
         WebElement result = driver.findElement(By.id("result_scale"));
-        waitFor(WaitingConditions.elementTextToEqual(result, "2.5"));
+        wait.until(WaitingConditions.elementTextToEqual(result, "2.5"));
     }
 
     @Test
@@ -88,7 +87,7 @@ public class MultitiouchTest extends JUnit4TestBase {
         driver.get(pages.pinchTouchTest);
         zoomElement("picture", 0.4);
         WebElement result = driver.findElement(By.id("result_scale"));
-        waitFor(WaitingConditions.elementTextToEqual(result, "0.4"));
+        wait.until(WaitingConditions.elementTextToEqual(result, "0.4"));
     }
 
     @AfterClass

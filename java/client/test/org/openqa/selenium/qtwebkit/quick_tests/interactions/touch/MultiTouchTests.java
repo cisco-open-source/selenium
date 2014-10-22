@@ -32,8 +32,6 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 
 import org.junit.Test;
 
-import static org.openqa.selenium.TestWaiter.waitFor;
-
 public class MultiTouchTests extends JUnit4TestBase {
     private MultiTouchActions getBuilder(WebDriver driver) {
         return new MultiTouchActions(driver);
@@ -55,20 +53,20 @@ public class MultiTouchTests extends JUnit4TestBase {
     public void testCanRotateElement() {
         driver.get(pages.multiTouchTest);
         rotateElement("pinchItem", 80);
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("rotationLbl"), "80"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("rotationLbl"), "80"));
     }
 
     @Test
     public void testCanZoomOutElement() {
         driver.get(pages.multiTouchTest);
         zoomElement("pinchItem", 12.5);
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("zoomLbl"), "12.5"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("zoomLbl"), "12.5"));
     }
 
     @Test
     public void testCanZoomInElement() {
         driver.get(pages.multiTouchTest);
         zoomElement("pinchItem", 0.3);
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("zoomLbl"), "0.3"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("zoomLbl"), "0.3"));
     }
 }

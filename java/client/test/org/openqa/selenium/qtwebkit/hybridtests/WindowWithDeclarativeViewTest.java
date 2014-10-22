@@ -34,7 +34,6 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import java.util.concurrent.Callable;
 
 import static org.junit.Assert.fail;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 public class WindowWithDeclarativeViewTest extends JUnit4TestBase {
 

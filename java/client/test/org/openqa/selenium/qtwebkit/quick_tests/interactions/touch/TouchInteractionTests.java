@@ -28,12 +28,9 @@ import org.openqa.selenium.interactions.touch.TouchActions;
 import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.qtwebkit.quick_tests.interactions.touch.TouchTestBase;
 
-import static org.openqa.selenium.TestWaiter.waitFor;
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 import org.junit.Test;
 import org.junit.Before;

@@ -32,7 +32,6 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 public class WidgetAndWebViewTest  extends JUnit4TestBase {
 
@@ -52,7 +51,7 @@ public class WidgetAndWebViewTest  extends JUnit4TestBase {
     for (String winHandle : driver.getWindowHandles()) {
       if (!currentWindow.equals(winHandle)) {
         driver.switchTo().window(winHandle);
-        waitFor(WaitingConditions.pageTitleToBe(driver, "Color Page"));
+        wait.until(titleIs("Color Page"));
         break;
       }
     }
@@ -85,7 +84,7 @@ public class WidgetAndWebViewTest  extends JUnit4TestBase {
     for (String winHandle : driver.getWindowHandles()) {
       if (!currentWindow.equals(winHandle)) {
         driver.switchTo().window(winHandle);
-        waitFor(WaitingConditions.pageTitleToBe(driver, "Color Page"));
+        wait.until(titleIs("Color Page"));
         break;
       }
     }

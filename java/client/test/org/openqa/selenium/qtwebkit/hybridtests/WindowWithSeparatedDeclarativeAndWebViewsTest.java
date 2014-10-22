@@ -38,7 +38,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBase {
 
@@ -118,7 +117,7 @@ public class WindowWithSeparatedDeclarativeAndWebViewsTest extends JUnit4TestBas
         }
         assertNotNull(webWindow);
         driver.switchTo().window(currentWindow);
-        waitFor(WaitingConditions.pageTitleToBe(driver, "Test Widget"));
+        wait.until(titleIs("Test Widget"));
 
         inputQmlURL.sendKeys(appServer.whereIs("quick1/ClickTest.qml"));
         buttonToQml.click();

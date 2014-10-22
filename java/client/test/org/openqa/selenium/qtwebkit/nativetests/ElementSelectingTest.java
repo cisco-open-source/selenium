@@ -26,7 +26,6 @@ import org.openqa.selenium.testing.JUnit4TestBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementSelectionToBe;
 
 import static org.hamcrest.Matchers.is;

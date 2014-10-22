@@ -52,8 +52,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.junit.Assume.assumeFalse;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 
 public class EmbeddedWebViewTest extends JUnit4TestBase {
 
@@ -93,7 +93,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.get(pages.clicksPage);
         driver.findElement(By.id("normal")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.get(pages.clicksPage);
         driver.findElement(By.id("overflowLink")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.findElement(By.id("otherframe")).click();
         driver.switchTo().defaultContent().switchTo().frame("target");
 
-        waitFor(WaitingConditions.pageSourceToContain(driver, "Hello WebDriver"));
+        wait.until(WaitingConditions.pageSourceToContain( "Hello WebDriver"));
     }
 
     @JavascriptEnabled
@@ -168,7 +168,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
     public void testShouldClickOnFirstBoundingClientRectWithNonZeroSize() {
         driver.get(pages.clicksPage);
         driver.findElement(By.id("twoClientRects")).click();
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -187,7 +187,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.get(pages.clicksPage);
         driver.findElement(By.id("link-with-enclosed-image")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -196,7 +196,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.findElement(By.id("link-with-enclosed-image")).findElement(By.tagName("img"))
             .click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -204,14 +204,14 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.get(pages.clicksPage);
         driver.findElement(By.id("link-with-enclosed-span")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
     public void testCanClickOnALinkThatContainsEmbeddedBlockElements() {
         driver.get(pages.clicksPage);
         driver.findElement(By.id("embeddedBlock")).click();
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -220,7 +220,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         driver.findElement(By.id("link-with-enclosed-span")).findElement(By.tagName("span"))
             .click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     // See http://code.google.com/p/selenium/issues/attachmentText?id=2700
@@ -242,7 +242,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
     public void testClicksASurroundingStrongTag() {
         driver.get(appServer.whereIs("ClickTest_testClicksASurroundingStrongTag.html"));
         driver.findElement(By.tagName("a")).click();
-        waitFor(WaitingConditions.pageTitleToBe(driver, "XHTML Test Page"));
+        wait.until(titleIs("XHTML Test Page"));
     }
 
     @Test
@@ -254,7 +254,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
 
         element.click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+        wait.until(titleIs("clicks"));
     }
 
     @Test
@@ -268,7 +268,7 @@ public class EmbeddedWebViewTest extends JUnit4TestBase {
         WebElement element = driver.findElement(By.id("click"));
         element.click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "clicks"));
+        wait.until(titleIs("clicks"));
     }
 
     @Test

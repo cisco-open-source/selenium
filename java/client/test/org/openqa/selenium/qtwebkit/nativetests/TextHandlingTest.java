@@ -35,7 +35,6 @@ import org.hamcrest.TypeSafeMatcher;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;

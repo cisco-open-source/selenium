@@ -31,8 +31,6 @@ import static org.junit.Assert.fail;
 import org.openqa.selenium.*;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
-import static org.openqa.selenium.TestWaiter.waitFor;
-
 public class ClickTest extends JUnit4TestBase {
 
 
@@ -45,20 +43,20 @@ public class ClickTest extends JUnit4TestBase {
     public void testCanClickOnAPushButton() {
         driver.findElement(By.id("pushBtn")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "CLick Test Window"));
+        wait.until(titleIs("CLick Test Window"));
     }
 
     @Test
     public void testCanClickOnACheckBox() {
         driver.findElement(By.id("checkBox")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "CLick Test Window"));
+        wait.until(titleIs("CLick Test Window"));
     }
 
     @Test
     public void testClickingOnButtonInScrollArea() {
         driver.findElement(By.id("btnOnScroll")).click();
 
-        waitFor(WaitingConditions.pageTitleToBe(driver, "CLick Test Window"));
+        wait.until(titleIs("CLick Test Window"));
     }
 }

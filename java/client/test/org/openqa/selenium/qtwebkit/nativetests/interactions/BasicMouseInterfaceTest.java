@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.*;
 import static org.openqa.selenium.testing.Ignore.Driver.*;
 import static org.openqa.selenium.testing.TestUtilities.*;

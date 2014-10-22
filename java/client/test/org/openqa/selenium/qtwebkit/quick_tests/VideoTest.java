@@ -40,7 +40,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 public class VideoTest extends JUnit4TestBase {
 

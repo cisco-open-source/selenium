@@ -31,8 +31,6 @@ import static org.junit.Assert.fail;
 import org.openqa.selenium.*;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
-import static org.openqa.selenium.TestWaiter.waitFor;
-
 public class ClickTest extends JUnit4TestBase {
 
 
