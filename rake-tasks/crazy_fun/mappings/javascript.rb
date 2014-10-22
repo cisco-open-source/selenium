@@ -222,7 +222,7 @@ module Javascript
         py = "python"
       end
       @calcdeps = "#{py} third_party/closure/bin/calcdeps.py " +
-                  "-c third_party/closure/bin/compiler-20130603.jar "
+                  "-c third_party/closure/bin/compiler-20140814.jar "
     end
 
     def js_name(dir, name)
@@ -515,7 +515,7 @@ module Javascript
 
         CrazyFunJava.ant.java :classname => "com.google.javascript.jscomp.CommandLineRunner", :failonerror => true do
           classpath do
-            pathelement :path =>  "third_party/closure/bin/compiler-20130603.jar"
+            pathelement :path =>  "third_party/closure/bin/compiler-20140814.jar"
           end
           arg :line => cmd
         end
@@ -684,7 +684,7 @@ module Javascript
 
         CrazyFunJava.ant.java :classname => "com.google.javascript.jscomp.CommandLineRunner", :failonerror => true do
           classpath do
-            pathelement :path =>  "third_party/closure/bin/compiler-20130603.jar"
+            pathelement :path =>  "third_party/closure/bin/compiler-20140814.jar"
           end
           arg :line => flags.join(" ")
         end
@@ -767,7 +767,6 @@ module Javascript
                   "}, arguments);}"
 
         cmd = "" <<
-            "--create_name_map_files=true " <<
             "--third_party=false " <<
             "--js_output_file=#{output} " <<
             "--output_wrapper='#{wrapper}' " <<
@@ -807,7 +806,7 @@ module Javascript
 
         CrazyFunJava.ant.java :classname => "com.google.javascript.jscomp.CommandLineRunner", :fork => false, :failonerror => true do
           classpath do
-            pathelement :path =>  "third_party/closure/bin/compiler-20130603.jar"
+            pathelement :path =>  "third_party/closure/bin/compiler-20140814.jar"
           end
           arg :line => cmd
         end
@@ -837,7 +836,7 @@ module Javascript
     MAX_STR_LENGTH_JAVA = MAX_LINE_LENGTH_JAVA - "       .append\(\"\"\)\n".length
     COPYRIGHT =
           "/*\n" +
-          " * Copyright 2011-2012 WebDriver committers\n" +
+          " * Copyright 2011-2014 Software Freedom Conservancy\n" +
           " *\n" +
           " * Licensed under the Apache License, Version 2.0 (the \"License\");\n" +
           " * you may not use this file except in compliance with the License.\n" +
@@ -1050,7 +1049,7 @@ module Javascript
 
     def generate_java(dir, name, task_name, output, js_files, package)
       file output => js_files do
-        task_name =~ /([a-z]+)-driver/
+        task_name =~ /([a-z]+)-(driver|atoms)/
         implementation = $1.capitalize
         output_dir = File.dirname(output)
         mkdir_p output_dir unless File.exists?(output_dir)

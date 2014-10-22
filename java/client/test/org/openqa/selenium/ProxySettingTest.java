@@ -31,6 +31,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
@@ -172,7 +173,7 @@ public class ProxySettingTest extends JUnit4TestBase {
   }
 
   //Required Capabilities not supported
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT})
+  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT, REMOTE, SAFARI})
   @NeedsLocalEnvironment
   @Test
   public void canConfigureProxyWithRequiredCapability() {
@@ -188,7 +189,7 @@ public class ProxySettingTest extends JUnit4TestBase {
   }
 
   //Required Capabilities not supported
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT})
+  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT, REMOTE, SAFARI})
   @NeedsLocalEnvironment
   @Test
   public void requiredProxyCapabilityShouldHavePriority() {

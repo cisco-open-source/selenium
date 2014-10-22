@@ -20,8 +20,6 @@ class Selenium::WebDriver::Remote::Bridge
   command :refresh,                                :post,    "session/:session_id/refresh"
   command :quit,                                   :delete,  "session/:session_id"
   command :close,                                  :delete,  "session/:session_id/window"
-  command :getVisible,                             :get,     "session/:session_id/visible"
-  command :setVisible,                             :post,    "session/:session_id/visible"
   command :getPageSource,                          :get,     "session/:session_id/source"
   command :getTitle,                               :get,     "session/:session_id/title"
   command :findElement,                            :post,    "session/:session_id/element"
@@ -67,6 +65,7 @@ class Selenium::WebDriver::Remote::Bridge
   #
 
   command :switchToFrame,                          :post,    "session/:session_id/frame"
+  command :switchToParentFrame,                    :post,    "session/:session_id/frame/parent"
   command :switchToWindow,                         :post,    "session/:session_id/window"
 
   #

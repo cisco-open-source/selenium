@@ -17,33 +17,40 @@ limitations under the License.
 
 package org.openqa.selenium.testing.drivers;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.openqa.selenium.Platform.LINUX;
+import static org.openqa.selenium.Platform.WINDOWS;
+import static org.openqa.selenium.testing.Ignore.Driver.ALL;
+import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
+import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
+import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
+import static org.openqa.selenium.testing.Ignore.Driver.IE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
+import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
+import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
+import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
+import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.drivers.Browser.chrome;
+import static org.openqa.selenium.testing.drivers.Browser.htmlunit;
+import static org.openqa.selenium.testing.drivers.Browser.htmlunit_js;
+import static org.openqa.selenium.testing.drivers.Browser.ie;
+import static org.openqa.selenium.testing.drivers.Browser.opera;
+import static org.openqa.selenium.testing.drivers.Browser.phantomjs;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import org.junit.runners.model.FrameworkMethod;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.testing.Ignore;
-import org.openqa.selenium.testing.IgnoreComparator;
 import org.openqa.selenium.testing.JavascriptEnabled;
 import org.openqa.selenium.testing.NativeEventsRequired;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
 
 import java.util.Arrays;
 import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.openqa.selenium.Platform.LINUX;
-import static org.openqa.selenium.Platform.WINDOWS;
-import static org.openqa.selenium.testing.Ignore.Driver.*;
-import static org.openqa.selenium.testing.drivers.Browser.android;
-import static org.openqa.selenium.testing.drivers.Browser.chrome;
-import static org.openqa.selenium.testing.drivers.Browser.htmlunit;
-import static org.openqa.selenium.testing.drivers.Browser.htmlunit_js;
-import static org.openqa.selenium.testing.drivers.Browser.ie;
-import static org.openqa.selenium.testing.drivers.Browser.ipad;
-import static org.openqa.selenium.testing.drivers.Browser.iphone;
-import static org.openqa.selenium.testing.drivers.Browser.opera;
-import static org.openqa.selenium.testing.drivers.Browser.phantomjs;
 
 /**
  * Class that decides whether a test class or method should be ignored.
@@ -52,7 +59,7 @@ public class TestIgnorance {
 
   private Set<Browser> alwaysNativeEvents = ImmutableSet.of(chrome, ie, opera);
   private Set<Browser> neverNativeEvents = ImmutableSet.of(
-      htmlunit, htmlunit_js, ipad, iphone, android, phantomjs);
+      htmlunit, htmlunit_js, phantomjs);
   private IgnoreComparator ignoreComparator = new IgnoreComparator();
   private Set<String> methods = Sets.newHashSet();
   private Set<String> only = Sets.newHashSet();
@@ -124,8 +131,16 @@ public class TestIgnorance {
     }
 
     // We only have native events on Linux and Windows.
-    Platform platform = Platform.getCurrent();
+    Platform platform = getEffectivePlatform();
     return !(platform.is(LINUX) || platform.is(WINDOWS));
+  }
+
+  private static Platform getEffectivePlatform() {
+    if (SauceDriver.shouldUseSauce()) {
+      return SauceDriver.getEffectivePlatform();
+    }
+
+    return Platform.getCurrent();
   }
 
   private boolean isIgnoredDueToBeingOnSauce(FrameworkMethod method, Object test) {
@@ -156,12 +171,6 @@ public class TestIgnorance {
     }
 
     switch (browser) {
-      case android:
-      case android_real_phone:
-        comparator.addDriver(ANDROID);
-        comparator.addDriver(REMOTE);
-        break;
-
       case chrome:
         comparator.addDriver(CHROME);
         break;
@@ -181,11 +190,6 @@ public class TestIgnorance {
 
       case ie:
         comparator.addDriver(IE);
-        break;
-
-      case ipad:
-      case iphone:
-        comparator.addDriver(IPHONE);
         break;
 
       case none:

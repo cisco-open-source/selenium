@@ -21,12 +21,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
-import static org.openqa.selenium.TestWaiter.waitFor;
 import static org.openqa.selenium.WaitingConditions.elementTextToContain;
 import static org.openqa.selenium.WaitingConditions.elementTextToEqual;
 import static org.openqa.selenium.WaitingConditions.elementValueToEqual;
-import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
 import static org.openqa.selenium.ie.InternetExplorerDriver.ENABLE_PERSISTENT_HOVERING;
+import static org.openqa.selenium.support.ui.ExpectedConditions.not;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
 import static org.openqa.selenium.testing.Ignore.Driver.FIREFOX;
@@ -52,12 +52,12 @@ import org.openqa.selenium.NeedsFreshDriver;
 import org.openqa.selenium.NoDriverAfterTest;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Platform;
-import org.openqa.selenium.TestWaiter;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.Color;
 import org.openqa.selenium.support.Colors;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.JavascriptEnabled;
@@ -67,8 +67,6 @@ import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
 import java.awt.*;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests operations that involve mouse and keyboard.
@@ -211,8 +209,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     Action dblClick = getBuilder(driver).doubleClick(toDoubleClick).build();
 
     dblClick.perform();
-    String testFieldContent = TestWaiter.waitFor(
-        elementValueToEqual(toDoubleClick, "DoubleClicked"), 5, TimeUnit.SECONDS);
+    String testFieldContent = shortWait.until(elementValueToEqual(toDoubleClick, "DoubleClicked"));
     assertEquals("Value should change to DoubleClicked.", "DoubleClicked",
                  testFieldContent);
   }
@@ -244,7 +241,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
     contextClick.perform();
 
-    waitFor(elementValueToEqual(toClick, "Clicked"));
+    wait.until(elementValueToEqual(toClick, "Clicked"));
 
     assertEquals("Value should change to Clicked.", "Clicked",
                  toClick.getAttribute("value"));
@@ -307,7 +304,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     // For this reason, this action will fail.
     new Actions(driver).moveToElement(linkElement, 500, 30).click().perform();
 
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
   }
 
   @SuppressWarnings("unchecked")
@@ -361,7 +358,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     new Actions(driver).moveByOffset(-50, verticalMove).perform();
 
     WebElement resultArea = driver.findElement(By.id("result"));
-    waitFor(elementTextToContain(resultArea, "parent matches"));
+    wait.until(elementTextToContain(resultArea, "parent matches"));
   }
 
   @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, CHROME, OPERA, OPERA_MOBILE, QTWEBKIT},
@@ -377,22 +374,22 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
     WebElement resultArea = driver.findElement(By.id("result"));
     String expectedEvents = "First";
-    waitFor(elementTextToEqual(resultArea, expectedEvents));
+    wait.until(elementTextToEqual(resultArea, expectedEvents));
 
     // Move to element with id 'r2', at (2500, 50) to (2580, 100)
     new Actions(driver).moveByOffset(2540 - 150, 75 - 125).click().perform();
     expectedEvents += " Second";
-    waitFor(elementTextToEqual(resultArea, expectedEvents));
+    wait.until(elementTextToEqual(resultArea, expectedEvents));
 
     // Move to element with id 'r3' at (60, 1500) to (140, 1550)
     new Actions(driver).moveByOffset(100 - 2540, 1525 - 75).click().perform();
     expectedEvents += " Third";
-    waitFor(elementTextToEqual(resultArea, expectedEvents));
+    wait.until(elementTextToEqual(resultArea, expectedEvents));
 
     // Move to element with id 'r4' at (220,180) to (320, 230)
     new Actions(driver).moveByOffset(270 - 100, 205 - 1525).click().perform();
     expectedEvents += " Fourth";
-    waitFor(elementTextToEqual(resultArea, expectedEvents));
+    wait.until(elementTextToEqual(resultArea, expectedEvents));
   }
 
   @Ignore({ANDROID, IPHONE, OPERA, OPERA_MOBILE})
@@ -405,7 +402,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
       new Actions(driver).moveToElement(element).click().perform();
       driver.switchTo().defaultContent()
           .switchTo().frame("target");
-      waitFor(elementTextToEqual(driver, By.id("span"), "An inline element"));
+      wait.until(elementTextToEqual(By.id("span"), "An inline element"));
     } finally {
       driver.switchTo().defaultContent();
     }
@@ -429,13 +426,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     ((JavascriptExecutor) driver).executeScript("arguments[0].style.background = 'green'", element);
     new Actions(driver).moveToElement(element).build().perform();
 
-    waitFor(new Callable<Boolean>() {
-
-      public Boolean call() throws Exception {
-        return !item.getText().equals("");
-      }
-    });
-
+    wait.until(not(elementTextToEqual(item, "")));
     assertEquals("Item 1", item.getText());
   }
 
@@ -469,12 +460,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
     // Intentionally wait to make sure hover persists.
     Thread.sleep(2000);
 
-    waitFor(new Callable<Boolean>() {
-
-      public Boolean call() throws Exception {
-        return !item.getText().equals("");
-      }
-    });
+    wait.until(not(elementTextToEqual(item, "")));
 
     assertEquals("Item 1", item.getText());
   }
@@ -518,12 +504,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
       // Intentionally wait to make sure hover DOES NOT persist.
       Thread.sleep(1000);
 
-      waitFor(new Callable<Boolean>() {
-
-        public Boolean call() throws Exception {
-          return item.getText().equals("");
-        }
-      });
+      wait.until(elementTextToEqual(item, ""));
 
       assertEquals("", item.getText());
 
@@ -545,11 +526,11 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
     WebElement reporter = driver.findElement(By.id("status"));
 
-    waitFor(fuzzyMatchingOfCoordinates(reporter, 50, 200));
+    wait.until(fuzzyMatchingOfCoordinates(reporter, 50, 200));
 
     new Actions(driver).moveByOffset(10, 20).build().perform();
 
-    waitFor(fuzzyMatchingOfCoordinates(reporter, 60, 220));
+    wait.until(fuzzyMatchingOfCoordinates(reporter, 60, 220));
   }
 
   @JavascriptEnabled
@@ -566,7 +547,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
     WebElement reporter = driver.findElement(By.id("status"));
 
-    waitFor(fuzzyMatchingOfCoordinates(reporter, 95, 195));
+    wait.until(fuzzyMatchingOfCoordinates(reporter, 95, 195));
   }
 
   @JavascriptEnabled
@@ -583,7 +564,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
     WebElement reporter = driver.findElement(By.id("status"));
 
-    waitFor(fuzzyMatchingOfCoordinates(reporter, 0, 0));
+    wait.until(fuzzyMatchingOfCoordinates(reporter, 0, 0));
   }
 
   @JavascriptEnabled
@@ -600,7 +581,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
       WebElement reporter = driver.findElement(By.id("status"));
 
-      waitFor(fuzzyMatchingOfCoordinates(reporter, 40, 20));
+      wait.until(fuzzyMatchingOfCoordinates(reporter, 40, 20));
     } finally {
       new Actions(driver).moveByOffset(-50, -100).build().perform();
     }
@@ -648,10 +629,11 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
   }
 
-  private Callable<Boolean> fuzzyMatchingOfCoordinates(
+  private ExpectedCondition<Boolean> fuzzyMatchingOfCoordinates(
       final WebElement element, final int x, final int y) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
+    return new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver ignored) {
         return fuzzyPositionMatching(x, y, element.getText());
       }
 

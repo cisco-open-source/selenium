@@ -30,7 +30,6 @@ class ExecuteScriptCommandHandler : public IECommandHandler {
 
  protected:
   virtual void ExecuteInternal(const IECommandExecutor& executor,
-                               const LocatorMap& locator_parameters,
                                const ParametersMap& command_parameters,
                                Response* response) {
     ParametersMap::const_iterator script_parameter_iterator = command_parameters.find("script");
@@ -196,7 +195,7 @@ class ExecuteScriptCommandHandler : public IECommandHandler {
       }
       std::string counter_string = std::to_string(static_cast<long long>(counter));
       std::string name = it.memberName();
-      object_script += name + ":arguments[" + counter_string + "]";
+      object_script += "\"" + name + "\"" + ":arguments[" + counter_string + "]";
       ++counter;
     }
     object_script += "};}})();";

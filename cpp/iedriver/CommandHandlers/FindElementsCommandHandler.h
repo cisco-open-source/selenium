@@ -31,7 +31,6 @@ class FindElementsCommandHandler : public IECommandHandler {
 
  protected:
   void ExecuteInternal(const IECommandExecutor& executor,
-                       const LocatorMap& locator_parameters,
                        const ParametersMap& command_parameters,
                        Response* response) {
     ParametersMap::const_iterator using_parameter_iterator = command_parameters.find("using");
@@ -86,7 +85,9 @@ class FindElementsCommandHandler : public IECommandHandler {
       if (status_code == WD_SUCCESS) {
         response->SetSuccessResponse(found_elements);
       } else {
-        response->SetErrorResponse(status_code, "Finding elements returned an unexpected error");
+        response->SetErrorResponse(status_code,
+            "Finding elements with " + mechanism + " == " + value +
+            "returned an unexpected error");
       }
     }
   }

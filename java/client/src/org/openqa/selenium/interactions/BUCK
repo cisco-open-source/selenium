@@ -1,9 +1,8 @@
 java_library(name = 'interactions',
   srcs = [
     'Actions.java',
-  ] + glob(['*Action.java', 'internal/*Action.java']),
-  export_deps = True,
-  deps = [
+  ] + glob(['*Action.java', 'internal/*Action.java', 'touch/*.java']),
+  exported_deps = [
     ':core',
     ':exceptions',
     '//java/client/src/org/openqa/selenium:core',

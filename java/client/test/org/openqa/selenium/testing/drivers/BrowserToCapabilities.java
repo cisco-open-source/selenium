@@ -36,11 +36,6 @@ public class BrowserToCapabilities {
     DesiredCapabilities caps;
 
     switch (browser) {
-      case android:
-      case android_real_phone:
-        caps = DesiredCapabilities.android();
-        break;
-
       case chrome:
         caps = DesiredCapabilities.chrome();
         break;
@@ -85,14 +80,6 @@ public class BrowserToCapabilities {
 
       case safari:
         caps = DesiredCapabilities.safari();
-        break;
-
-      case ipad:
-        caps = DesiredCapabilities.ipad();
-        break;
-
-      case iphone:
-        caps = DesiredCapabilities.iphone();
         break;
 
       case qtwebkit:

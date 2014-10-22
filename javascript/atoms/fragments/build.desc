@@ -35,10 +35,28 @@ js_fragment(
     deps = [ "//javascript/atoms:all_js" ])
 
 js_fragment(
+    name = "get_attribute",
+    module = "bot.dom",
+    function = "bot.dom.getAttribute",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
     name = "get_effective_style",
     function = "bot.dom.getEffectiveStyle",
     module = "bot.dom",
     deps = [ "//javascript/atoms:all_js" ])
+
+js_fragment(
+    name = "get_element_size",
+    module = "bot.dom",
+    function = "bot.dom.getClientRect",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "get_interactable_size",
+    module = "bot.window",
+    function = "bot.window.getInteractableSize",
+    deps = ["//javascript/atoms:all_js"])
 
 js_fragment(
     name = "get_location",
@@ -50,6 +68,12 @@ js_fragment(
     name = "get_size",
     function = "goog.style.getSize",
     module = "goog.style",
+    deps = [ "//javascript/atoms:all_js" ])
+
+js_fragment(
+    name = "get_visible_text",
+    function = "bot.dom.getVisibleText",
+    module = "bot.dom",
     deps = [ "//javascript/atoms:all_js" ])
 
 js_fragment(
@@ -75,6 +99,54 @@ js_fragment(
     function = "bot.dom.isInteractable",
     module = "bot.dom",
     deps = [ "//javascript/atoms:all_js" ])
+
+js_fragment(
+    name = "is_shown",
+    function = "bot.dom.isShown",
+    module = "bot.dom",
+    deps = [ "//javascript/atoms:all_js" ])
+
+js_fragment(
+    name = "is_selected",
+    function = "bot.dom.isSelected",
+    module = "bot.dom",
+    deps = [ "//javascript/atoms:all_js" ])
+
+js_fragment(
+    name = "link_text",
+    module = "bot.locators.linkText",
+    function = "bot.locators.linkText.single",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "link_texts",
+    module = "bot.locators.linkText",
+    function = "bot.locators.linkText.many",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "partial_link_text",
+    module = "bot.locators.linkText",
+    function = "bot.locators.partialLinkText.single",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "partial_link_texts",
+    module = "bot.locators.linkText",
+    function = "bot.locators.partialLinkText.many",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "scroll_into_view",
+    module = "bot.action",
+    function = "bot.action.scrollIntoView",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "stringify",
+    module = "bot.json",
+    function = "bot.json.stringify",
+    deps = ["//javascript/atoms:all_js"])
 
 js_fragment(
     name = "submit",
@@ -119,12 +191,6 @@ js_fragment(
     deps = [ "//javascript/atoms:all_js" ])
 
 js_fragment(
-    name = "is_online",
-    function = "bot.connection.isOnline",
-    module = "bot.connection",
-    deps = [ "//javascript/atoms:all_js" ])
-
-js_fragment(
     name = "get_current_position",
     function = "bot.geolocation.getCurrentPosition",
     module = "bot.geolocation",
@@ -135,3 +201,27 @@ js_fragment(
     function = "bot.storage.database.executeSql",
     module = "bot.storage.database",
     deps = [ "//javascript/atoms:all_js" ])
+
+js_fragment(
+    name = "back",
+    module = "bot.window",
+    function = "bot.window.back",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "forward",
+    module = "bot.window",
+    function = "bot.window.forward",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "xpath",
+    module = "bot.locators.xpath",
+    function = "bot.locators.xpath.single",
+    deps = ["//javascript/atoms:all_js"])
+
+js_fragment(
+    name = "xpaths",
+    module = "bot.locators.xpath",
+    function = "bot.locators.xpath.many",
+    deps = ["//javascript/atoms:all_js"])

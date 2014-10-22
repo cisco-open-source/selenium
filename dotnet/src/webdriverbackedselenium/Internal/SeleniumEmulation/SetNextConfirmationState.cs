@@ -31,7 +31,15 @@ namespace Selenium.Internal.SeleniumEmulation
         /// <returns>The result of the command.</returns>
         protected override object HandleSeleneseCommand(IWebDriver driver, string locator, string value)
         {
-            ((IJavaScriptExecutor)driver).ExecuteScript("window.__webdriverNextConfirm = arguments[0]", this.result);
+            ((IJavaScriptExecutor)driver).ExecuteScript(
+                "var canUseLocalStorage = false; " +
+                "try { canUseLocalStorage = !!window.localStorage; } catch(ex) { /* probe failed */ } " +
+                "if (canUseLocalStorage) { " +
+                "  window.localStorage.setItem('__webdriverNextConfirm', JSON.stringify(arguments[0])); " +
+                "} else { " +
+                "  window.__webdriverNextConfirm = arguments[0];" +
+                "}"
+                , this.result);
             return null;
         }
     }

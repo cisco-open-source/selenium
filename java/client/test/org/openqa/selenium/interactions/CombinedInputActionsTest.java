@@ -16,11 +16,39 @@ limitations under the License.
 
 package org.openqa.selenium.interactions;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
+import static org.openqa.selenium.WaitingConditions.elementValueToEqual;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
+import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
+import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
+import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
+import static org.openqa.selenium.testing.Ignore.Driver.IE;
+import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
+import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
+import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
+import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
+import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
+import static org.openqa.selenium.testing.TestUtilities.getEffectivePlatform;
+import static org.openqa.selenium.testing.TestUtilities.getIEVersion;
+import static org.openqa.selenium.testing.TestUtilities.isFirefox;
+import static org.openqa.selenium.testing.TestUtilities.isInternetExplorer;
+import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
+import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated;
+
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WaitingConditions;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.testing.Ignore;
@@ -30,32 +58,6 @@ import org.openqa.selenium.testing.TestUtilities;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.elementToExist;
-import static org.openqa.selenium.WaitingConditions.elementValueToEqual;
-import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.CHROME;
-import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
-import static org.openqa.selenium.testing.Ignore.Driver.IE;
-import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
-import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
-import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
-import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
-import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
-import static org.openqa.selenium.testing.TestUtilities.getEffectivePlatform;
-import static org.openqa.selenium.testing.TestUtilities.isFirefox;
-import static org.openqa.selenium.testing.TestUtilities.isInternetExplorer;
-import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
-
 /**
  * Tests combined input actions.
  */
@@ -64,11 +66,38 @@ import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
     issues = {4136})
 public class CombinedInputActionsTest extends JUnit4TestBase {
 
+  @JavascriptEnabled
+  @Test
+  @Ignore({CHROME, IE, PHANTOMJS})
+  public void testPlainClickingOnMultiSelectionList() {
+    assumeTrue("Only works with native events on Linux",
+               isNativeEventsEnabled(driver));
+
+    driver.get(pages.formSelectionPage);
+
+    List<WebElement> options = driver.findElements(By.tagName("option"));
+
+    Actions actions = new Actions(driver);
+    Action selectThreeOptions = actions.click(options.get(1))
+        .click(options.get(2))
+        .click(options.get(3))
+        .build();
+
+    selectThreeOptions.perform();
+
+    WebElement showButton = driver.findElement(By.name("showselected"));
+    showButton.click();
+
+    WebElement resultElement = driver.findElement(By.id("result"));
+    assertEquals("Should have picked the third option only.", "cheddar",
+                 resultElement.getText());
+  }
+
   // TODO: Check if this could work in any browser without native events.
   @JavascriptEnabled
   @Test
-  @Ignore(CHROME)
-  public void testClickingOnFormElements() {
+  @Ignore({CHROME, IE, OPERA, OPERA_MOBILE})
+  public void testShiftClickingOnMultiSelectionList() {
     assumeTrue("Only works with native events on Linux",
                isNativeEventsEnabled(driver) && getEffectivePlatform().is(Platform.LINUX));
 
@@ -79,7 +108,6 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
     Actions actions = new Actions(driver);
     Action selectThreeOptions = actions.click(options.get(1))
         .keyDown(Keys.SHIFT)
-        .click(options.get(2))
         .click(options.get(3))
         .keyUp(Keys.SHIFT)
         .build();
@@ -94,10 +122,39 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
         resultElement.getText());
   }
 
+  // TODO: Check if this could work in any browser without native events.
   @JavascriptEnabled
-  @Ignore({ANDROID, IE, REMOTE, IPHONE, OPERA})
   @Test
-  public void testSelectingMultipleItems() {
+  @Ignore({CHROME, HTMLUNIT, IE, OPERA, OPERA_MOBILE, PHANTOMJS})
+  public void testControlClickingOnMultiSelectionList() {
+    assumeTrue("Only works with native events on Linux",
+               isNativeEventsEnabled(driver) && getEffectivePlatform().is(Platform.LINUX));
+
+    driver.get(pages.formSelectionPage);
+
+    List<WebElement> options = driver.findElements(By.tagName("option"));
+
+    Actions actions = new Actions(driver);
+    Action selectThreeOptions = actions.click(options.get(1))
+        .keyDown(Keys.CONTROL)
+        .click(options.get(3))
+        .keyUp(Keys.CONTROL)
+        .build();
+
+    selectThreeOptions.perform();
+
+    WebElement showButton = driver.findElement(By.name("showselected"));
+    showButton.click();
+
+    WebElement resultElement = driver.findElement(By.id("result"));
+    assertEquals("Should have picked the first and the third options.", "roquefort cheddar",
+                 resultElement.getText());
+  }
+
+  @JavascriptEnabled
+  @Ignore({ANDROID, IE, REMOTE, IPHONE, OPERA, PHANTOMJS})
+  @Test
+  public void testControlClickingOnCustomMultiSelectionList() {
     assumeFalse("Does not works with native events on Windows",
                 isNativeEventsEnabled(driver) && getEffectivePlatform().is(Platform.WINDOWS));
 
@@ -130,14 +187,32 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
   private void navigateToClicksPageAndClickLink() {
     driver.get(pages.clicksPage);
 
-    waitFor(elementToExist(driver, "normal"));
+    wait.until(presenceOfElementLocated(By.id("normal")));
     WebElement link = driver.findElement(By.id("normal"));
 
     new Actions(driver)
         .click(link)
         .perform();
 
-    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
+    wait.until(titleIs("XHTML Test Page"));
+  }
+
+  @Ignore(value = {ANDROID, IPHONE, OPERA, PHANTOMJS, SAFARI}, reason = "Not tested")
+  @Test
+  public void canMoveMouseToAnElementInAnIframeAndClick() {
+    driver.get(appServer.whereIs("click_tests/click_in_iframe.html"));
+
+    wait.until(presenceOfElementLocated(By.id("ifr")));
+    driver.switchTo().frame("ifr");
+
+    WebElement link = driver.findElement(By.id("link"));
+
+    new Actions(driver)
+        .moveToElement(link)
+        .click()
+        .perform();
+
+    wait.until(titleIs("Submitted Successfully!"));
   }
 
   @Ignore({IPHONE})
@@ -153,7 +228,7 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
   public void testCanClickOnLinksWithAnOffset() {
     driver.get(pages.clicksPage);
 
-    waitFor(elementToExist(driver, "normal"));
+    wait.until(presenceOfElementLocated(By.id("normal")));
     WebElement link = driver.findElement(By.id("normal"));
 
     new Actions(driver)
@@ -161,7 +236,44 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
         .click()
         .perform();
 
-    waitFor(pageTitleToBe(driver, "XHTML Test Page"));
+    wait.until(titleIs("XHTML Test Page"));
+  }
+
+  @Ignore(
+      value = {HTMLUNIT, IPHONE},
+      reason = "HtmlUnit: Advanced mouse actions only implemented in rendered browsers")
+  @Test
+  public void testClickAfterMoveToAnElementWithAnOffsetShouldUseLastMousePosition() {
+    driver.get(pages.clickEventPage);
+
+    WebElement element = driver.findElement(By.id("eventish"));
+    Point location = element.getLocation();
+
+    new Actions(driver)
+        .moveToElement(element, 20, 10)
+        .click()
+        .perform();
+
+    wait.until(presenceOfElementLocated(By.id("pageX")));
+
+    int x;
+    int y;
+    if (isInternetExplorer(driver) && getIEVersion(driver) < 10) {
+      x = Integer.parseInt(driver.findElement(By.id("clientX")).getText());
+      y = Integer.parseInt(driver.findElement(By.id("clientY")).getText());
+    } else {
+      x = Integer.parseInt(driver.findElement(By.id("pageX")).getText());
+      y = Integer.parseInt(driver.findElement(By.id("pageY")).getText());
+    }
+
+    assertTrue(fuzzyPositionMatching(location.getX() + 20, location.getY() + 10, x, y));
+  }
+
+  private boolean fuzzyPositionMatching(int expectedX, int expectedY, int actualX, int actualY) {
+    // Everything within 5 pixels range is OK
+    final int ALLOWED_DEVIATION = 5;
+    return Math.abs(expectedX - actualX) < ALLOWED_DEVIATION &&
+           Math.abs(expectedY - actualY) < ALLOWED_DEVIATION;
   }
 
   /**
@@ -180,7 +292,7 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
         .click()
         .perform();
 
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
   }
 
   @Ignore({HTMLUNIT, OPERA, OPERA_MOBILE})
@@ -203,7 +315,7 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
         .sendKeys(element, "abc def")
         .perform();
 
-    waitFor(elementValueToEqual(element, "abc def"));
+    wait.until(elementValueToEqual(element, "abc def"));
 
     //TODO: Figure out why calling sendKey(Key.CONTROL + "a") and then
     //sendKeys("x") does not work on Linux.
@@ -214,7 +326,7 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
     // Release keys before next step.
     new Actions(driver).sendKeys(Keys.NULL).perform();
 
-    waitFor(elementValueToEqual(element, ""));
+    wait.until(elementValueToEqual(element, ""));
 
     new Actions(driver)
         .sendKeys(Keys.CONTROL + "v")
@@ -223,7 +335,7 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
 
     new Actions(driver).sendKeys(Keys.NULL).perform();
 
-    waitFor(elementValueToEqual(element, "abc defabc def"));
+    wait.until(elementValueToEqual(element, "abc defabc def"));
   }
 
   @Ignore({HTMLUNIT, OPERA, IE})
@@ -261,7 +373,8 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
 
     new Actions(driver).keyDown(Keys.SHIFT).click(toClick).keyUp(Keys.SHIFT).perform();
 
-    WebElement shiftInfo = waitFor(elementToExist(driver, "shiftKey"));
+    WebElement shiftInfo =
+        wait.until(presenceOfElementLocated(By.id("shiftKey")));
     assertThat(shiftInfo.getText(), equalTo("true"));
   }
 
@@ -296,7 +409,7 @@ public class CombinedInputActionsTest extends JUnit4TestBase {
     item.click();
 
     WebElement result = driver.findElement(By.id("result"));
-    waitFor(WaitingConditions.elementTextToContain(result, "item 1"));
+    wait.until(WaitingConditions.elementTextToContain(result, "item 1"));
   }
 
   @JavascriptEnabled

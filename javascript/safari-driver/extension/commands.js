@@ -23,7 +23,7 @@ goog.provide('safaridriver.extension.commands');
 goog.require('bot.response');
 goog.require('goog.Uri');
 goog.require('goog.array');
-goog.require('goog.debug.Logger');
+goog.require('goog.log');
 goog.require('goog.string');
 goog.require('safaridriver.alert');
 goog.require('safaridriver.extension.LogDb');
@@ -35,10 +35,10 @@ goog.require('webdriver.promise');
 
 
 /**
- * @private {!goog.debug.Logger}
+ * @private {goog.log.Logger}
  * @const
  */
-safaridriver.extension.commands.LOG_ = goog.debug.Logger.getLogger(
+safaridriver.extension.commands.LOG_ = goog.log.getLogger(
     'safaridriver.extension.commands');
 
 
@@ -185,14 +185,14 @@ safaridriver.extension.commands.sendNavigationCommand_ = function(
     tab.once(safaridriver.message.Load.TYPE, onLoad);
   }
   safaridriver.extension.commands.sendCommand(session, command).
-      then(onSuccess, onFailure);
+      then(onSuccess, /** @type {function(*)} */(onFailure));
   return response.promise;
 
   /** Load message handler that completes the command response. */
   function onLoad() {
     tab.removeListener(safaridriver.message.Alert.TYPE, onAlert);
     if (response.isPending()) {
-      safaridriver.extension.commands.LOG_.info(
+      goog.log.info(safaridriver.extension.commands.LOG_,
           'Page load finished; returning');
       tab.removeListener(safaridriver.message.Alert.TYPE, onAlert);
       response.fulfill();
@@ -224,7 +224,7 @@ safaridriver.extension.commands.sendNavigationCommand_ = function(
    */
   function onSuccess() {
     if (!waitForLoad && response.isPending()) {
-      safaridriver.extension.commands.LOG_.info(
+      goog.log.info(safaridriver.extension.commands.LOG_,
           'Not expecting a new page load; returning');
       response.fulfill();
     }
@@ -237,7 +237,7 @@ safaridriver.extension.commands.sendNavigationCommand_ = function(
    */
   function onFailure(e) {
     if (response.isPending()) {
-      safaridriver.extension.commands.LOG_.severe(
+      goog.log.error(safaridriver.extension.commands.LOG_,
           'Error while loading page; failing', e);
       tab.removeListener(safaridriver.message.Load.TYPE, onLoad);
       response.reject(e);
@@ -488,7 +488,7 @@ safaridriver.extension.commands.executeAsyncScript = function(session,
  * @see http://code.google.com/p/selenium/issues/detail?id=3862
  */
 safaridriver.extension.commands.handleNoAlertsPresent = function() {
-  throw new bot.Error(bot.ErrorCode.NO_MODAL_DIALOG_OPEN,
+  throw new bot.Error(bot.ErrorCode.NO_SUCH_ALERT,
       'The SafariDriver does not support alert handling. To prevent tests ' +
           'from handing when an alert is opened, they are always immediately ' +
           'dismissed. For more information, see ' +

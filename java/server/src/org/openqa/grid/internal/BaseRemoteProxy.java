@@ -17,6 +17,12 @@ limitations under the License.
 
 package org.openqa.grid.internal;
 
+import static org.openqa.grid.common.RegistrationRequest.MAX_INSTANCES;
+import static org.openqa.grid.common.RegistrationRequest.PATH;
+import static org.openqa.grid.common.RegistrationRequest.REMOTE_HOST;
+import static org.openqa.grid.common.RegistrationRequest.SELENIUM_PROTOCOL;
+
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -42,11 +48,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidParameterException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.openqa.grid.common.RegistrationRequest.*;
 
 public class BaseRemoteProxy implements RemoteProxy {
   private final RegistrationRequest request;
@@ -136,11 +144,7 @@ public class BaseRemoteProxy implements RemoteProxy {
     maxConcurrentSession = getConfigInteger(RegistrationRequest.MAX_SESSION);
     cleanUpCycle = getConfigInteger(RegistrationRequest.CLEAN_UP_CYCLE);
     timeOutMs = getConfigInteger(RegistrationRequest.TIME_OUT);
-    Object tm = this.config.get(RegistrationRequest.STATUS_CHECK_TIMEOUT);
-    if (tm == null) {
-      tm = new Integer(0);
-    }
-    statusCheckTimeout = ((Integer) tm).intValue();
+    statusCheckTimeout = getConfigInteger(RegistrationRequest.STATUS_CHECK_TIMEOUT);
 
     List<DesiredCapabilities> capabilities = request.getCapabilities();
 
@@ -171,6 +175,9 @@ public class BaseRemoteProxy implements RemoteProxy {
 
   private Integer getConfigInteger(String key){
     Object o = this.config.get(key);
+    if (o == null) {
+      return 0;
+    }
     if (o instanceof String){
       return Integer.parseInt((String)o);
     }
@@ -303,7 +310,11 @@ public class BaseRemoteProxy implements RemoteProxy {
             log.logp(Level.WARNING, "SessionCleanup", null,
                 "session " + session
                     + " has TIMED OUT due to client inactivity and will be released.");
-            ((TimeoutListener) proxy).beforeRelease(session);
+            try {
+              ((TimeoutListener) proxy).beforeRelease(session);
+            } catch(IllegalStateException ignore){
+              log.log(Level.WARNING, ignore.getMessage());
+            }
             registry.terminate(session, SessionTerminationReason.TIMEOUT);
           }
         }
@@ -311,7 +322,11 @@ public class BaseRemoteProxy implements RemoteProxy {
         if (session.isOrphaned()) {
           log.logp(Level.WARNING, "SessionCleanup", null,
               "session " + session + " has been ORPHANED and will be released");
-          ((TimeoutListener) proxy).beforeRelease(session);
+          try {
+            ((TimeoutListener) proxy).beforeRelease(session);
+          } catch(IllegalStateException ignore){
+            log.log(Level.WARNING, ignore.getMessage());
+          }
           registry.terminate(session, SessionTerminationReason.ORPHAN);
         }
       }
@@ -495,10 +510,11 @@ public class BaseRemoteProxy implements RemoteProxy {
     HttpHost host = new HttpHost(getRemoteHost().getHost(), getRemoteHost().getPort());
     HttpResponse response;
     String existingName = Thread.currentThread().getName();
-
+    HttpEntity entity = null;
     try {
       Thread.currentThread().setName("Probing status of " + url);
       response = client.execute(host, r);
+      entity = response.getEntity();
       int code = response.getStatusLine().getStatusCode();
 
       if (code == 200) {
@@ -523,6 +539,12 @@ public class BaseRemoteProxy implements RemoteProxy {
       throw new GridException(e.getMessage(), e);
     } finally {
       Thread.currentThread().setName(existingName);
+      try { //Added by jojo to release connection thoroughly
+          EntityUtils.consume(entity);
+          } catch (IOException e) {
+            log.info("Exception thrown when consume entity");
+          }
+
     }
   }
 

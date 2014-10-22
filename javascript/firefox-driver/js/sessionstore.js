@@ -22,6 +22,7 @@ goog.require('fxdriver.logging');
 goog.require('fxdriver.modals');
 goog.require('fxdriver.moz');
 goog.require('fxdriver.proxy');
+goog.require('goog.log');
 goog.require('goog.object');
 goog.require('wdSession');
 
@@ -43,6 +44,14 @@ wdSessionStoreService = function() {
    */
   this.sessions_ = {};
 };
+
+
+/**
+ * @private {goog.log.Logger}
+ * @const
+ */
+wdSessionStoreService.LOG_ = fxdriver.logging.getLogger(
+    'fxdriver.wdSessionStoreService');
 
 
 /**
@@ -162,7 +171,8 @@ wdSessionStoreService.CAPABILITY_PREFERENCE_MAPPING = {
   'locationContextEnabled': 'geo.enabled',
   'browserConnectionEnabled': 'dom.network.enabled',
   'acceptSslCerts': 'webdriver_accept_untrusted_certs',
-  'nativeEvents' : 'webdriver_enable_native_events'
+  'nativeEvents' : 'webdriver_enable_native_events',
+  'pageLoadingStrategy' : 'webdriver.load.strategy'
 };
 // TODO: Don't save firefox specific capability acceptSslCerts as preferences.
 
@@ -175,7 +185,8 @@ wdSessionStoreService.CAPABILITY_PREFERENCE_MAPPING = {
  */
 wdSessionStoreService.prototype.configure_ = function(response, desiredCaps, 
     requiredCaps, driver) {
-  fxdriver.logging.info('Setting preferences based on required capabilities');
+  goog.log.info(wdSessionStoreService.LOG_,
+      'Setting preferences based on required capabilities');
   this.configureCapabilities_(desiredCaps, driver);
 
   if (!requiredCaps) {
@@ -188,7 +199,7 @@ wdSessionStoreService.prototype.configure_ = function(response, desiredCaps,
     if (key in wdSessionStoreService.READ_ONLY_CAPABILITIES_ &&
         value != wdSessionStoreService.READ_ONLY_CAPABILITIES_[key]) {
       var msg = 'Required capability ' + key + ' cannot be set to ' + value;
-      fxdriver.logging.info(msg);
+      goog.log.info(wdSessionStoreService.LOG_, msg);
       response.sendError(new WebDriverError(bot.ErrorCode.SESSION_NOT_CREATED,
         msg));
       wdSession.quitBrowser(0);
@@ -203,24 +214,28 @@ wdSessionStoreService.prototype.configure_ = function(response, desiredCaps,
  * @param {!FirefoxDriver} driver The driver instance.
  * @private
  */
-wdSessionStoreService.prototype.configureCapabilities_ = function(capabilities, 
+wdSessionStoreService.prototype.configureCapabilities_ = function(capabilities,
   driver) {
   var prefStore = fxdriver.moz.getService('@mozilla.org/preferences-service;1',
     'nsIPrefBranch');
   goog.object.forEach(capabilities, function(value, key) {
-    if (!goog.isBoolean(value)) {
-      return;
-    }
     if (key in wdSessionStoreService.CAPABILITY_PREFERENCE_MAPPING) {
       var pref = wdSessionStoreService.CAPABILITY_PREFERENCE_MAPPING[key];
-      prefStore.setBoolPref(pref, value);
-      fxdriver.logging.info('Setting capability ' +
-        key + ' (' + pref + ') to ' + value);
+      goog.log.info(wdSessionStoreService.LOG_,
+          'Setting capability ' + key + ' (' + pref + ') to ' + value);
+      if (goog.isBoolean(value)) {
+        prefStore.setBoolPref(pref, value);
+      } else {
+        prefStore.setCharPref(pref, value);
+      }
       if (key == 'nativeEvents') {
         driver.enableNativeEvents = value;
       }
     }
   });
+  if (driver.enableNativeEvents) {
+    prefStore.setCharPref('layout.css.devPixelsPerPx', '1.0');
+  }
 };
 
 

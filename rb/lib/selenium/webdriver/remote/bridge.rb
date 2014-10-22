@@ -190,6 +190,10 @@ module Selenium
           execute :switchToFrame, {}, :id => id
         end
 
+        def switchToParentFrame
+          execute :switchToParentFrame
+        end
+
         def switchToDefaultContent
           execute :switchToFrame, {}, :id => nil
         end
@@ -413,7 +417,7 @@ module Selenium
 
         def upload(local_file)
           unless File.file?(local_file)
-            raise WebDriverError::Error, "you may only upload files: #{local_file.inspect}"
+            raise Error::WebDriverError, "you may only upload files: #{local_file.inspect}"
           end
 
           execute :uploadFile, {}, :file => Zipper.zip_file(local_file)

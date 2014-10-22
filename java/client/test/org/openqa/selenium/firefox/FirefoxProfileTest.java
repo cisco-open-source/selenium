@@ -18,11 +18,11 @@ package org.openqa.selenium.firefox;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.Proxy;
 import org.openqa.selenium.io.FileHandler;
 import org.openqa.selenium.io.TemporaryFilesystem;
 import org.openqa.selenium.io.Zip;
 import org.openqa.selenium.testing.InProject;
+import org.openqa.selenium.testing.drivers.Firebug;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,10 +33,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class FirefoxProfileTest {
@@ -82,44 +80,21 @@ public class FirefoxProfileTest {
   }
 
   @Test
-  public void manualProxy() throws Exception {
-    profile.setProxyPreferences(
-        new Proxy()
-            .setHttpProxy("foo:123")
-            .setFtpProxy("bar:234")
-            .setSslProxy("baz:345")
-            .setNoProxy("localhost"));
-    List<String> prefLines = readGeneratedProperties(profile);
-    String prefs = new ArrayList<String>(prefLines).toString();
-    assertThat(prefs, containsString("network.proxy.http\", \"foo\""));
-    assertThat(prefs, containsString("network.proxy.http_port\", 123"));
-    assertThat(prefs, containsString("network.proxy.ftp\", \"bar\""));
-    assertThat(prefs, containsString("network.proxy.ftp_port\", 234"));
-    assertThat(prefs, containsString("network.proxy.ssl\", \"baz\""));
-    assertThat(prefs, containsString("network.proxy.ssl_port\", 345"));
-    assertThat(prefs, containsString("network.proxy.no_proxies_on\", \"localhost\""));
-    assertThat(prefs, containsString("network.proxy.type\", 1"));
+  public void getIntegerPreferenceShouldReturnUserSuppliedValueWhenSet() throws Exception {
+    String key = "cheese";
+    int value = 1234;
+    profile.setPreference(key, value);
+
+    int defaultValue = -42;
+    assertEquals(1234, profile.getIntegerPreference(key, defaultValue));
   }
 
   @Test
-  public void proxyAutoconfigUrl() throws Exception {
-    profile.setProxyPreferences(
-        new Proxy()
-            .setProxyAutoconfigUrl("http://foo/bar.pac"));
-    List<String> prefLines = readGeneratedProperties(profile);
-    String prefs = new ArrayList<String>(prefLines).toString();
-    assertThat(prefs, containsString("network.proxy.autoconfig_url\", \"http://foo/bar.pac\""));
-    assertThat(prefs, containsString("network.proxy.type\", 2"));
-  }
+  public void getIntegerPreferenceShouldReturnDefaultValueWhenSet() throws Exception {
+    String key = "cheese";
 
-  @Test
-  public void proxyAutodetect() throws Exception {
-    profile.setProxyPreferences(
-        new Proxy()
-            .setAutodetect(true));
-    List<String> prefLines = readGeneratedProperties(profile);
-    String prefs = new ArrayList<String>(prefLines).toString();
-    assertThat(prefs, containsString("network.proxy.type\", 4"));
+    int defaultValue = 42;
+    assertEquals(defaultValue, profile.getIntegerPreference(key, defaultValue));
   }
 
   @Test
@@ -152,7 +127,7 @@ public class FirefoxProfileTest {
   @Test
   public void shouldInstallExtensionUsingClasspath() throws IOException {
     FirefoxProfile profile = new FirefoxProfile();
-    profile.addExtension(FirefoxProfileTest.class, FIREBUG_RESOURCE_PATH);
+    profile.addExtension(Firebug.class, FIREBUG_RESOURCE_PATH);
     File profileDir = profile.layoutOnDisk();
     File extensionDir = new File(profileDir, "extensions/firebug@software.joehewitt.com");
     assertTrue(extensionDir.exists());

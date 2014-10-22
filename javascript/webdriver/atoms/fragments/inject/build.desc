@@ -83,6 +83,11 @@ js_fragment(name = "default_content",
   function = "webdriver.atoms.inject.frame.defaultContent",
   deps = ["//javascript/webdriver/atoms/inject:deps"])
 
+js_fragment(name = "get_parent_frame",
+  module = "webdriver.atoms.inject.frame",
+  function = "webdriver.atoms.inject.frame.parentFrame",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
 js_fragment(name = "get_frame_window",
   module = "webdriver.atoms.inject.frame",
   function = "webdriver.atoms.inject.frame.getFrameWindow",
@@ -173,4 +178,35 @@ js_fragment(name = "execute_sql",
 js_fragment(name = "get_appcache_status",
   module = "webdriver.atoms.inject.storage.appcache",
   function = "webdriver.atoms.inject.storage.appcache.getStatus",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
+# Advanced User Interactions
+js_fragment(name = "mouse_click",
+  module = "webdriver.atoms.inject.action",
+  function = "webdriver.atoms.inject.action.mouseClick",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
+js_fragment(name = "mouse_move",
+  module = "webdriver.atoms.inject.action",
+  function = "webdriver.atoms.inject.action.mouseMove",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
+js_fragment(name = "mouse_down",
+  module = "webdriver.atoms.inject.action",
+  function = "webdriver.atoms.inject.action.mouseButtonDown",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
+js_fragment(name = "mouse_up",
+  module = "webdriver.atoms.inject.action",
+  function = "webdriver.atoms.inject.action.mouseButtonUp",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
+js_fragment(name = "mouse_double_click",
+  module = "webdriver.atoms.inject.action",
+  function = "webdriver.atoms.inject.action.doubleClick",
+  deps = ["//javascript/webdriver/atoms/inject:deps"])
+
+js_fragment(name = "send_keys_to_active_element",
+  module = "webdriver.atoms.inject.action",
+  function = "webdriver.atoms.inject.action.sendKeysToActiveElement",
   deps = ["//javascript/webdriver/atoms/inject:deps"])

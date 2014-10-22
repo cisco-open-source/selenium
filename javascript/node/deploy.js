@@ -19,6 +19,7 @@
 'use strict';
 
 var assert = require('assert'),
+    child_process = require('child_process'),
     fs = require('fs'),
     path = require('path'),
     vm = require('vm');
@@ -171,6 +172,9 @@ function processLibraryFiles(filePaths, contentRoots) {
 function copySrcs(srcDir, outputDirPath) {
   var filePaths = fs.readdirSync(srcDir);
   filePaths.forEach(function(filePath) {
+    if (filePath === 'node_modules') {
+      return;
+    }
     filePath = path.join(srcDir, filePath);
     if (fs.statSync(filePath).isDirectory()) {
       copySrcs(filePath, path.join(outputDirPath, path.basename(filePath)));
@@ -198,16 +202,21 @@ function copyLibraries(outputDirPath, filePaths) {
   var seenFiles = {};
   var symbols = [];
   var providedSymbols = [];
+  var rootFiles = [];
   filePaths.filter(function(path) {
     return !fs.statSync(path).isDirectory();
   }).forEach(function(path) {
+    if (!FILE_INFO[path].provides.length) {
+      rootFiles.push(path);
+    }
     providedSymbols = providedSymbols.concat(FILE_INFO[path].provides);
     symbols = symbols.concat(FILE_INFO[path].requires);
   });
+  rootFiles.forEach(processFile);
   providedSymbols.forEach(resolveDeps);
   symbols.forEach(resolveDeps);
 
-  var depsPath = path.join(outputDirPath, 'lib', 'deps.js');
+  var depsPath = path.join(outputDirPath, 'lib', 'goog', 'deps.js');
   fs.writeFileSync(depsPath, depsFileContents.join('\n') + '\n', 'utf8');
 
   function resolveDeps(symbol) {
@@ -219,7 +228,10 @@ function copyLibraries(outputDirPath, filePaths) {
           '; required in\n  ' + UNPROVIDED[symbol].join('\n  '));
     }
 
-    var file = PROVIDERS[symbol];
+    processFile(PROVIDERS[symbol]);
+  }
+
+  function processFile(file) {
     if (seenFiles[file]) return;
     seenFiles[file] = true;
 
@@ -320,6 +332,73 @@ function copyResources(outputDirPath, resources, exclusions) {
 }
 
 
+function generateDocs(outputDir, callback) {
+  var libDir = path.join(outputDir, 'lib');
+  var excludedDirs = [
+    path.join(outputDir, 'example'),
+    path.join(libDir, 'test'),
+    path.join(libDir, 'webdriver/test'),
+    path.join(outputDir, 'test')
+  ];
+
+  var excludedFiles = [
+    path.join(libDir, 'webdriver/testing/client.js'),
+    path.join(libDir, 'webdriver/testing/flowtester.js'),
+    path.join(libDir, 'webdriver/testing/jsunit.js'),
+    path.join(libDir, 'webdriver/testing/window.js'),
+  ];
+
+  var endsWith = function(str, suffix) {
+    var l = str.length - suffix.length;
+    return l >= 0 && str.indexOf(suffix, l) == l;
+  };
+
+  var getFiles = function(dir) {
+    var files = [];
+    fs.readdirSync(dir).forEach(function(file) {
+      file = path.join(dir, file);
+      if (fs.statSync(file).isDirectory() &&
+          excludedDirs.indexOf(file) == -1) {
+        files = files.concat(getFiles(file));
+      } else if (endsWith(path.basename(file), '.js') &&
+          excludedFiles.indexOf(file) == -1) {
+        files.push(file);
+      }
+    });
+    return files;
+  };
+
+  var sourceFiles = getFiles(libDir);
+  var moduleFiles = getFiles(outputDir).filter(function(file) {
+    return sourceFiles.indexOf(file) == -1;
+  });
+
+  var config = {
+    'output': path.join(outputDir, 'docs'),
+    'closureLibraryDir': path.join(outputDir, 'lib', 'goog'),
+    'license': path.join(outputDir, 'COPYING'),
+    'readme': path.join(outputDir, 'README.md'),
+    'language': 'ES5',
+    'sources': sourceFiles,
+    'modules': moduleFiles,
+    'excludes': [
+      path.join(outputDir, 'docs'),
+      path.join(outputDir, 'node_modules')
+    ]
+  };
+
+  var configFile = outputDir + '-docs.json';
+  fs.writeFileSync(configFile, JSON.stringify(config), 'utf8');
+
+  var command = [
+      'java -jar', path.join(
+          __dirname, '../../third_party/java/dossier/dossier-0.4.0.jar'),
+      '-c', configFile
+  ].join(' ');
+  child_process.exec(command, callback);
+}
+
+
 function main() {
   var parser = new optparse.OptionParser().
       path('output', { help: 'Path to the output directory' }).
@@ -365,9 +444,17 @@ function main() {
 
   processLibraryFiles(options.lib, options.root);
 
+  console.log('Copying sources...');
   copySrcs(options.src, options.output);
+  console.log('Copying library files...');
   copyLibraries(options.output, options.lib);
+  console.log('Copying resource files...');
   copyResources(options.output, options.resource, options.exclude_resource);
+  console.log('Generating documentation...');
+  generateDocs(options.output, function(e) {
+    if (e) throw e;
+    console.log('ALL DONE');
+  });
 }
 
 

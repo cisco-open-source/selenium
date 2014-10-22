@@ -1,5 +1,5 @@
 /*
-Copyright 2007-2010 Selenium committers
+Copyright 2007-2014 Software Freedom Conservancy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public interface CapabilityType {
   String SUPPORTS_SQL_DATABASE = "databaseEnabled";
   String SUPPORTS_LOCATION_CONTEXT = "locationContextEnabled";
   String SUPPORTS_APPLICATION_CACHE = "applicationCacheEnabled";
-  String SUPPORTS_BROWSER_CONNECTION = "browserConnectionEnabled";
+  String SUPPORTS_NETWORK_CONNECTION = "networkConnectionEnabled";
   String SUPPORTS_FINDING_BY_CSS = "cssSelectorsEnabled";
   String PROXY = "proxy";
   String SUPPORTS_WEB_STORAGE = "webStorageEnabled";
@@ -46,6 +46,8 @@ public interface CapabilityType {
   String LOGGING_PREFS = "loggingPrefs";
 
   String ENABLE_PROFILING_CAPABILITY = "webdriver.logging.profiler.enabled";
+
+  String PAGE_LOADING_STRATEGY = "pageLoadingStrategy";
 
   /**
    * Moved InternetExplorer specific CapabilityTypes into InternetExplorerDriver.java for consistency

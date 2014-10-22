@@ -1,5 +1,4 @@
 require File.expand_path("../spec_helper", __FILE__)
-require 'pry'
 
 module Selenium
   module WebDriver
@@ -36,7 +35,7 @@ module Selenium
 
           cookies = driver.manage.all_cookies
 
-          cookies.should have(1).things
+          expect(cookies.size).to eq(1)
           cookies.first[:name].should == "foo"
           cookies.first[:value].should == "bar"
         end

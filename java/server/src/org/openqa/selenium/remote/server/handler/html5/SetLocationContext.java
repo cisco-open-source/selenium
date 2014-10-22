@@ -18,15 +18,13 @@ package org.openqa.selenium.remote.server.handler.html5;
 
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.html5.Location;
-import org.openqa.selenium.html5.LocationContext;
 import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
-import org.openqa.selenium.remote.server.rest.ResultType;
 
 import java.util.Map;
 
-public class SetLocationContext extends WebDriverHandler implements JsonParametersAware {
+public class SetLocationContext extends WebDriverHandler<Void> implements JsonParametersAware {
   private volatile Location location;
 
   public SetLocationContext(Session session) {
@@ -34,9 +32,9 @@ public class SetLocationContext extends WebDriverHandler implements JsonParamete
   }
 
   @Override
-  public ResultType call() throws Exception {
+  public Void call() throws Exception {
     Utils.getLocationContext(getUnwrappedDriver()).setLocation(location);
-    return ResultType.SUCCESS;
+    return null;
   }
 
   @Override

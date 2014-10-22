@@ -60,7 +60,7 @@ namespace OpenQA.Selenium.Remote
     /// }
     /// </code>
     /// </example>
-    public class RemoteWebDriver : IWebDriver, ISearchContext, IJavaScriptExecutor, IFindsById, IFindsByClassName, IFindsByLinkText, IFindsByName, IFindsByTagName, IFindsByXPath, IFindsByPartialLinkText, IFindsByCssSelector, IHasInputDevices, IHasCapabilities, IAllowsFileDetection
+    public class RemoteWebDriver : IWebDriver, ISearchContext, IJavaScriptExecutor, IFindsById, IFindsByClassName, IFindsByLinkText, IFindsByName, IFindsByTagName, IFindsByXPath, IFindsByPartialLinkText, IFindsByCssSelector, ITakesScreenshot, IHasInputDevices, IHasCapabilities, IAllowsFileDetection
     {
         /// <summary>
         /// The default command timeout for HTTP requests in a RemoteWebDriver instance.
@@ -423,7 +423,7 @@ namespace OpenQA.Selenium.Remote
         /// <returns>The value returned by the script.</returns>
         public object ExecuteScript(string script, params object[] args)
         {
-            return this.ExecuteScriptInternal(script, false, args);
+            return this.ExecuteScriptCommand(script, DriverCommand.ExecuteScript, args);
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace OpenQA.Selenium.Remote
         /// <returns>The value returned by the script.</returns>
         public object ExecuteAsyncScript(string script, params object[] args)
         {
-            return this.ExecuteScriptInternal(script, true, args);
+            return this.ExecuteScriptCommand(script, DriverCommand.ExecuteAsyncScript, args);
         }
         #endregion
 
@@ -487,7 +487,10 @@ namespace OpenQA.Selenium.Remote
         /// </example>
         public IWebElement FindElementByClassName(string className)
         {
-            return this.FindElement("class name", className);
+            // TODO: Modified for spec-compliance. May change.
+            // Requires cleanup after spec is at recommendation.
+            // return this.FindElement("class name", className);
+            return this.FindElement("css selector", "." + className);
         }
 
         /// <summary>
@@ -503,7 +506,10 @@ namespace OpenQA.Selenium.Remote
         /// </example>
         public ReadOnlyCollection<IWebElement> FindElementsByClassName(string className)
         {
-            return this.FindElements("class name", className);
+            // TODO: Modified for spec-compliance. May change.
+            // Requires cleanup after spec is at recommendation.
+            // return this.FindElements("class name", className);
+            return this.FindElements("css selector", "." + className);
         }
 
         #endregion
@@ -592,7 +598,10 @@ namespace OpenQA.Selenium.Remote
         /// </example>
         public IWebElement FindElementByName(string name)
         {
-            return this.FindElement("name", name);
+            // TODO: Modified for spec-compliance. May change.
+            // Requires cleanup after spec is at recommendation.
+            // return this.FindElement("name", name);
+            return this.FindElement("css selector", "*[name=\"" + name + "\"]");
         }
 
         /// <summary>
@@ -608,7 +617,10 @@ namespace OpenQA.Selenium.Remote
         /// </example>
         public ReadOnlyCollection<IWebElement> FindElementsByName(string name)
         {
-            return this.FindElements("name", name);
+            // TODO: Modified for spec-compliance. May change.
+            // Requires cleanup after spec is at recommendation.
+            // return this.FindElements("name", name);
+            return this.FindElements("css selector", "*[name=\"" + name + "\"]");
         }
 
         #endregion
@@ -627,7 +639,10 @@ namespace OpenQA.Selenium.Remote
         /// </example>
         public IWebElement FindElementByTagName(string tagName)
         {
-            return this.FindElement("tag name", tagName);
+            // TODO: Modified for spec-compliance. May change.
+            // Requires cleanup after spec is at recommendation.
+            // return this.FindElement("tag name", tagName);
+            return this.FindElement("css selector", tagName);
         }
 
         /// <summary>
@@ -643,7 +658,10 @@ namespace OpenQA.Selenium.Remote
         /// </example>
         public ReadOnlyCollection<IWebElement> FindElementsByTagName(string tagName)
         {
-            return this.FindElements("tag name", tagName);
+            // TODO: Modified for spec-compliance. May change.
+            // Requires cleanup after spec is at recommendation.
+            // return this.FindElements("tag name", tagName);
+            return this.FindElements("css selector", tagName);
         }
         #endregion
 
@@ -704,6 +722,22 @@ namespace OpenQA.Selenium.Remote
         }
         #endregion
 
+        #region ITakesScreenshot Members
+        /// <summary>
+        /// Gets a <see cref="Screenshot"/> object representing the image of the page on the screen.
+        /// </summary>
+        /// <returns>A <see cref="Screenshot"/> object containing the image.</returns>
+        public Screenshot GetScreenshot()
+        {
+            // Get the screenshot as base64.
+            Response screenshotResponse = this.Execute(DriverCommand.Screenshot, null);
+            string base64 = screenshotResponse.Value.ToString();
+
+            // ... and convert it.
+            return new Screenshot(base64);
+        }
+        #endregion
+
         #region IDisposable Members
 
         /// <summary>
@@ -745,7 +779,18 @@ namespace OpenQA.Selenium.Remote
             Dictionary<string, object> elementDictionary = response.Value as Dictionary<string, object>;
             if (elementDictionary != null)
             {
-                string id = (string)elementDictionary["ELEMENT"];
+                // TODO: Remove this "if" logic once the spec is properly updated
+                // and remote-end implementations comply.
+                string id = string.Empty;
+                if (elementDictionary.ContainsKey("ELEMENT"))
+                {
+                    id = (string)elementDictionary["ELEMENT"];
+                }
+                else if (elementDictionary.ContainsKey("id"))
+                {
+                    id = (string)elementDictionary["id"];
+                }
+
                 element = this.CreateElement(id);
             }
 
@@ -766,7 +811,18 @@ namespace OpenQA.Selenium.Remote
                 Dictionary<string, object> elementDictionary = elementObject as Dictionary<string, object>;
                 if (elementDictionary != null)
                 {
-                    string id = (string)elementDictionary["ELEMENT"];
+                    // TODO: Remove this "if" logic once the spec is properly updated
+                    // and remote-end implementations comply.
+                    string id = string.Empty;
+                    if (elementDictionary.ContainsKey("ELEMENT"))
+                    {
+                        id = (string)elementDictionary["ELEMENT"];
+                    }
+                    else if (elementDictionary.ContainsKey("id"))
+                    {
+                        id = (string)elementDictionary["id"];
+                    }
+
                     RemoteWebElement element = this.CreateElement(id);
                     toReturn.Add(element);
                 }
@@ -871,9 +927,12 @@ namespace OpenQA.Selenium.Remote
         /// <returns>The first <see cref="IWebElement"/> matching the given criteria.</returns>
         protected IWebElement FindElement(string mechanism, string value)
         {
+            // TODO: Remove "using" once all remote-end implementations comply
+            // with the spec.
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("using", mechanism);
             parameters.Add("value", value);
+            parameters.Add("locator", mechanism);
             Response commandResponse = this.Execute(DriverCommand.FindElement, parameters);
             return this.GetElementFromResponse(commandResponse);
         }
@@ -886,9 +945,12 @@ namespace OpenQA.Selenium.Remote
         /// <returns>A collection of all of the <see cref="IWebElement">IWebElements</see> matching the given criteria.</returns>
         protected ReadOnlyCollection<IWebElement> FindElements(string mechanism, string value)
         {
+            // TODO: Remove "using" once all remote-end implementations comply
+            // with the spec.
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("using", mechanism);
             parameters.Add("value", value);
+            parameters.Add("locator", mechanism);
             Response commandResponse = this.Execute(DriverCommand.FindElements, parameters);
             return this.GetElementsFromResponse(commandResponse);
         }
@@ -902,6 +964,33 @@ namespace OpenQA.Selenium.Remote
         {
             RemoteWebElement toReturn = new RemoteWebElement(this, elementId);
             return toReturn;
+        }
+
+        /// <summary>
+        /// Executes JavaScript in the context of the currently selected frame or window using a specific command.
+        /// </summary>
+        /// <param name="script">The JavaScript code to execute.</param>
+        /// <param name="commandName">The name of the command to execute.</param>
+        /// <param name="args">The arguments to the script.</param>
+        /// <returns>The value returned by the script.</returns>
+        protected object ExecuteScriptCommand(string script, string commandName, params object[] args)
+        {
+            object[] convertedArgs = ConvertArgumentsToJavaScriptObjects(args);
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("script", script);
+
+            if (convertedArgs != null && convertedArgs.Length > 0)
+            {
+                parameters.Add("args", convertedArgs);
+            }
+            else
+            {
+                parameters.Add("args", new object[] { });
+            }
+
+            Response commandResponse = this.Execute(commandName, parameters);
+            return this.ParseJavaScriptReturnValue(commandResponse.Value);
         }
         #endregion
 
@@ -926,8 +1015,10 @@ namespace OpenQA.Selenium.Remote
             }
             else if (argAsElement != null)
             {
+                // TODO: Remove addition of 'id' key when spec is changed.
                 Dictionary<string, object> elementDictionary = new Dictionary<string, object>();
                 elementDictionary.Add("ELEMENT", argAsElement.InternalElementId);
+                elementDictionary.Add("id", argAsElement.InternalElementId);
                 converted = elementDictionary;
             }
             else if (argAsDictionary != null)
@@ -962,6 +1053,11 @@ namespace OpenQA.Selenium.Remote
             return converted;
         }
 
+        /// <summary>
+        /// Converts the arguments to JavaScript objects.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns>The list of the arguments converted to JavaScript objects.</returns>
         private static object[] ConvertArgumentsToJavaScriptObjects(object[] args)
         {
             if (args == null)
@@ -1060,34 +1156,6 @@ namespace OpenQA.Selenium.Remote
             }
         }
 
-        private object ExecuteScriptInternal(string script, bool async, params object[] args)
-        {
-            if (!this.Capabilities.IsJavaScriptEnabled)
-            {
-                throw new NotSupportedException("You must be using an underlying instance of WebDriver that supports executing javascript");
-            }
-
-            // Escape the quote marks
-            // script = script.Replace("\"", "\\\"");
-            object[] convertedArgs = ConvertArgumentsToJavaScriptObjects(args);
-
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
-            parameters.Add("script", script);
-
-            if (convertedArgs != null && convertedArgs.Length > 0)
-            {
-                parameters.Add("args", convertedArgs);
-            }
-            else
-            {
-                parameters.Add("args", new object[] { });
-            }
-
-            string command = async ? DriverCommand.ExecuteAsyncScript : DriverCommand.ExecuteScript;
-            Response commandResponse = this.Execute(command, parameters);
-            return this.ParseJavaScriptReturnValue(commandResponse.Value);
-        }
-
         private object ParseJavaScriptReturnValue(object responseValue)
         {
             object returnValue = null;
@@ -1100,6 +1168,13 @@ namespace OpenQA.Selenium.Remote
                 if (resultAsDictionary.ContainsKey("ELEMENT"))
                 {
                     string id = (string)resultAsDictionary["ELEMENT"];
+                    RemoteWebElement element = this.CreateElement(id);
+                    returnValue = element;
+                }
+                else if (resultAsDictionary.ContainsKey("id"))
+                {
+                    // TODO: Remove addition of 'id' key when spec is changed.
+                    string id = (string)resultAsDictionary["id"];
                     RemoteWebElement element = this.CreateElement(id);
                     returnValue = element;
                 }

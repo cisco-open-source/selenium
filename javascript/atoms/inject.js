@@ -37,6 +37,27 @@ goog.require('bot.response.ResponseObject');
 goog.require('goog.array');
 goog.require('goog.dom.NodeType');
 goog.require('goog.object');
+goog.require('goog.userAgent');
+
+
+/**
+ * Type definition for the WebDriver's JSON wire protocol representation
+ * of a DOM element.
+ * @typedef {{ELEMENT: string}}
+ * @see bot.inject.ELEMENT_KEY
+ * @see http://code.google.com/p/selenium/wiki/JsonWireProtocol
+ */
+bot.inject.JsonElement;
+
+
+/**
+ * Type definition for a cached Window object that can be referenced in
+ * WebDriver's JSON wire protocol. Note, this is a non-standard
+ * representation.
+ * @typedef {{WINDOW: string}}
+ * @see bot.inject.WINDOW_KEY
+ */
+bot.inject.JsonWindow;
 
 
 /**
@@ -183,7 +204,17 @@ bot.inject.unwrapValue = function(value, opt_doc) {
  */
 bot.inject.recompileFunction_ = function(fn, theWindow) {
   if (goog.isString(fn)) {
-    return new theWindow['Function'](fn);
+    try {
+      return new theWindow['Function'](fn);
+    } catch (ex) {
+      // Try to recover if in IE5-quirks mode
+      // Need to initialize the script engine on the passed-in window
+      if (goog.userAgent.IE && theWindow.execScript) {
+        theWindow.execScript(';');
+        return new theWindow['Function'](fn);
+      }
+      throw ex;
+    }
   }
   return theWindow == window ? fn : new theWindow['Function'](
       'return (' + fn + ').apply(null,arguments);');

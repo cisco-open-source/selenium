@@ -12,6 +12,10 @@
 // limitations under the License.
 
 #include "IECommandExecutor.h"
+#include <algorithm>
+#include <ctime>
+#include <vector>
+#include "CommandExecutor.h"
 #include "logging.h"
 #include "CommandHandlers/AcceptAlertCommandHandler.h"
 #include "CommandHandlers/AddCookieCommandHandler.h"
@@ -72,7 +76,9 @@
 #include "CommandHandlers/SetWindowSizeCommandHandler.h"
 #include "CommandHandlers/SubmitElementCommandHandler.h"
 #include "CommandHandlers/SwitchToFrameCommandHandler.h"
+#include "CommandHandlers/SwitchToParentFrameCommandHandler.h"
 #include "CommandHandlers/SwitchToWindowCommandHandler.h"
+#include "HtmlDialog.h"
 #include "StringUtilities.h"
 
 namespace webdriver {
@@ -151,7 +157,7 @@ LRESULT IECommandExecutor::OnSetCommand(UINT uMsg,
   LOG(TRACE) << "Entering IECommandExecutor::OnSetCommand";
 
   LPCSTR json_command = reinterpret_cast<LPCSTR>(lParam);
-  this->current_command_.Populate(json_command);
+  this->current_command_.Deserialize(json_command);
   return 0;
 }
 
@@ -244,6 +250,11 @@ LRESULT IECommandExecutor::OnBrowserNewWindow(UINT uMsg,
   LOG(TRACE) << "Entering IECommandExecutor::OnBrowserNewWindow";
 
   IWebBrowser2* browser = this->factory_->CreateBrowser();
+  if (browser == NULL) {
+    // No browser was created, so we have to bail early.
+    // Check the log for the HRESULT why.
+    return 1;
+  }
   BrowserHandle new_window_wrapper(new Browser(browser, NULL, this->m_hWnd));
   // TODO: This is a big assumption that this will work. We need a test case
   // to validate that it will or won't.
@@ -761,6 +772,7 @@ void IECommandExecutor::PopulateCommandHandlers() {
   this->command_handlers_[webdriver::CommandType::GetWindowHandles] = CommandHandlerHandle(new GetAllWindowHandlesCommandHandler);
   this->command_handlers_[webdriver::CommandType::SwitchToWindow] = CommandHandlerHandle(new SwitchToWindowCommandHandler);
   this->command_handlers_[webdriver::CommandType::SwitchToFrame] = CommandHandlerHandle(new SwitchToFrameCommandHandler);
+  this->command_handlers_[webdriver::CommandType::SwitchToParentFrame] = CommandHandlerHandle(new SwitchToParentFrameCommandHandler);
   this->command_handlers_[webdriver::CommandType::Get] = CommandHandlerHandle(new GoToUrlCommandHandler);
   this->command_handlers_[webdriver::CommandType::GoForward] = CommandHandlerHandle(new GoForwardCommandHandler);
   this->command_handlers_[webdriver::CommandType::GoBack] = CommandHandlerHandle(new GoBackCommandHandler);

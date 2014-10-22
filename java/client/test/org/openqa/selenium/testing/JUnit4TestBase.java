@@ -17,8 +17,10 @@ limitations under the License.
 
 package org.openqa.selenium.testing;
 
-import java.util.List;
-import java.util.logging.Logger;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,12 +42,13 @@ import org.openqa.selenium.logging.profiler.EventType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import java.util.List;
+import java.util.logging.Logger;
 
 @RunWith(SeleniumTestRunner.class)
 public abstract class JUnit4TestBase implements WrapsDriver {
@@ -57,6 +60,8 @@ public abstract class JUnit4TestBase implements WrapsDriver {
   protected Pages pages;
   private static ThreadLocal<WebDriver> storedDriver = new ThreadLocal<WebDriver>();
   protected WebDriver driver;
+  protected Wait<WebDriver> wait;
+  protected Wait<WebDriver> shortWait;
 
   @Before
   public void prepareEnvironment() throws Exception {
@@ -74,6 +79,8 @@ public abstract class JUnit4TestBase implements WrapsDriver {
   @Before
   public void createDriver() throws Exception {
     driver = actuallyCreateDriver();
+    wait = new WebDriverWait(driver, 30);
+    shortWait = new WebDriverWait(driver, 5);
   }
 
   @Rule
@@ -85,7 +92,6 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     protected void starting(Description description) {
       super.starting(description);
       logger.info(">>> Starting " + description);
-
     }
 
     @Override
@@ -118,7 +124,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
       }
     }
   };
-
+  
   public WebDriver getWrappedDriver() {
     return storedDriver.get();
   }
@@ -126,7 +132,8 @@ public abstract class JUnit4TestBase implements WrapsDriver {
   public static WebDriver actuallyCreateDriver() {
     WebDriver driver = storedDriver.get();
 
-    if (driver == null) {
+    if (driver == null ||
+        (driver instanceof RemoteWebDriver && ((RemoteWebDriver)driver).getSessionId() == null)) {
       DesiredCapabilities caps = new DesiredCapabilities();
       caps.setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, true);
       WebDriverBuilder builder = new WebDriverBuilder();

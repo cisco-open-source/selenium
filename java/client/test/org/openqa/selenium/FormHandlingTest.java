@@ -16,14 +16,6 @@ limitations under the License.
 
 package org.openqa.selenium;
 
-import org.junit.Test;
-import org.openqa.selenium.testing.Ignore;
-import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.TestUtilities;
-
-import java.io.File;
-import java.io.IOException;
-
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -32,8 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
-import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.pageTitleToBe;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
 import static org.openqa.selenium.testing.Ignore.Driver.HTMLUNIT;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
@@ -47,13 +38,21 @@ import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.TestUtilities.isIe6;
 import static org.openqa.selenium.testing.TestUtilities.isIe7;
 
+import org.junit.Test;
+import org.openqa.selenium.testing.Ignore;
+import org.openqa.selenium.testing.JUnit4TestBase;
+import org.openqa.selenium.testing.TestUtilities;
+
+import java.io.File;
+import java.io.IOException;
+
 public class FormHandlingTest extends JUnit4TestBase {
 
   @Test
   public void testShouldClickOnSubmitInputElements() {
     driver.get(pages.formPage);
     driver.findElement(By.id("submitButton")).click();
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
     assertThat(driver.getTitle(), equalTo("We Arrive Here"));
   }
 
@@ -74,7 +73,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   public void testShouldBeAbleToClickImageButtons() {
     driver.get(pages.formPage);
     driver.findElement(By.id("imageButton")).click();
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
     assertThat(driver.getTitle(), equalTo("We Arrive Here"));
   }
 
@@ -83,7 +82,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   public void testShouldBeAbleToSubmitForms() {
     driver.get(pages.formPage);
     driver.findElement(By.name("login")).submit();
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
   }
 
   @Test
@@ -91,7 +90,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   public void testShouldSubmitAFormWhenAnyInputElementWithinThatFormIsSubmitted() {
     driver.get(pages.formPage);
     driver.findElement(By.id("checky")).submit();
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
   }
 
   @Test
@@ -99,7 +98,7 @@ public class FormHandlingTest extends JUnit4TestBase {
   public void testShouldSubmitAFormWhenAnyElementWithinThatFormIsSubmitted() {
     driver.get(pages.formPage);
     driver.findElement(By.xpath("//form/p")).submit();
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
   }
 
   @Test(expected = NoSuchElementException.class)
@@ -138,7 +137,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     WebElement nestedForm = driver.findElement(By.id("nested_form"));
     WebElement input = nestedForm.findElement(By.name("x"));
     input.sendKeys("\n");
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
     assertTrue(driver.getCurrentUrl().endsWith("?x=name"));
   }
 
@@ -149,7 +148,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     WebElement nestedForm = driver.findElement(By.id("nested_form"));
     WebElement input = nestedForm.findElement(By.name("x"));
     input.sendKeys(Keys.ENTER);
-    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+    wait.until(titleIs("We Arrive Here"));
     assertTrue(driver.getCurrentUrl().endsWith("?x=name"));
   }
 
@@ -246,7 +245,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     assertThat(value, is("some text"));
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA, OPERA_MOBILE},
+  @Ignore(value = {ANDROID, HTMLUNIT, IPHONE, OPERA, OPERA_MOBILE},
           reason = "iPhone: sendKeys implemented incorrectly")
   @Test
   public void testSendingKeyboardEventsShouldAppendTextInInputsWithExistingValue() {
@@ -289,7 +288,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     element.submit();
     Alert alert = driver.switchTo().alert();
     String text = alert.getText();
-    alert.dismiss();
+    alert.accept();
 
     assertEquals("Tasty cheese", text);
   }
@@ -300,7 +299,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     checkSubmitButton("internal_explicit_submit");
   }
 
-  @Ignore(value = {ANDROID, IPHONE, SAFARI, OPERA_MOBILE}, reason = "untested")
+  @Ignore(value = {ANDROID, HTMLUNIT, IPHONE, SAFARI, OPERA_MOBILE}, reason = "untested")
   @Test
   public void testCanClickOnAnImplicitSubmitButton() {
     assumeFalse(isIe6(driver) || isIe7(driver) );
@@ -328,7 +327,7 @@ public class FormHandlingTest extends JUnit4TestBase {
     driver.findElement(By.id("name")).sendKeys(name);
     driver.findElement(By.id(buttonId)).click();
 
-    waitFor(pageTitleToBe(driver, "Submitted Successfully!"));
+    wait.until(titleIs("Submitted Successfully!"));
 
     assertThat(driver.getCurrentUrl(), containsString("name="+name));
   }

@@ -30,6 +30,7 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
 import org.openqa.selenium.testing.Ignore;
@@ -40,7 +41,6 @@ import java.net.URL;
 import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
-import static org.openqa.selenium.TestWaiter.waitFor;
 
 public class QtWebDriverSwitchesTest extends JUnit4TestBase {
 
@@ -71,8 +71,8 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         assertEquals(60, pnt.getY());
 
 
-        waitFor(xEqual(driver, point));
-        waitFor(yEqual(driver, point));
+        wait.until(xEqual(point));
+        wait.until(yEqual(point));
 
         sleep(2);
 
@@ -95,8 +95,8 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         Dimension sz = window.getSize();
         assertEquals(400, sz.getHeight());
         assertEquals(600, sz.getWidth());
-        waitFor(windowHeightToEqual(driver, size));
-        waitFor(windowWidthToEqual(driver, size));
+        wait.until(windowHeightToEqual(size));
+        wait.until(windowWidthToEqual(size));
 
         sleep(2);
 
@@ -123,14 +123,14 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         assertEquals(80, pnt.getX());
         assertEquals(60, pnt.getY());
 
-        waitFor(xEqual(driver, point));
-        waitFor(yEqual(driver, point));
+        wait.until(xEqual(point));
+        wait.until(yEqual(point));
 
         Dimension sz = window.getSize();
         assertEquals(640, sz.getWidth());
         assertEquals(480, sz.getHeight());
-        waitFor(windowHeightToEqual(driver, size));
-        waitFor(windowWidthToEqual(driver, size));
+        wait.until(windowHeightToEqual(size));
+        wait.until(windowWidthToEqual(size));
 
         sleep(2);
 
@@ -152,16 +152,17 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         driver.manage().window().setSize(new Dimension(10, 10));
         driver.manage().window().maximize();
 
-        waitFor(windowHeightToEqual(driver, maximizedSize));
-        waitFor(windowWidthToEqual(driver, maximizedSize));
+        wait.until(windowHeightToEqual(maximizedSize));
+        wait.until(windowWidthToEqual(maximizedSize));
 
         sleep(2);
 
     }
 
-    private Callable<Boolean> windowHeightToEqual(final WebDriver driver, final Dimension size) {
-        return new Callable<Boolean>() {
-            public Boolean call() throws Exception {
+    private ExpectedCondition<Boolean> windowHeightToEqual(final Dimension size) {
+        return new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver input) {
                 Dimension newSize = driver.manage().window().getSize();
                 if(newSize.height == size.height) {
                     return true;
@@ -172,21 +173,24 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         };
     }
 
-    private Callable<Boolean> windowWidthToEqual(final WebDriver driver, final Dimension size) {
-        return new Callable<Boolean>() {
-            public Boolean call() throws Exception {
+    private ExpectedCondition<Boolean> windowWidthToEqual(final Dimension size) {
+        return new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver input) {
                 Dimension newSize = driver.manage().window().getSize();
                 if(newSize.width == size.width) {
                     return true;
                 }
+
                 return null;
             }
         };
     }
 
-    private Callable<Boolean> xEqual(final WebDriver driver, final Point targetPosition) {
-        return new Callable<Boolean>() {
-            public Boolean call() throws Exception {
+    private ExpectedCondition<Boolean> xEqual(final Point targetPosition) {
+        return new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver input) {
                 Point newPosition = driver.manage().window().getPosition();
                 if(newPosition.x == targetPosition.x) {
                     return true;
@@ -196,9 +200,10 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
             }
         };
     }
-    private Callable<Boolean> yEqual(final WebDriver driver, final Point targetPosition) {
-        return new Callable<Boolean>() {
-            public Boolean call() throws Exception {
+    private ExpectedCondition<Boolean> yEqual(final Point targetPosition) {
+        return new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver input) {
                 Point newPosition = driver.manage().window().getPosition();
                 if(newPosition.y == targetPosition.y) {
                     return true;

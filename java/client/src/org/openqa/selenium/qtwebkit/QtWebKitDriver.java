@@ -47,7 +47,6 @@ import com.google.common.collect.ImmutableMap;
 import org.openqa.selenium.*;
 import org.openqa.selenium.html5.AppCacheStatus;
 import org.openqa.selenium.html5.ApplicationCache;
-import org.openqa.selenium.html5.BrowserConnection;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.SessionStorage;
 import org.openqa.selenium.html5.WebStorage;
@@ -69,7 +68,7 @@ import org.openqa.selenium.remote.html5.RemoteSessionStorage;
 public class QtWebKitDriver extends RemoteWebDriver
 
     implements TakesScreenshot, WebStorage, Rotatable, ApplicationCache,
-               BrowserConnection, HasMultiTouchScreen, Visualizer {
+               HasMultiTouchScreen, Visualizer {
 
     private RemoteLocalStorage localStorage;
     private RemoteSessionStorage sessionStorage;
@@ -148,16 +147,6 @@ public class QtWebKitDriver extends RemoteWebDriver
         Long status = (Long) execute(DriverCommand.GET_APP_CACHE_STATUS).getValue();
         long st = status;
         return AppCacheStatus.getEnum((int)st);
-    }
-
-    @Override
-    public boolean isOnline() {
-        return ((Boolean) execute(DriverCommand.IS_BROWSER_ONLINE).getValue());
-    }
-
-    @Override
-    public void setOnline(boolean online) throws WebDriverException {
-        execute(DriverCommand.SET_BROWSER_ONLINE, ImmutableMap.of("state", online));
     }
 
     @Override

@@ -1,3 +1,77 @@
+## v2.43.0-dev
+
+* Added native support for Firefox - the Java Selenium server is no longer
+    required.
+* Added support for generator functions to `ControlFlow#execute` and
+    `ControlFlow#wait`. For more information, see documentation on
+    `webdriver.promise.consume`. Requires harmony support (run with
+    `node --harmony-generators` in `v0.11.x`).
+* Various improvements to the `Builder` API. Notably, the `build()` function
+    will no longer default to attempting to use a server at
+    `http://localhost:4444/wd/hub` if it cannot start a browser directly -
+    you must specify the WebDriver server with `usingServer(url)`. You can
+    also set the target browser and WebDriver server through a pair of
+    environment variables. See the documentation on the `Builder` constructor
+    for more information.
+* For consistency with the other language bindings, added browser specific
+    classes that can be used to start a browser without the builder.
+
+        var webdriver = require('selenium-webdriver')
+            chrome = require('selenium-webdriver/chrome');
+
+        // The following are equivalent.
+        var driver1 = new webdriver.Builder().forBrowser('chrome').build();
+        var driver2 = new chrome.Driver();
+
+* Promise A+ compliance: a promise may no longer resolve to itself.
+* For consistency with other language bindings, deprecated
+    `UnhandledAlertError#getAlert` and added `#getAlertText`.
+    `getAlert` will be removed in `2.45.0`.
+* FIXED: 7641: Deprecated `ErrorCode.NO_MODAL_DIALOG_OPEN` and
+    `ErrorCode.MODAL_DIALOG_OPENED` in favor of the new
+    `ErrorCode.NO_SUCH_ALERT` and `ErrorCode.UNEXPECTED_ALERT_OPEN`,
+    respecitvely.
+* FIXED: 7563: Mocha integration no longer disables timeouts. Default Mocha
+    timeouts apply (2000 ms) and may be changed using `this.timeout(ms)`.
+* FIXED: 7470: Make it easier to create WebDriver instances in custom flows for
+    parallel execution.
+
+## v2.42.1
+
+* FIXED: 7465: Fixed `net.getLoopbackAddress` on Windows
+* FIXED: 7277: Support `done` callback in Mocha's BDD interface
+* FIXED: 7156: `Promise#thenFinally` should not suppress original error
+
+## v2.42.0
+
+* Removed deprecated functions `Promise#addCallback()`,
+    `Promise#addCallbacks()`, `Promise#addErrback()`, and `Promise#addBoth()`.
+* Fail with a more descriptive error if the server returns a malformed redirect
+* FIXED: 7300: Connect to ChromeDriver using the loopback address since
+    ChromeDriver 2.10.267517 binds to localhost by default.
+* FIXED: 7339: Preserve wrapped test function's string representation for
+    Mocha's BDD interface.
+
+## v2.41.0
+
+* FIXED: 7138: export logging API from webdriver module.
+* FIXED: 7105: beforeEach/it/afterEach properly bind `this` for Mocha tests.
+
+## v2.40.0
+
+* API documentation is now included in the docs directory.
+* Added utility functions for working with an array of promises:
+    `promise.all`, `promise.map`, and `promise.filter`
+* Introduced `Promise#thenCatch()` and `Promise#thenFinally()`.
+* Deprecated `Promise#addCallback()`, `Promise#addCallbacks()`,
+    `Promise#addErrback()`, and `Promise#addBoth()`.
+* Removed deprecated function `webdriver.WebDriver#getCapability`.
+* FIXED: 6826: Added support for custom locators.
+
+## v2.39.0
+
+* Version bump to stay in sync with the Selenium project.
+
 ## v2.38.1
 
 * FIXED: 6686: Changed `webdriver.promise.Deferred#cancel()` to silently no-op

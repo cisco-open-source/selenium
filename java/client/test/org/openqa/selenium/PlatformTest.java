@@ -26,8 +26,58 @@ import static org.junit.Assert.assertTrue;
 public class PlatformTest {
 
   @Test
-  public void testShouldIdentifyWindowsVariants() {
-    assertAllAre(Platform.WINDOWS, "Windows 2003");
+  public void testXpIsWindows() {
+    assertTrue(Platform.XP.is(Platform.WINDOWS));
+  }
+
+  @Test
+  public void testVistaIsWindows() {
+    assertTrue(Platform.VISTA.is(Platform.WINDOWS));
+  }
+
+  @Test
+  public void testWin8IsWindows() {
+    assertTrue(Platform.WIN8.is(Platform.WINDOWS));
+  }
+
+  @Test
+  public void testWin81IsWindows() {
+    assertTrue(Platform.WIN8_1.is(Platform.WINDOWS));
+  }
+
+  @Test
+  public void testLinuxIsUnix() {
+    assertTrue(Platform.LINUX.is(Platform.UNIX));
+  }
+
+  @Test
+  public void testUnixIsNotLinux() {
+    assertFalse(Platform.UNIX.is(Platform.LINUX));
+  }
+
+  @Test
+  public void testXpIsAny() {
+    assertTrue(Platform.XP.is(Platform.ANY));
+  }
+
+  @Test
+  public void testWindowsIsAny() {
+    assertTrue(Platform.WINDOWS.is(Platform.ANY));
+  }
+
+  @Test
+  public void testLinuxIsAny() {
+    assertTrue(Platform.LINUX.is(Platform.ANY));
+  }
+
+  @Test
+  public void testUnixIsAny() {
+    assertTrue(Platform.UNIX.is(Platform.ANY));
+  }
+
+  @Test
+  public void testShouldIdentifyXPVariants() {
+    assertAllAre(Platform.WINDOWS, "Windows 2003", "xp", "windows", "winnt");
   }
 
   @Test
@@ -57,12 +107,9 @@ public class PlatformTest {
   }
 
   @Test
-  public void testShouldDistinctUnixFromLinux() {
-    Platform linPlatform = Platform.extractFromSysProperty("Linux");
-    assertTrue("Linux should be identified as Unix", linPlatform.is(Platform.UNIX));
-
-    Platform anyUnixPlatform = Platform.extractFromSysProperty("solaris");
-    assertFalse("Unix should NOT be identified as Linux", anyUnixPlatform.is(Platform.LINUX));
+  public void testWindows81Detection() {
+    assertEquals("Windows NT with os version 6.3 should be detected as Windows 8.1",
+                 Platform.WIN8_1, Platform.extractFromSysProperty("windows nt (unknown)", "6.3"));
   }
 
   private void assertAllAre(Platform platform, String... osNames) {

@@ -1,0 +1,33 @@
+
+js_library(name = 'base-lib',
+  srcs = [
+    'command.js',
+    'events.js',
+    'promise.js',
+    'stacktrace.js',
+  ],
+  deps = [
+    '//third_party/closure:closure',
+  ],
+)
+
+js_library(name = 'key',
+  srcs = [
+    'key.js',
+  ],
+  visibility = [
+    '//javascript/...',
+  ],
+)
+
+js_library(name = 'logging',
+  srcs = [
+    'logging.js',
+  ],
+  deps = [
+    '//third_party/closure:closure',
+  ],
+  visibility = [
+    '//javascript/...',
+  ],
+)

@@ -102,8 +102,11 @@ public class Jetty7AppServer implements AppServer {
     addServlet(defaultContext, "/upload", UploadServlet.class);
     addServlet(defaultContext, "/encoding", EncodingServlet.class);
     addServlet(defaultContext, "/sleep", SleepingServlet.class);
+    addServlet(defaultContext, "/cookie", CookieServlet.class);
     addServlet(defaultContext, "/quitquitquit", KillSwitchServlet.class);
     addServlet(defaultContext, "/basicAuth", BasicAuth.class);
+    addServlet(defaultContext, "/generated/*", GeneratedJsTestServlet.class);
+
     addFilter(defaultContext, MultiPartFilter.class, "/upload", 0 /* DEFAULT dispatches */);
 
     listenOn(getHttpPort());
@@ -246,12 +249,12 @@ public class Jetty7AppServer implements AppServer {
     return context;
   }
 
-  private static int getHttpPortFromEnv() {
+  protected static int getHttpPortFromEnv() {
     String port = System.getenv(FIXED_HTTP_PORT_ENV_NAME);
     return port == null ? DEFAULT_HTTP_PORT : Integer.parseInt(port);
   }
 
-  private static int getHttpsPortFromEnv() {
+  protected static int getHttpsPortFromEnv() {
     String port = System.getenv(FIXED_HTTPS_PORT_ENV_NAME);
     return port == null ? DEFAULT_HTTPS_PORT : Integer.parseInt(port);
   }

@@ -169,6 +169,7 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.history.Event');
 goog.require('goog.history.EventType');
+goog.require('goog.labs.userAgent.device');
 goog.require('goog.memoize');
 goog.require('goog.string');
 goog.require('goog.userAgent');
@@ -257,15 +258,6 @@ goog.History = function(opt_invisible, opt_blankPageUrl, opt_input,
       goog.dom.getWindow(goog.dom.getOwnerDocument(opt_input)) : window;
 
   /**
-   * The initial page location with an empty hash component. If the page uses
-   * a BASE element, setting location.hash directly will navigate away from the
-   * current document. To prevent this, the full path is always specified.
-   * @type {string}
-   * @private
-   */
-  this.baseUrl_ = this.window_.location.href.split('#')[0];
-
-  /**
    * The base URL for the hidden iframe. Must refer to a document in the
    * same domain as the main page.
    * @type {string|undefined}
@@ -296,7 +288,7 @@ goog.History = function(opt_invisible, opt_blankPageUrl, opt_input,
 
   /**
    * An object to keep track of the history event listeners.
-   * @type {goog.events.EventHandler}
+   * @type {goog.events.EventHandler.<!goog.History>}
    * @private
    */
   this.eventHandler_ = new goog.events.EventHandler(this);
@@ -497,7 +489,8 @@ goog.History.prototype.setEnabled = function(enable) {
           this.window_, goog.events.EventType.HASHCHANGE, this.onHashChange_);
       this.enabled_ = true;
       this.dispatchEvent(new goog.history.Event(this.getToken(), false));
-    } else if (!goog.userAgent.IE || this.documentLoaded) {
+    } else if (!(goog.userAgent.IE && !goog.labs.userAgent.device.isMobile()) ||
+               this.documentLoaded) {
       // Start dispatching history events if all necessary loading has
       // completed (always true for browsers other than IE.)
       this.eventHandler_.listen(this.timer_, goog.Timer.TICK,
@@ -656,7 +649,7 @@ goog.History.prototype.setHistoryState_ = function(token, replace, opt_title) {
       this.setHash_(token, replace);
 
       if (!goog.History.isOnHashChangeSupported()) {
-        if (goog.userAgent.IE) {
+        if (goog.userAgent.IE && !goog.labs.userAgent.device.isMobile()) {
           // IE must save state using the iframe.
           this.setIframeToken_(token, replace, opt_title);
         }
@@ -702,8 +695,12 @@ goog.History.prototype.setHistoryState_ = function(token, replace, opt_title) {
  * @private
  */
 goog.History.prototype.setHash_ = function(token, opt_replace) {
+  // If the page uses a BASE element, setting location.hash directly will
+  // navigate away from the current document. Also, the original URL path may
+  // possibly change from HTML5 history pushState. To account for these, the
+  // full path is always specified.
   var loc = this.window_.location;
-  var url = this.baseUrl_;
+  var url = loc.href.split('#')[0];
 
   // If a hash has already been set, then removing it programmatically will
   // reload the page. Once there is a hash, we won't remove it.
@@ -999,5 +996,6 @@ goog.History.EventType = goog.history.EventType;
  * @extends {goog.events.Event}
  * @constructor
  * @deprecated Use goog.history.Event.
+ * @final
  */
 goog.History.Event = goog.history.Event;

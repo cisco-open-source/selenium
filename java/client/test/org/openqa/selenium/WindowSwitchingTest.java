@@ -17,17 +17,6 @@ limitations under the License.
 
 package org.openqa.selenium;
 
-import com.google.common.collect.Sets;
-
-import org.junit.Test;
-import org.openqa.selenium.testing.Ignore;
-import org.openqa.selenium.testing.JUnit4TestBase;
-import org.openqa.selenium.testing.JavascriptEnabled;
-import org.openqa.selenium.testing.TestUtilities;
-import org.openqa.selenium.testing.drivers.Browser;
-
-import java.util.Set;
-
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,12 +24,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
-import static org.openqa.selenium.TestWaiter.waitFor;
-import static org.openqa.selenium.WaitingConditions.alertToBePresent;
-import static org.openqa.selenium.WaitingConditions.elementToExist;
+import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
 import static org.openqa.selenium.WaitingConditions.windowHandleCountToBe;
 import static org.openqa.selenium.WaitingConditions.windowHandleCountToBeGreaterThan;
-import static org.openqa.selenium.WaitingConditions.newWindowIsOpened;
+import static org.openqa.selenium.support.ui.ExpectedConditions.alertIsPresent;
 import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
@@ -48,6 +35,18 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
+
+import com.google.common.collect.Sets;
+
+import org.junit.Test;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.testing.Ignore;
+import org.openqa.selenium.testing.JUnit4TestBase;
+import org.openqa.selenium.testing.JavascriptEnabled;
+import org.openqa.selenium.testing.TestUtilities;
+import org.openqa.selenium.testing.drivers.Browser;
+
+import java.util.Set;
 
 @Ignore(value = {IPHONE}, reason = "The iPhone only supports one window")
 public class WindowSwitchingTest extends JUnit4TestBase {
@@ -64,7 +63,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.linkText("Open new window")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     assertThat(driver.getTitle(), equalTo("XHTML Test Page"));
 
@@ -105,7 +104,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.linkText("Open new window")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     driver.switchTo().window("result");
     driver.close();
@@ -129,7 +128,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.linkText("Open new window")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     driver.switchTo().window("result");
     driver.close();
@@ -162,7 +161,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.linkText("Open new window")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     driver.switchTo().window("result");
     WebElement body = driver.findElement(By.tagName("body"));
@@ -187,7 +186,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
     driver.findElement(By.name("windowOne")).click();
     driver.findElement(By.name("windowTwo")).click();
 
-    waitFor(windowHandleCountToBeGreaterThan(driver, 2));
+    wait.until(windowHandleCountToBeGreaterThan(2));
 
     Set<String> allWindowHandles = driver.getWindowHandles();
 
@@ -217,16 +216,16 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.name("windowThree")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     driver.switchTo().window("result");
 
     try {
-      waitFor(elementToExist(driver, "close"));
+      wait.until(ExpectedConditions.presenceOfElementLocated(By.id("close")));
       driver.findElement(By.id("close")).click();
 
       if (isIEDriver && !isIE6) {
-        Alert alert = waitFor(alertToBePresent(driver));
+        Alert alert = wait.until(alertIsPresent());
         alert.accept();
       }
 
@@ -253,20 +252,20 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.name("windowThree")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     driver.switchTo().window("result");
     int allWindowHandles = driver.getWindowHandles().size();
 
     try {
-      waitFor(elementToExist(driver, "close")).click();
+      wait.until(ExpectedConditions.presenceOfElementLocated(By.id("close"))).click();
 
       if (isIEDriver && !isIE6) {
-        Alert alert = waitFor(alertToBePresent(driver));
+        Alert alert = wait.until(alertIsPresent());
         alert.accept();
       }
 
-      Set<String> allHandles = waitFor(windowHandleCountToBe(driver, allWindowHandles - 1));
+      Set<String> allHandles = wait.until(windowHandleCountToBe(allWindowHandles - 1));
 
       assertEquals(currentWindowHandles.size(), allHandles.size());
     } finally {
@@ -310,7 +309,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.name("windowOne")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     Set<String> allWindowHandles = driver.getWindowHandles();
 
@@ -333,7 +332,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
 
     driver.findElement(By.name("windowOne")).click();
 
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     Set<String> allWindowHandles = driver.getWindowHandles();
 
@@ -368,7 +367,7 @@ public class WindowSwitchingTest extends JUnit4TestBase {
     String mainWindow = driver.getWindowHandle();
 
     driver.findElement(By.id("a-link-that-opens-a-new-window")).click();
-    waitFor(newWindowIsOpened(driver, currentWindowHandles));
+    wait.until(newWindowIsOpened(currentWindowHandles));
 
     driver.switchTo().frame("myframe");
 

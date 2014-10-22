@@ -26,6 +26,20 @@ describe "Selenium::WebDriver::TargetLocator" do
     end
   end
 
+  not_compliant_on :browser => [:safari, :phantomjs] do
+    it "should switch to parent frame" do
+      driver.navigate.to url_for("iframes.html")
+
+      iframe = driver.find_element(:tag_name => "iframe")
+      driver.switch_to.frame(iframe)
+
+      driver.find_element(:name, 'login').should be_kind_of(WebDriver::Element)
+
+      driver.switch_to.parent_frame
+      driver.find_element(:id, 'iframe_page_heading').should be_kind_of(WebDriver::Element)
+    end
+  end
+
   # switching by name not yet supported by safari
   not_compliant_on :browser => [:ie, :iphone, :safari] do
     it "should switch to a window and back when given a block" do
@@ -175,7 +189,7 @@ describe "Selenium::WebDriver::TargetLocator" do
         driver.find_element(:id => "alert").click
         wait_for_alert
 
-        lambda { driver.title }.should raise_error(Selenium::WebDriver::Error::UnhandledAlertError)
+        lambda { driver.title }.should raise_error(Selenium::WebDriver::Error::UnhandledAlertError, /cheese/)
 
         driver.title.should == "Testing Alerts" # :chrome does not auto-dismiss the alert
       end

@@ -16,13 +16,16 @@
 
 package org.openqa.selenium.remote.server.xdrpc;
 
-import com.google.common.io.CharStreams;
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InputStream;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Loads a {@link CrossDomainRpc} from a {@link HttpServletRequest}.
@@ -40,11 +43,18 @@ public class CrossDomainRpcLoader {
    */
   public CrossDomainRpc loadRpc(HttpServletRequest request) throws IOException {
     JSONObject json;
+    InputStream stream = null;
     try {
-      json = new JSONObject(CharStreams.toString(request.getReader()));
+      stream = request.getInputStream();
+      byte[] data = ByteStreams.toByteArray(stream);
+      json = new JSONObject(new String(data, Charsets.UTF_8));
     } catch (JSONException e) {
       throw new IllegalArgumentException(
           "Failed to parse JSON request: " + e.getMessage(), e);
+    } finally {
+      if (stream != null) {
+        stream.close();
+      }
     }
 
     return new CrossDomainRpc(
