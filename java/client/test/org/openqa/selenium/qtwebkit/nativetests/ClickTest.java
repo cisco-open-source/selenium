@@ -27,6 +27,7 @@ import org.junit.Before;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.testing.JUnit4TestBase;

@@ -43,13 +43,13 @@ public class ClickTest extends JUnit4TestBase {
     public void testCanClickOnAPushButton() {
         driver.findElement(By.id("button1")).click();
 
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("clickDisplay"), "clicked button1"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("clickDisplay"), "clicked button1"));
     }
 
     @Test
     public void testCanClickOnMouseArea() {
         driver.findElement(By.id("mouseHotSpotArea2")).click();
 
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("clickDisplay"), "clicked area 2"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("clickDisplay"), "clicked area 2"));
     }
 }

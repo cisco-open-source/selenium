@@ -131,7 +131,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 //    Action dblClick = getBuilder(driver).doubleClick(toDoubleClick).build();
 //
 //    dblClick.perform();
-//    String testFieldContent = TestWaiter.waitFor(
+//    String testFieldContent = TestWaiter.wait.until(
 //        elementValueToEqual(toDoubleClick, "DoubleClicked"), 5, TimeUnit.SECONDS);
 //    assertEquals("Value should change to DoubleClicked.", "DoubleClicked",
 //                 testFieldContent);
@@ -164,7 +164,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 //
 //    contextClick.perform();
 //
-//    waitFor(elementValueToEqual(toClick, "Clicked"));
+//    wait.until(elementValueToEqual(toClick, "Clicked"));
 //
 //    assertEquals("Value should change to Clicked.", "Clicked",
 //                 toClick.getAttribute("value"));
@@ -228,7 +228,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 //    // For this reason, this action will fail.
 //    new Actions(driver).moveToElement(linkElement, 500, 30).click().perform();
 //
-//    waitFor(pageTitleToBe(driver, "We Arrive Here"));
+//    wait.until(pageTitleToBe(driver, "We Arrive Here"));
 //  }
 //
 //  private Map<String, Object> getElementSize(WebElement element) {
@@ -284,7 +284,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 //    new Actions(driver).moveByOffset(-50, verticalMove).perform();
 //
 //    WebElement resultArea = driver.findElement(By.id("result"));
-//    waitFor(elementTextToContain(resultArea, "parent matches"));
+//    wait.until(elementTextToContain(resultArea, "parent matches"));
 //  }
 //
 //  @Ignore(value = {ANDROID, IE, HTMLUNIT, IPHONE, SELENESE, CHROME, OPERA, OPERA_MOBILE, QTWEBKIT},
@@ -305,22 +305,22 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 //
 //    WebElement resultArea = driver.findElement(By.id("result"));
 //    String expectedEvents = "First";
-//    waitFor(elementTextToEqual(resultArea, expectedEvents));
+//    wait.until(elementTextToEqual(resultArea, expectedEvents));
 //
 //    // Move to element with id 'r2', at (2500, 50) to (2580, 100)
 //    new Actions(driver).moveByOffset(2540 - 150, 75 - 125).click().perform();
 //    expectedEvents += " Second";
-//    waitFor(elementTextToEqual(resultArea, expectedEvents));
+//    wait.until(elementTextToEqual(resultArea, expectedEvents));
 //
 //    // Move to element with id 'r3' at (60, 1500) to (140, 1550)
 //    new Actions(driver).moveByOffset(100 - 2540, 1525 - 75).click().perform();
 //    expectedEvents += " Third";
-//    waitFor(elementTextToEqual(resultArea, expectedEvents));
+//    wait.until(elementTextToEqual(resultArea, expectedEvents));
 //
 //    // Move to element with id 'r4' at (220,180) to (320, 230)
 //    new Actions(driver).moveByOffset(270 - 100, 205 - 1525).click().perform();
 //    expectedEvents += " Fourth";
-//    waitFor(elementTextToEqual(resultArea, expectedEvents));
+//    wait.until(elementTextToEqual(resultArea, expectedEvents));
 //  }
 //
 

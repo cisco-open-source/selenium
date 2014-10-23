@@ -103,8 +103,8 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
         Action dblClick = getBuilder(driver).doubleClick(toDoubleClick).build();
 
         dblClick.perform();
-        String testFieldContent = TestWaiter.waitFor(
-                    elementTextToEqual(toDoubleClick, "DoubleClicked"), 5, TimeUnit.SECONDS);
+        String testFieldContent = wait.until(
+                    elementTextToEqual(toDoubleClick, "DoubleClicked"));
         assertEquals("Value should change to DoubleClicked.", "DoubleClicked",
                     testFieldContent);
     }
@@ -132,7 +132,7 @@ public class BasicMouseInterfaceTest extends JUnit4TestBase {
 
         contextClick.perform();
 
-        waitFor(elementTextToEqual(toClick, "Clicked"));
+        wait.until(elementTextToEqual(toClick, "Clicked"));
 
         assertEquals("Value should change to Clicked.", "Clicked",
                      toClick.getText());

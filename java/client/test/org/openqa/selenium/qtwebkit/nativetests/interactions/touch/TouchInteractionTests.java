@@ -73,14 +73,14 @@ public class TouchInteractionTests extends TouchTestBase {
     public void testCanTap() {
         driver.get("qtwidget://TouchTestWidget");
         singleTapOnElement("touchArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleased"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "PressedReleased"));
     }
 
     @Test
     public void testCanDoubleTap() {
         driver.get("qtwidget://TouchTestWidget");
         doubleTapOnElement("touchArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleasedPressedReleased"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "PressedReleasedPressedReleased"));
     }
 
 

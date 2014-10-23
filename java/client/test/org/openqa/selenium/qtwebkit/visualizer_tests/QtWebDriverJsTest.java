@@ -251,7 +251,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 //    page.keyPress("Shift");
 //    for (String key : shiftKeys) {
 //      page.keyPress(key);
-//      waitFor(keyPressed(key));
+//      wait.until(keyPressed(key));
 //    }
   }
 

@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
 
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import java.util.concurrent.Callable;
 
@@ -68,7 +69,7 @@ public class VisibilityTest extends JUnit4TestBase {
         assertTrue(element.isDisplayed());
 
         element.click();
-        waitFor(elementNotToDisplayed(element));
+        wait.until(elementNotToDisplayed(element));
         assertFalse(element.isDisplayed());
     }
 
@@ -117,10 +118,10 @@ public class VisibilityTest extends JUnit4TestBase {
         assertTrue(element.isDisplayed());
     }
 
-    private Callable<Boolean> elementNotToDisplayed(final WebElement element) {
-        return new Callable<Boolean>() {
-
-            public Boolean call() throws Exception {
+    private ExpectedCondition<Boolean> elementNotToDisplayed(final WebElement element) {
+        return new ExpectedCondition<Boolean>() {
+            @Override
+            public Boolean apply(WebDriver input) {
                 return !element.isDisplayed();
             }
         };

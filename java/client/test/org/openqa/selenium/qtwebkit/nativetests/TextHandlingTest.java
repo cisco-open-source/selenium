@@ -136,7 +136,7 @@ public class TextHandlingTest extends JUnit4TestBase {
         WebElement textarea = driver.findElement(By.id("emptytext"));
         textarea.clear();
 
-        waitFor(WaitingConditions.elementTextToEqual(textarea, ""));
+        wait.until(WaitingConditions.elementTextToEqual(textarea, ""));
 
         String expectedText = "i like cheese" + newLine + newLine + "it's really nice";
 

@@ -27,11 +27,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WaitingConditions;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 
 public class WidgetAndWebViewTest  extends JUnit4TestBase {
 
@@ -67,7 +69,7 @@ public class WidgetAndWebViewTest  extends JUnit4TestBase {
     for (String winHandle : driver.getWindowHandles()) {
       if (!currentWindow.equals(winHandle)) {
         driver.switchTo().window(winHandle);
-        waitFor(windowUrlContains(driver, "colorPage.html"));
+        wait.until(windowUrlContains("colorPage.html"));
         break;
       }
     }
@@ -144,10 +146,11 @@ public class WidgetAndWebViewTest  extends JUnit4TestBase {
   private WebElement button;
 
 
-  private Callable<Boolean> windowUrlContains(final WebDriver webdriver, final String url) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
-        String currentUrl = webdriver.getCurrentUrl();
+  private ExpectedCondition<Boolean> windowUrlContains(final String url) {
+    return new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver driver) {
+        String currentUrl = driver.getCurrentUrl();
         return currentUrl.contains(url);
       }
     };

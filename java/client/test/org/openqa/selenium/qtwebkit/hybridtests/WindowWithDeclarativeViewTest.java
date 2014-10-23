@@ -29,6 +29,7 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 import java.util.concurrent.Callable;
@@ -57,7 +58,7 @@ public class WindowWithDeclarativeViewTest extends JUnit4TestBase {
     for (String winHandle : driver.getWindowHandles()) {
       if (!currentWindow.equals(winHandle)) {
         driver.switchTo().window(winHandle);
-        waitFor(windowUrlContains(driver, "FindingTest.qml"));
+        wait.until(windowUrlContains(driver, "FindingTest.qml"));
         break;
       }
     }
@@ -68,7 +69,7 @@ public class WindowWithDeclarativeViewTest extends JUnit4TestBase {
     inputUrl.sendKeys(appServer.whereIs("quick1/NoExist.qml"));
     btnLoad.click();
     WebElement label = driver.findElement(By.id("labelStatus"));
-    waitFor(labelContains(label, "Error"));
+    wait.until(labelContains(label, "Error"));
   }
 
   @Test
@@ -76,7 +77,7 @@ public class WindowWithDeclarativeViewTest extends JUnit4TestBase {
     inputUrl.sendKeys("qtwidget://FindingTestWidget");
     btnLoad.click();
     WebElement label = driver.findElement(By.id("labelStatus"));
-    waitFor(labelContains(label, "Error"));
+    wait.until(labelContains(label, "Error"));
   }
 
   @Test
@@ -154,18 +155,20 @@ public class WindowWithDeclarativeViewTest extends JUnit4TestBase {
   private WebElement btnLoad;
   private String currentWindow;
 
-  private Callable<Boolean> windowUrlContains(final WebDriver webdriver, final String url) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
+  private ExpectedCondition<Boolean> windowUrlContains(final WebDriver webdriver, final String url) {
+    return new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver input) {
         String currentUrl = webdriver.getCurrentUrl();
         return currentUrl.contains(url);
       }
     };
   }
 
-  private Callable<Boolean> labelContains(final WebElement elem, final String text) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
+  private ExpectedCondition<Boolean> labelContains(final WebElement elem, final String text) {
+    return new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver input) {
         String current = elem.getText();
         return current.contains(text);
       }

@@ -91,35 +91,35 @@ public class TouchInteractionTests extends TouchTestBase {
     public void testCanClickOnMulitouchArea() {
         driver.get(pages.touchTest);
         singleTapOnElement("touchArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleased"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "PressedReleased"));
     }
 
     @Test
     public void testCanClickOnMouseArea() {
         driver.get(pages.touchTest);
         singleTapOnElement("mouseArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "Clicked"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "Clicked"));
     }
 
     @Test
     public void testCanDoubleClickOnMouseArea() {
         driver.get(pages.touchTest);
         doubleTapOnElement("mouseArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "DoubleClicked"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "DoubleClicked"));
     }
 
     @Test
     public void testCanDoubleClickOnMultitouchArea() {
         driver.get(pages.touchTest);
         doubleTapOnElement("touchArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "PressedReleasedPressedReleased"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "PressedReleasedPressedReleased"));
     }
 
     @Test
     public void testCanLongClick() {
         driver.get(pages.touchTest);
         longTapOnElement("mouseArea");
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "LongClicked"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "LongClicked"));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class TouchInteractionTests extends TouchTestBase {
     public void testFlick() {
         driver.get(pages.touchScrollTest);
         flickElement("listView", 0, -200, FlickAction.SPEED_FAST);
-        waitFor(WaitingConditions.elementTextToEqual(driver, By.id("resultLabel"), "Flicked"));
+        wait.until(WaitingConditions.elementTextToEqual(By.id("resultLabel"), "Flicked"));
 
     }
 }
