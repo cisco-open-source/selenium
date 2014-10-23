@@ -28,12 +28,15 @@ import org.openqa.selenium.qtwebkit.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.service.DriverService;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
 public class QtWebDriverJsBaseTest extends JUnit4TestBase {
 
   protected QtWebDriverJsPage page;
   protected WebDriver targetDriver;
+  protected Wait<WebDriver> targetWait;
 
   @Before
   public void createDriver() throws Exception {
@@ -43,11 +46,13 @@ public class QtWebDriverJsBaseTest extends JUnit4TestBase {
     driver = new QtWebKitDriver(webDriverExecutor, capabilities);
     page = PageFactory.initElements(driver, QtWebDriverJsPage.class);
     page.setDriver(driver);
+    wait = new WebDriverWait(driver, 30);
 
     DriverService webDriver2Service = QtWebDriverService.createDefaultService();
     QtWebDriverExecutor webDriver2Executor = new QtWebDriverServiceExecutor(webDriver2Service);
     targetDriver = new QtWebKitDriver(webDriver2Executor, capabilities);
     page.setTargetDriver(targetDriver);
+    targetWait = new WebDriverWait(targetDriver, 30);
 
     String targetWebDriverUrl = webDriver2Service.getUrl().toExternalForm();
     page.setWebDriverUrl(targetWebDriverUrl);

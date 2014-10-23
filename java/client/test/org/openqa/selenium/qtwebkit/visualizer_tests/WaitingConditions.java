@@ -24,20 +24,23 @@ package org.openqa.selenium.qtwebkit.visualizer_tests;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import java.util.concurrent.Callable;
 
 public class WaitingConditions {
 
-  public static Callable<String> pageUrlToBe(
-      final WebDriver driver, final String expectedUrl) {
+  public static ExpectedCondition<String> pageUrlToBe(
+      final String expectedUrl) {
     if (expectedUrl == null)
       throw new IllegalArgumentException("expectedUrl");
 
-    return new Callable<String>() {
+    return new ExpectedCondition<String>() {
+      private String actualUrl;
+
       @Override
-      public String call() throws Exception {
-        String actualUrl = driver.getCurrentUrl();
+      public String apply(WebDriver driver) {
+        actualUrl = driver.getCurrentUrl();
 
         if (expectedUrl.equals(actualUrl)) {
           return actualUrl;
@@ -48,20 +51,20 @@ public class WaitingConditions {
 
       @Override
       public String toString() {
-        return "page url to be [" + expectedUrl + "] while actual value is [" + driver.getCurrentUrl() + "]";
+        return "page url to be [" + expectedUrl + "] while actual value is [" + actualUrl + "]";
       }
     };
   }
 
-  public static Callable<String> elementAttributeToEqual(
+  public static ExpectedCondition<String> elementAttributeToEqual(
       final WebElement element, final String attributeName, final String expectedValue) {
     if (expectedValue == null)
       throw new IllegalArgumentException("expectedValue");
 
-    return new Callable<String>() {
+    return new ExpectedCondition<String>() {
 
       @Override
-      public String call() throws Exception {
+      public String apply(WebDriver driver) {
         String actualValue = element.getAttribute(attributeName);
 
         if (expectedValue.equals(actualValue)) {
@@ -79,9 +82,11 @@ public class WaitingConditions {
     };
   }
 
-  public static Callable<Boolean> elementToBeEnabled(final WebElement element) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
+  public static ExpectedCondition<Boolean> elementToBeEnabled(final WebElement element) {
+    return new ExpectedCondition<Boolean>() {
+
+      @Override
+      public Boolean apply(WebDriver driver) {
         try {
           return element.isEnabled();
         } catch (StaleElementReferenceException e) {
@@ -91,9 +96,11 @@ public class WaitingConditions {
     };
   }
 
-  public static Callable<Boolean> elementToBeDisabled(final WebElement element) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
+  public static ExpectedCondition<Boolean> elementToBeDisabled(final WebElement element) {
+    return new ExpectedCondition<Boolean>() {
+
+      @Override
+      public Boolean apply(WebDriver driver) {
         try {
           return !element.isEnabled();
         } catch (StaleElementReferenceException e) {
@@ -103,9 +110,11 @@ public class WaitingConditions {
     };
   }
 
-  public static Callable<Boolean> elementToBeDisplayed(final WebElement element) {
-    return new Callable<Boolean>() {
-      public Boolean call() throws Exception {
+  public static ExpectedCondition<Boolean> elementToBeDisplayed(final WebElement element) {
+    return new ExpectedCondition<Boolean>() {
+
+      @Override
+      public Boolean apply(WebDriver driver) {
         try {
           return element.isDisplayed();
         } catch (StaleElementReferenceException e) {
@@ -115,11 +124,12 @@ public class WaitingConditions {
     };
   }
 
-  public static Callable<WebElement> activeElementToBe(
-      final WebDriver driver, final WebElement expectedActiveElement) {
-    return new Callable<WebElement>() {
+  public static ExpectedCondition<WebElement> activeElementToBe(
+      final WebElement expectedActiveElement) {
+    return new ExpectedCondition<WebElement>() {
 
-      public WebElement call() throws Exception {
+      @Override
+      public WebElement apply(WebDriver driver) {
         WebElement activeElement = driver.switchTo().activeElement();
 
         if (expectedActiveElement.equals(activeElement)) {
@@ -136,11 +146,12 @@ public class WaitingConditions {
     };
   }
 
-  public static Callable<String> activeWindowToBe(
-      final WebDriver driver, final String expectedActiveWindow) {
-    return new Callable<String>() {
+  public static ExpectedCondition<String> activeWindowToBe(
+      final String expectedActiveWindow) {
+    return new ExpectedCondition<String>() {
 
-      public String call() throws Exception {
+      @Override
+      public String apply(WebDriver driver) {
         String actualActiveWindow = driver.getWindowHandle();
 
         if (expectedActiveWindow.equalsIgnoreCase(actualActiveWindow)) {

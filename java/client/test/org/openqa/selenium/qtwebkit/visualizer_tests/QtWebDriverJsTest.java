@@ -27,6 +27,7 @@ import org.openqa.selenium.qtwebkit.QtWebDriverExecutor;
 import org.openqa.selenium.qtwebkit.QtWebKitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,12 +39,6 @@ import static org.openqa.selenium.WaitingConditions.*;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.*;
 
 public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
-
-  private static final long TIME_OUT = 20;
-
-  private static <X> X waitFor(Callable<X> until) {
-    return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
-  }
 
   @Test
   public void checkWebPageUpdateOnSessionReuse() {
@@ -63,7 +58,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
       driver.findElement(By.id("getButton")).click();
 
       // shall retrieve web page url from previous session according to MHA-879
-      waitFor(page.webPageIs(pages.clicksPage));
+      wait.until(page.webPageIs(pages.clicksPage));
     } finally {
       originalDriver.quit();
     }
@@ -79,13 +74,13 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     page.setWebPage(pages.clicksPage);
 
-    waitFor(elementToBeEnabled(sourceButton));
-    waitFor(elementToBeEnabled(screenshotButton));
+    wait.until(elementToBeEnabled(sourceButton));
+    wait.until(elementToBeEnabled(screenshotButton));
 
     page.setWebDriverUrl("");
 
-    waitFor(elementToBeDisabled(sourceButton));
-    waitFor(elementToBeDisabled(screenshotButton));
+    wait.until(elementToBeDisabled(sourceButton));
+    wait.until(elementToBeDisabled(screenshotButton));
   }
 
   @Test
@@ -94,7 +89,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.setWebPage(pages.clicksPage);
     page.clickScreenshotButton();
 
-    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    String newWindow = wait.until(newWindowIsOpened(originalWindowHandles));
     driver.switchTo().window(newWindow);
     Dimension dimension = VisualizerUtils.getDimensionFromTitle(driver.getTitle());
     assertTrue("Screenshot has non zero dimension",
@@ -108,7 +103,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     Set<String> originalWindowHandles = driver.getWindowHandles();
     page.clickLogsSelect("driver");
-    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    String newWindow = wait.until(newWindowIsOpened(originalWindowHandles));
     driver.switchTo().window(newWindow);
     assertTrue(driver.getPageSource().contains("ALL"));
     assertTrue(driver.getPageSource().contains("INFO"));
@@ -124,7 +119,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     Set<String> originalWindowHandles = driver.getWindowHandles();
     driver.switchTo().window(page.getWebDriverJsWindowHandle());
     page.clickLogsSelect("browser");
-    String newWindow = waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    String newWindow = wait.until(newWindowIsOpened(originalWindowHandles));
     driver.switchTo().window(newWindow);
     assertTrue(driver.getPageSource().contains("Fingerprint"));
   }
@@ -203,10 +198,10 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     assertFalse(page.isFoundElementDisplayed());
   }
 
-  private Callable<String> keyPressed(final String key) {
-    return new Callable<String>() {
+  private ExpectedCondition<String> keyPressed(final String key) {
+    return new ExpectedCondition<String>() {
       @Override
-      public String call() throws Exception {
+      public String apply(WebDriver driver) {
         String actualValue = getActualValue();
 
         if (key.equals(actualValue)) {
@@ -250,7 +245,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     for (String key : keys) {
       page.keyPress(key);
-      waitFor(keyPressed(key));
+      wait.until(keyPressed(key));
     }
 
 //    page.keyPress("Shift");
@@ -267,7 +262,7 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
 
     Set<String> originalWindowHandles = targetDriver.getWindowHandles();
     targetDriver.findElement(By.id("new-window")).click();
-    waitFor(newWindowIsOpened(targetDriver, originalWindowHandles));
+    targetWait.until(newWindowIsOpened(originalWindowHandles));
 
     page.clickListWindowHandles();
 
@@ -282,10 +277,10 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     String expectedActiveWindow = VisualizerUtils.findNotEqualsIgnoreCase(targetDriver.getWindowHandles(), currentActiveWindow);
     page.getWindowListSelect().selectByValue(expectedActiveWindow);
     page.clickChooseWindow();
-    waitFor(activeWindowToBe(targetDriver, expectedActiveWindow));
+    targetWait.until(activeWindowToBe(expectedActiveWindow));
 
     // Upon choose window, input field 'Web page' shall be update, MHA-879
-    waitFor(page.webPageIs(pages.xhtmlTestPage));
+    wait.until(page.webPageIs(pages.xhtmlTestPage));
   }
 
   @Test
@@ -294,9 +289,9 @@ public class QtWebDriverJsTest extends QtWebDriverJsBaseTest {
     page.clickGet();
     final Dimension dimension = new Dimension(200, 100);
     page.setWindowSize(dimension);
-    waitFor(new Callable<Dimension>() {
+    wait.until(new ExpectedCondition<Dimension>() {
       @Override
-      public Dimension call() throws Exception {
+      public Dimension apply(WebDriver driver) {
         return dimension.equals(targetDriver.manage().window().getSize()) ? dimension : null;
       }
     });

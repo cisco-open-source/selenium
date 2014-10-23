@@ -23,7 +23,6 @@ package org.openqa.selenium.qtwebkit.visualizer_tests;
 
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.TestWaiter;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
@@ -39,14 +38,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.openqa.selenium.WaitingConditions.*;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.activeElementToBe;
+import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated;
+import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 
 public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
-
-  private static final long TIME_OUT = 20;
-
-  private static <X> X waitFor(Callable<X> until) {
-    return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
-  }
 
   private void rotateElement(String elementId, int angle) {
     WebElement toRotate = driver.findElement(By.id(elementId));
@@ -65,27 +60,27 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     Set<String> originalWindowHandles = driver.getWindowHandles();
     page.setWebPage(pages.clicksPage);
     page.clickSource();
-    waitFor(newWindowIsOpened(driver, originalWindowHandles));
+    wait.until(newWindowIsOpened(originalWindowHandles));
 
     targetDriver.findElement(By.id("normal")).click();
-    waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
+    targetWait.until(titleIs("XHTML Test Page"));
 
     driver.switchTo().window(page.clickSource());
 
     String typingText = "TheTypingText";
     String expectedText = "change" + typingText;
 
-    waitFor(elementToExist(driver, "username"));
+    wait.until(presenceOfElementLocated(By.id("username")));
     WebElement inputField = driver.findElement(By.id("username"));
     WebElement inputField2 = targetDriver.findElement(By.id("username"));
 
     inputField.click();
-    waitFor(activeElementToBe(driver, inputField));
-    waitFor(activeElementToBe(targetDriver, inputField2));
+    wait.until(activeElementToBe(inputField));
+    targetWait.until(activeElementToBe(inputField2));
 
     inputField.sendKeys(typingText);
 
-    waitFor(elementValueToEqual(inputField2, expectedText));
+    wait.until(elementValueToEqual(inputField2, expectedText));
     assertThat(inputField2.getAttribute("value"), equalTo(expectedText));
   }
 
@@ -97,7 +92,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     String visualizerTitle = driver.getTitle();
 
     driver.findElement(By.id("normal")).click();
-    waitFor(pageTitleToBe(targetDriver, "XHTML Test Page"));
+    targetWait.until(titleIs("XHTML Test Page"));
 
     assertEquals("We do not proceed by links in visualizer", visualizerTitle, driver.getTitle());
   }
@@ -108,7 +103,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
     driver.switchTo().window(page.clickSource());
 
     new Actions(driver).contextClick(driver.findElement(By.id("doubleClickField"))).perform();
-    waitFor(elementValueToEqual(targetDriver.findElement(By.id("doubleClickField")), "ContextClicked"));
+    targetWait.until(elementValueToEqual(targetDriver.findElement(By.id("doubleClickField")), "ContextClicked"));
   }
 
   @Test
@@ -118,7 +113,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     rotateElement("picture", 35);
     WebElement result = targetDriver.findElement(By.id("result_rotate"));
-    waitFor(elementTextToEqual(result, "35"));
+    targetWait.until(elementTextToEqual(result, "35"));
   }
 
   @Test
@@ -128,7 +123,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     rotateElement("picture", -35);
     WebElement result = targetDriver.findElement(By.id("result_rotate"));
-    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "-35"));
+    targetWait.until(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "-35"));
   }
 
   @Test
@@ -138,7 +133,7 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     zoomElement("picture", 2.5);
     WebElement result = targetDriver.findElement(By.id("result_scale"));
-    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "2.5"));
+    targetWait.until(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "2.5"));
   }
 
   @Test
@@ -148,6 +143,6 @@ public class QtWebDriverVisualizerTest extends QtWebDriverJsBaseTest {
 
     zoomElement("picture", 0.5);
     WebElement result = targetDriver.findElement(By.id("result_scale"));
-    waitFor(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "0.5"));
+    targetWait.until(org.openqa.selenium.WaitingConditions.elementTextToEqual(result, "0.5"));
   }
 }

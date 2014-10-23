@@ -25,16 +25,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.Callable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertNotNull;
-import static org.openqa.selenium.WaitingConditions.alertToBePresent;
 import static org.openqa.selenium.WaitingConditions.elementTextToContain;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.elementToBeDisplayed;
 import static org.openqa.selenium.qtwebkit.visualizer_tests.WaitingConditions.pageUrlToBe;
+import static org.openqa.selenium.support.ui.ExpectedConditions.alertIsPresent;
 
 public class QtWebDriverJsPage {
   private static final long TIME_OUT = 20;
@@ -42,6 +45,9 @@ public class QtWebDriverJsPage {
   private WebDriver driver;
   private WebDriver targetDriver;
   private String webDriverJsWindowHandle;
+
+  protected Wait<WebDriver> wait;
+  protected Wait<WebDriver> targetWait;
 
   private WebElement webDriverUrlPort;
   private WebElement webPage;
@@ -101,12 +107,8 @@ public class QtWebDriverJsPage {
   @FindBy(xpath = "//input[@value = 'Set window size']")
   private WebElement windowSizeButton;
 
-  private static <X> X waitFor(Callable<X> until) {
-    return TestWaiter.waitFor(until, TIME_OUT, SECONDS);
-  }
-
   private Point getLocationFromAlert(String caption) {
-    waitFor(alertToBePresent(driver));
+    wait.until(alertIsPresent());
     String value = driver.switchTo().alert().getText().replace(caption, "").trim();
     driver.switchTo().alert().accept();
     try {
@@ -118,7 +120,7 @@ public class QtWebDriverJsPage {
   }
 
   private Dimension getDimensionFromAlert(String caption) {
-    waitFor(alertToBePresent(driver));
+    wait.until(alertIsPresent());
     String value = driver.switchTo().alert().getText().replace(caption, "").trim();
     driver.switchTo().alert().accept();
     try {
@@ -130,14 +132,14 @@ public class QtWebDriverJsPage {
   }
 
   private String getStringFromAlert(String caption) {
-    waitFor(alertToBePresent(driver));
+    wait.until(alertIsPresent());
     String value = driver.switchTo().alert().getText().replace(caption, "").trim();
     driver.switchTo().alert().accept();
     return value;
   }
 
   private boolean getBooleanFromAlert(String caption) {
-    waitFor(alertToBePresent(driver));
+    wait.until(alertIsPresent());
     String value = driver.switchTo().alert().getText().replace(caption, "").trim();
     driver.switchTo().alert().accept();
     return Boolean.valueOf(value);
@@ -159,10 +161,12 @@ public class QtWebDriverJsPage {
 
   public void setDriver(WebDriver driver) {
     this.driver = driver;
+    wait = new WebDriverWait(driver, TIME_OUT);
   }
 
   public void setTargetDriver(WebDriver targetDriver) {
     this.targetDriver = targetDriver;
+    targetWait = new WebDriverWait(targetDriver, TIME_OUT);
   }
 
   public String getWebDriverJsWindowHandle() {
@@ -175,10 +179,10 @@ public class QtWebDriverJsPage {
 
   public void setWebDriverUrl(String url) {
     driver.get(url + "/WebDriverJsDemo.html");
-    waitFor(new Callable<Object>() {
+    wait.until(new ExpectedCondition<Object>() {
       @Override
-      public Object call() throws Exception {
-        return ((JavascriptExecutor)driver).executeScript("return window.wd;");
+      public Object apply(WebDriver driver) {
+        return ((JavascriptExecutor) driver).executeScript("return window.wd;");
       }
 
       @Override
@@ -203,12 +207,12 @@ public class QtWebDriverJsPage {
     webPageValue = webPage;
   }
 
-  public Callable<String> webPageIs(final String expectedWebPage) {
-    return new Callable<String>() {
+  public ExpectedCondition<String> webPageIs(final String expectedWebPage) {
+    return new ExpectedCondition<String>() {
       private String actualWebPage;
 
       @Override
-      public String call() throws Exception {
+      public String apply(WebDriver driver) {
         actualWebPage = getWebPage();
 
         if (expectedWebPage.equals(actualWebPage)) {
@@ -228,7 +232,7 @@ public class QtWebDriverJsPage {
 
   public void clickGet() {
     getButton.click();
-    waitFor(pageUrlToBe(targetDriver, webPageValue));
+    targetWait.until(pageUrlToBe(webPageValue));
   }
 
   public String clickSource() {
@@ -239,9 +243,9 @@ public class QtWebDriverJsPage {
 
     driver.switchTo().window(webDriverJsWindowHandle);
     sourceButton.click();
-    visualizerWindow = waitFor(new Callable<String>() {
+    visualizerWindow = wait.until(new ExpectedCondition<String>() {
       @Override
-      public String call() throws Exception {
+      public String apply(WebDriver driver) {
         return getVisualizerWindowHandle();
       }
     });
@@ -262,13 +266,13 @@ public class QtWebDriverJsPage {
     findElementKey.clear();
     findElementKey.sendKeys("c7c3179a38f864a463729657f15871326baccede");
     findElementButton.click();
-    waitFor(elementTextToContain(error, "The element could not be found"));
+    wait.until(elementTextToContain(error, "The element could not be found"));
 
     new Select(findElementCriteria).selectByValue(criteria);
     findElementKey.clear();
     findElementKey.sendKeys(key);
     findElementButton.click();
-    waitFor(elementTextToContain(foundElement, "Found element"));
+    wait.until(elementTextToContain(foundElement, "Found element"));
 
     return foundElement.getText().substring("Found element".length()).trim();
   }
@@ -324,9 +328,9 @@ public class QtWebDriverJsPage {
     driver.findElement(By.xpath(getKeyXPath(label))).click();
 
     if (label.equals("Shift")) {
-      waitFor(new Callable<WebElement>() {
+      wait.until(new ExpectedCondition<WebElement>() {
         @Override
-        public WebElement call() throws Exception {
+        public WebElement apply(WebDriver driver) {
           return driver.findElement(By.xpath(getKeyXPath("A")));
         }
       });
@@ -344,7 +348,7 @@ public class QtWebDriverJsPage {
 
   public void clickListWindowHandles() {
     listWindowButton.click();
-    waitFor(elementToBeDisplayed(windowList));
+    wait.until(elementToBeDisplayed(windowList));
   }
 
   public Select getWindowListSelect() {
