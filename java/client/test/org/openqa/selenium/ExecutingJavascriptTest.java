@@ -587,7 +587,7 @@ public class ExecutingJavascriptTest extends JUnit4TestBase {
 
   @JavascriptEnabled
   @Test(timeout = 10000)
-  @Ignore(value = {ANDROID, CHROME, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, SAFARI, MARIONETTE})
+  @Ignore(value = {ANDROID, CHROME, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT, SAFARI, MARIONETTE})
   public void shouldReturnDocumentElementIfDocumentIsReturned() {
     driver.get(pages.simpleTestPage);
 
