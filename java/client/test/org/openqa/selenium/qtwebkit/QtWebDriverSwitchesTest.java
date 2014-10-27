@@ -31,6 +31,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.testing.JUnit4TestBase;
 import org.openqa.selenium.testing.NeedsLocalEnvironment;
 import org.openqa.selenium.testing.Ignore;
@@ -63,6 +64,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         capabilities.setCapability("windowposition", arg);
 
         driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
+        wait = new WebDriverWait(driver, 30);
 
         driver.get(pages.colorPage);
         WebDriver.Window window = driver.manage().window();
@@ -88,6 +90,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         capabilities.setCapability("windowsize", arg);
 
         driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
+        wait = new WebDriverWait(driver, 30);
 
         driver.get(pages.colorPage);
 
@@ -116,6 +119,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         capabilities.setCapability("windowsize", arg_sz);
 
         driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
+        wait = new WebDriverWait(driver, 30);
 
         driver.get(pages.colorPage);
         WebDriver.Window window = driver.manage().window();
@@ -144,6 +148,7 @@ public class QtWebDriverSwitchesTest extends JUnit4TestBase {
         capabilities.setCapability("maximize", true);
 
         driver = new QtWebKitDriver(QtWebKitDriver.createDefaultExecutor(), capabilities);
+        wait = new WebDriverWait(driver, 30);
 
         driver.get(pages.colorPage);
 
