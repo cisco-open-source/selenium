@@ -80,7 +80,8 @@ public class PageLoadingTest extends JUnit4TestBase {
     localDriver = new WebDriverBuilder().setDesiredCapabilities(caps).get();
   }
 
-  @Ignore(value = {CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT})
+  @Ignore(value = {CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT, QTWEBKIT},
+          reason = "QTWEBKIT: only one session is supported.")
   @NeedsLocalEnvironment
   @Test
   public void testNoneStrategyShouldNotWaitForPageToLoad() {
@@ -98,7 +99,8 @@ public class PageLoadingTest extends JUnit4TestBase {
     assertTrue("Took too long to load page: " + duration, duration < 1000);
   }
 
-  @Ignore(value = {CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT})
+  @Ignore(value = {CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT, QTWEBKIT},
+          reason = "QTWEBKIT: only one session is supported.")
   @NeedsLocalEnvironment
   @Test
   public void testNoneStrategyShouldNotWaitForPageToRefresh() {
@@ -120,7 +122,8 @@ public class PageLoadingTest extends JUnit4TestBase {
     assertTrue("Took too long to load page: " + duration, duration < 1000);
   }
 
-  @Ignore(value = {FIREFOX, CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT})
+  @Ignore(value = {FIREFOX, CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT, QTWEBKIT},
+          reason = "QTWEBKIT: only one session is supported.")
   @NeedsLocalEnvironment
   @Test
   public void testEagerStrategyShouldNotWaitForResources() {
@@ -141,7 +144,8 @@ public class PageLoadingTest extends JUnit4TestBase {
     assertTrue("Took too long to load page: " + duration, duration < 5 * 1000);
   }
 
-  @Ignore(value = {FIREFOX, CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT})
+  @Ignore(value = {FIREFOX, CHROME, IE, OPERA, SAFARI, MARIONETTE, PHANTOMJS, HTMLUNIT, QTWEBKIT},
+          reason = "QTWEBKIT: only one session is supported.")
   @NeedsLocalEnvironment
   @Test
   public void testEagerStrategyShouldNotWaitForResourcesOnRefresh() {
@@ -165,6 +169,8 @@ public class PageLoadingTest extends JUnit4TestBase {
     assertTrue("Took too long to refresh page: " + duration, duration < 5 * 1000);
   }
 
+  @Ignore(value = {QTWEBKIT},
+          reason = "QTWEBKIT: only one session is supported.")
   @Test
   public void testEagerStrategyShouldWaitForDocumentToBeLoaded() {
     initLocalDriver("eager");
