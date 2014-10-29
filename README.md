@@ -1,10 +1,18 @@
-# Selenium
+# Selenium (branch with QtWebDriver)
 
 Selenium is an umbrella project for various tools and libraries that
 enable automation of web browsers.  Amongst other things it provides
 the support infrastructure for the [W3C WebDriver
 specification](https://dvcs.w3.org/hg/webdriver/raw-file/tip/webdriver-spec.html),
 that lets you write interchangable code for all major web browsers.
+
+This fork of Selenium includes Java language bindings for [QtWebDriver]
+(https://github.com/cisco-open-source/qtwebdriver), see [QtWebDriverService]
+(https://github.com/cisco-open-source/selenium/blob/master/java/client/src/org/openqa/selenium/qtwebkit/QtWebDriverService.java) class.
+It is possible to test QWidget, QWebView, QQuick1 (Qt4),
+QQuick2 (Qt5) or hybrid applications using this driver. QtWebDriver features
+are covered by series tests included in this repository. Information
+how to run them is available below.
 
 The project is made possible by volunteer contributors who have put in
 thousands of hours of their own time, and made the source code freely
@@ -179,6 +187,23 @@ really be able to run the tests too.  Try:
 Note that the `test_chrome` target requires that you have the separate
 [Chrome Driver](http://code.google.com/p/selenium/wiki/ChromeDriver)
 binary available on your `PATH`.
+
+To run QtWebDriver tests try:
+
+```sh
+./go test_qtwebkit
+./go test_wd_native_qt4
+./go test_wd_native_qt5
+./go test_wd_hybrid_qt4
+./go test_wd_hybrid_qt5
+./go test_wd_quick1
+./go test_wd_quick2
+```
+
+These targets require environment variable `qtwebdriver` to contain path
+to the separate [QtWebDriver](https://github.com/cisco-open-source/qtwebdriver)
+binary. Additional command line arguments to run this binary can be
+provided with `qtwebdriverargs` environment variable.
 
 If you are interested in a single language binding, try one of:
 
