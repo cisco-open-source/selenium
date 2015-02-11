@@ -38,6 +38,7 @@ import java.util.logging.Logger;
         QtWebDriverSwitchesTest.class,
         HTML5VideoTagTest.class,
         HTML5AudioTagTest.class,
+        PerfLoggingTest.class
 })
 
 public class QtWebkitDriverTests {
