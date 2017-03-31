@@ -375,7 +375,6 @@ public class TestSession {
 /*, ForwardConfiguration config*/)
       throws IOException {
     URL remoteURL = slot.getRemoteURL();
-
     String pathSpec = request.getServletPath() + request.getContextPath();
     String path = request.getRequestURI();
     if (!path.startsWith(pathSpec)) {

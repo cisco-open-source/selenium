@@ -82,6 +82,10 @@ class RemoteMouse implements Mouse {
     executor.execute(DriverCommand.MOUSE_UP, ImmutableMap.<String, Object>of());
   }
 
+  public void mouseWheel(int ticks) {
+    executor.execute(DriverCommand.WHEEL, ImmutableMap.of("ticks", ticks));
+  }
+
   public void mouseMove(Coordinates where) {
     Map<String, Object> moveParams = paramsFromCoordinates(where);
 

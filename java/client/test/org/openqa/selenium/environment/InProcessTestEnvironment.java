@@ -23,14 +23,26 @@ import org.openqa.selenium.environment.webserver.Jetty7AppServer;
 public class InProcessTestEnvironment implements TestEnvironment {
 
   private AppServer appServer;
+  private Pages pages;
+  private StatisticCommands statisticCommands = new StatisticCommands();
 
   public InProcessTestEnvironment() {
     appServer = new Jetty7AppServer();
     appServer.start();
+
+    pages = new Pages(appServer);
   }
 
   public AppServer getAppServer() {
     return appServer;
+  }
+
+  public Pages getTestContent() {
+    return pages;
+  }
+
+  public void setTestContent(Pages p) {
+      pages = p;
   }
 
   public void stop() {
@@ -39,5 +51,13 @@ public class InProcessTestEnvironment implements TestEnvironment {
 
   public static void main(String[] args) {
     new InProcessTestEnvironment();
+  }
+
+  public void addTestToCommand(String command, String url, String method,  String[] test) {
+    statisticCommands.addCommand(command, url, method, test);
+  }
+
+  public StatisticCommands getStatisticCommands() {
+    return statisticCommands;
   }
 }

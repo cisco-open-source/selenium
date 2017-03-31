@@ -36,7 +36,8 @@ public enum Browser {
   opera,
   opera_mobile,
   phantomjs,
-  safari;
+  safari,
+  qtwebkit;
 
   private static final Logger log = Logger.getLogger(Browser.class.getName());
 

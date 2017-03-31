@@ -33,6 +33,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -88,9 +89,10 @@ public class ProxySettingTest extends JUnit4TestBase {
     }
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI},
+  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
-                   + "Opera mobile/Safari - not implemented")
+                   + "Opera mobile/Safari - not implemented, "
+                   + "test for QTWEBKIT implemented in qtwebkit/hybridtests")
   @NeedsLocalEnvironment
   @Test
   public void canConfigureManualHttpProxy() {
@@ -105,9 +107,10 @@ public class ProxySettingTest extends JUnit4TestBase {
     assertTrue("Proxy should have been called", proxyServer.hasBeenCalled("simpleTest.html"));
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT},
+  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
-                   + "Opera mobile/Safari - not implemented")
+                   + "Opera mobile/Safari - not implemented"
+                   + "QtWebKit: WebDriver doesn't support proxy configuring by PAC")
   @NeedsLocalEnvironment
   @Test
   public void canConfigureProxyThroughPACFile() {
@@ -132,9 +135,10 @@ public class ProxySettingTest extends JUnit4TestBase {
         "Hello, world!", driver.findElement(By.tagName("h3")).getText());
   }
 
-  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT},
+  @Ignore(value = {ANDROID, IPHONE, OPERA_MOBILE, PHANTOMJS, SAFARI, HTMLUNIT, QTWEBKIT},
           reason = "Android/Iphone/PhantomJS - not tested,"
-                   + "Opera mobile/Safari - not implemented")
+                   + "Opera mobile/Safari - not implemented"
+                   + "QtWebkit: WebDriver doesn't support proxy configuring by PAC")
   @NeedsLocalEnvironment
   @Test
   public void canUsePACThatOnlyProxiesCertainHosts() throws Exception {
@@ -168,7 +172,8 @@ public class ProxySettingTest extends JUnit4TestBase {
         "Heading", driver.findElement(By.tagName("h1")).getText());
   }
 
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, REMOTE, SAFARI})
+  //Required Capabilities not supported
+  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT, REMOTE, SAFARI})
   @NeedsLocalEnvironment
   @Test
   public void canConfigureProxyWithRequiredCapability() {
@@ -183,7 +188,8 @@ public class ProxySettingTest extends JUnit4TestBase {
     assertTrue("Proxy should have been called", proxyServer.hasBeenCalled("simpleTest.html"));
   }
 
-  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, REMOTE, SAFARI})
+  //Required Capabilities not supported
+  @Ignore({ANDROID, CHROME, HTMLUNIT, IE, IPHONE, OPERA, OPERA_MOBILE, PHANTOMJS, QTWEBKIT, REMOTE, SAFARI})
   @NeedsLocalEnvironment
   @Test
   public void requiredProxyCapabilityShouldHavePriority() {

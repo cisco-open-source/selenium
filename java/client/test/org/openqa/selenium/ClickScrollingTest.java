@@ -34,6 +34,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import org.junit.Test;
 import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
@@ -93,7 +94,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, IPHONE},
+  @Ignore(value = {CHROME, IPHONE, QTWEBKIT},
           reason = "Chrome: failed, iPhone: untested, Firefox: failed with native events")
   @Test
   public void testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow() {
@@ -127,7 +128,7 @@ public class ClickScrollingTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, MARIONETTE},
+  @Ignore(value = {CHROME, IPHONE, PHANTOMJS, SAFARI, MARIONETTE, QTWEBKIT},
       reason = "Safari: button1 is scrolled to the bottom edge of the view, " +
           "so additonal scrolling is still required for button2")
   @Test

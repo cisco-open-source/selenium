@@ -32,6 +32,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.TestUtilities.isFirefox;
 import static org.openqa.selenium.testing.TestUtilities.isNativeEventsEnabled;
@@ -209,8 +210,8 @@ public class ClickTest extends JUnit4TestBase {
     driver.findElement(By.id("label-for-checkbox-with-label")).click();
 
     assertTrue(
-        "Should be selected",
-        driver.findElement(By.id("checkbox-with-label")).isSelected());
+            "Should be selected",
+            driver.findElement(By.id("checkbox-with-label")).isSelected());
   }
 
   @Test
@@ -270,8 +271,8 @@ public class ClickTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE}, reason
-      = "Opera, IE: failed, others: not tested")
+  @Ignore(value = {IE, OPERA, OPERA_MOBILE, ANDROID, IPHONE, MARIONETTE, QTWEBKIT}, reason
+      = "QtWebkit: element is not clickable, Opera, IE: failed, others: not tested")
   public void testCanClickAnImageMapArea() {
     driver.get(appServer.whereIs("click_tests/google_map.html"));
     driver.findElement(By.id("rectG")).click();

@@ -29,6 +29,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 import static org.openqa.selenium.testing.drivers.Browser.chrome;
@@ -211,6 +212,10 @@ public class TestIgnorance {
       case safari:
         comparator.addDriver(SAFARI);
         break;
+
+      case qtwebkit:
+          comparator.addDriver(QTWEBKIT);
+          break;
 
       default:
         throw new RuntimeException("Cannot determine which ignore to add ignores rules for");

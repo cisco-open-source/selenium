@@ -5,11 +5,13 @@ java_test(name = "test",
     "misc/**/*.java",
     "node/*.java",
     "utils/**/*.java",
+    "GridQtWebDriverTest.java",
     
   ],
   deps = [
     "//java/client/src/com/thoughtworks/selenium",
     "//java/server/src/org/openqa/grid/selenium",
     "//java/client/test/org/openqa/selenium",
+    "//java/client/src/org/openqa/selenium/qtwebkit:qtwebkit",
     "//third_party/java/mockito",
   ])

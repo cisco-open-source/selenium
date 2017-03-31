@@ -53,7 +53,9 @@ public class RemoteLogs implements Logs {
 
   public LogEntries get(String logType) {
     if (LogType.PROFILER.equals(logType)) {
-      return LogCombiner.combine(getRemoteEntries(logType), getLocalEntries(logType));
+      if (getAvailableDriverLogs().contains("profiler"))
+        return LogCombiner.combine(getRemoteEntries(logType), getLocalEntries(logType));
+      return getLocalEntries(logType);
     }
     if (LogType.CLIENT.equals(logType)) {
       return getLocalEntries(logType);
@@ -83,7 +85,7 @@ public class RemoteLogs implements Logs {
     return localLogs.getAvailableLogTypes();
   }
 
-  public Set<String> getAvailableLogTypes() {
+  private Set<String> getAvailableDriverLogs() {
     Object raw = executeMethod.execute(DriverCommand.GET_AVAILABLE_LOG_TYPES, null);
     @SuppressWarnings("unchecked")
     List<String> rawList = (List<String>) raw;
@@ -91,6 +93,12 @@ public class RemoteLogs implements Logs {
     for (String logType : rawList) {
       builder.add(logType);
     }
+    return builder.build();
+  }
+
+  public Set<String> getAvailableLogTypes() {
+    ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<String>();
+    builder.addAll(getAvailableDriverLogs());
     builder.addAll(getAvailableLocalLogs());
     return builder.build();
   }

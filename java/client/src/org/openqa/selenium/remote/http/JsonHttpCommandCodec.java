@@ -95,6 +95,7 @@ public class JsonHttpCommandCodec implements CommandCodec<HttpRequest> {
     defineCommand(FIND_ELEMENTS, post("/session/:sessionId/elements"));
     defineCommand(GET_ACTIVE_ELEMENT, post("/session/:sessionId/element/active"));
     defineCommand(GET_ELEMENT_ATTRIBUTE, get("/session/:sessionId/element/:id/attribute/:name"));
+    defineCommand(ELEMENT_SCREENSHOT, get("/session/:sessionId/element/:id/screenshot"));
     defineCommand(CLICK_ELEMENT, post("/session/:sessionId/element/:id/click"));
     defineCommand(CLEAR_ELEMENT, post("/session/:sessionId/element/:id/clear"));
     defineCommand(
@@ -151,6 +152,7 @@ public class JsonHttpCommandCodec implements CommandCodec<HttpRequest> {
 
     // Interactions-related commands.
     defineCommand(MOUSE_DOWN, post("/session/:sessionId/buttondown"));
+    defineCommand(WHEEL, post("/session/:sessionId/wheel"));
     defineCommand(MOUSE_UP, post("/session/:sessionId/buttonup"));
     defineCommand(CLICK, post("/session/:sessionId/click"));
     defineCommand(DOUBLE_CLICK, post("/session/:sessionId/doubleclick"));

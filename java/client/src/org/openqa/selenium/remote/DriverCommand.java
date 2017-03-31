@@ -86,6 +86,7 @@ public interface DriverCommand {
   String ELEMENT_EQUALS = "elementEquals";
 
   String SCREENSHOT = "screenshot";
+  String ELEMENT_SCREENSHOT = "elementScreenshot";
 
   String ACCEPT_ALERT = "acceptAlert";
   String DISMISS_ALERT = "dismissAlert";
@@ -127,6 +128,7 @@ public interface DriverCommand {
   String CLICK = "mouseClick";
   String DOUBLE_CLICK = "mouseDoubleClick";
   String MOUSE_DOWN = "mouseButtonDown";
+  String WHEEL = "mouseWheel";
   String MOUSE_UP = "mouseButtonUp";
   String MOVE_TO = "mouseMoveTo";
 
@@ -147,6 +149,8 @@ public interface DriverCommand {
   String TOUCH_DOUBLE_TAP = "touchDoubleTap";
   String TOUCH_LONG_PRESS = "touchLongPress";
   String TOUCH_FLICK = "touchFlick";
+  String TOUCH_PINCH_ZOOM = "pinchZoom";
+  String TOUCH_PINCH_ROTATE = "pinchRotate";
 
   // Window API (beta)
   String SET_WINDOW_SIZE = "setWindowSize";

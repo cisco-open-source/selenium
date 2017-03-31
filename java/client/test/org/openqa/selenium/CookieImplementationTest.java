@@ -47,6 +47,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.Ignore.Driver.REMOTE;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 
@@ -236,6 +237,7 @@ public class CookieImplementationTest extends JUnit4TestBase {
   }
 
   @Test
+  //TODO: Fails because of secon hostname isn't tranformed from domain name to ipv4 adrres,
   public void testShouldNotGetCookieOnDifferentDomain() {
     assumeTrue(domainHelper.checkHasValidAlternateHostname());
 
@@ -425,7 +427,8 @@ public class CookieImplementationTest extends JUnit4TestBase {
     assertTrue(retrieved.isHttpOnly());
   }
 
-  @Ignore(ANDROID)
+  @Ignore(value = {ANDROID, QTWEBKIT},
+          reason = "QTWEBKIT: looks like browser itself doesn't support setting expired cookie")
   @Test
   public void testSettingACookieThatExpiredInThePast() {
     long expires = System.currentTimeMillis() - 1000;

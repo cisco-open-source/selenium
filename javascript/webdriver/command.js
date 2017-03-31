@@ -213,6 +213,8 @@ webdriver.CommandName = {
   TOUCH_DOUBLE_TAP: 'touchDoubleTap',
   TOUCH_LONG_PRESS: 'touchLongPress',
   TOUCH_FLICK: 'touchFlick',
+  TOUCH_PINCH_ROTATE: 'touchPinchRotate',
+  TOUCH_PINCH_ZOOM: 'touchPinchZoom',
 
   GET_AVAILABLE_LOG_TYPES: 'getAvailableLogTypes',
   GET_LOG: 'getLog',

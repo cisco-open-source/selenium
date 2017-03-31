@@ -22,6 +22,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -29,19 +31,23 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.Pages;
+import org.openqa.selenium.environment.Pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
 import org.openqa.selenium.environment.InProcessTestEnvironment;
-import org.openqa.selenium.environment.TestEnvironment;
 import org.openqa.selenium.environment.webserver.AppServer;
 import org.openqa.selenium.internal.WrapsDriver;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.profiler.EventType;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.testing.drivers.WebDriverBuilder;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 @RunWith(SeleniumTestRunner.class)
@@ -49,7 +55,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
 
   private static final Logger logger = Logger.getLogger(JUnit4TestBase.class.getName());
 
-  protected TestEnvironment environment;
+  protected InProcessTestEnvironment environment;
   protected AppServer appServer;
   protected Pages pages;
   private static ThreadLocal<WebDriver> storedDriver = new ThreadLocal<WebDriver>();
@@ -62,7 +68,7 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     environment = GlobalTestEnvironment.get(InProcessTestEnvironment.class);
     appServer = environment.getAppServer();
 
-    pages = new Pages(appServer);
+    pages = environment.getTestContent();
 
     String hostName = environment.getAppServer().getHostName();
     String alternateHostName = environment.getAppServer().getAlternateHostName();
@@ -92,6 +98,30 @@ public abstract class JUnit4TestBase implements WrapsDriver {
     protected void finished(Description description) {
       super.finished(description);
       logger.info("<<< Finished " + description);
+      if (driver != null && ((RemoteWebDriver) driver).getSessionId() != null) {
+        List<LogEntry> entries;
+        try {
+          entries = driver.manage().logs().get("profiler").getAll();
+        } catch (Exception e) {
+          logger.warning("<<< Error: can't get valid logs...");
+          e.printStackTrace();
+          return;
+        }
+        String[] testCase = new String[2];
+        for (LogEntry entry : entries) {
+          try {
+            JSONObject json = new JSONObject(entry.getMessage());
+            if (json.getString("event").equals(EventType.HTTP_COMMAND.toString())) {
+              testCase[0] = description.getClassName();
+              testCase[1] = description.getMethodName();
+              environment.addTestToCommand(json.getString("command"), json.getString("url"),
+                                           json.getString("method"), testCase);
+            }
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+        }
+      }
     }
   };
   
@@ -104,7 +134,16 @@ public abstract class JUnit4TestBase implements WrapsDriver {
 
     if (driver == null ||
         (driver instanceof RemoteWebDriver && ((RemoteWebDriver)driver).getSessionId() == null)) {
-      driver = new WebDriverBuilder().get();
+      DesiredCapabilities caps = new DesiredCapabilities();
+      caps.setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, true);
+      WebDriverBuilder builder = new WebDriverBuilder();
+
+      String startClass = System.getProperty("webdriver.browserClass");
+      if (null != startClass) {
+        caps.setCapability("browserClass", startClass);
+      }
+      builder.setDesiredCapabilities(caps);
+      driver = builder.get();
       storedDriver.set(driver);
     }
     return storedDriver.get();

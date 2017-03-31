@@ -18,16 +18,14 @@ limitations under the License.
 package org.openqa.selenium.interactions.touch;
 
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NeedsFreshDriver;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.testing.Ignore;
 
 import static org.junit.Assert.assertTrue;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 /**
  * Tests the basic scroll operations on touch enabled devices..
@@ -51,12 +49,13 @@ public class TouchScrollTest extends TouchTestBase {
     assertTrue("Expected y > 4200, but got y = " + y, y > 4200);
 
     WebElement toScroll = driver.findElement(By.id("imagestart"));
-    Action scroll = getBuilder(driver).scroll(toScroll, 0, -800).build();
+    Action scroll = getBuilder(driver).scroll(toScroll, 0, -1000).build();
     scroll.perform();
 
     y = link.getLocation().y;
+    y = ((Long)((JavascriptExecutor) driver).executeScript("return document.body.scrollTop")).intValue();
     // After scrolling, the location of the element should change accordingly.
-    assertTrue("Expected y < 3500, but got y = " + y, y < 3500);
+    assertTrue("Expected y < 3500, but got y = " + y, y == 800);
   }
 
   @NeedsFreshDriver
@@ -75,6 +74,7 @@ public class TouchScrollTest extends TouchTestBase {
     scroll.perform();
 
     x = link.getLocation().x;
+    x = ((Long)((JavascriptExecutor) driver).executeScript("return document.body.scrollLeft")).intValue();
     // After scrolling, the location of the element should change accordingly.
     assertTrue("Expected x < 1500, but got x = " + x, x < 1500);
   }
@@ -116,5 +116,4 @@ public class TouchScrollTest extends TouchTestBase {
     // After scrolling, the location of the element should change accordingly.
     assertTrue("Expected x < 1500, but got x = " + x, x < 1500);
   }
-
 }

@@ -1,0 +1,13 @@
+
+java_test(name = "test_qtwebkit",
+  srcs = [ "*.java",
+            "touch/*.java"],
+  sysproperties = [
+    { "selenium.browser" : "qtwebkit" },
+  ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/qtwebkit",
+    "//java/client/test/org/openqa/selenium:tests",
+    "//third_party/java/junit",
+  ]
+)

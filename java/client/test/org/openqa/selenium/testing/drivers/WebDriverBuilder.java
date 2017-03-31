@@ -85,6 +85,7 @@ public class WebDriverBuilder implements Supplier<WebDriver> {
     List<Supplier<WebDriver>> suppliers = Lists.newArrayList();
     suppliers.add(new ExternalDriverSupplier(desiredCaps, requiredCaps));
     suppliers.add(new SauceBackedDriverSupplier(desiredCaps));
+    suppliers.add(new QtWebKitDriverSupplier(desiredCaps, requiredCaps));
     suppliers.add(new RemoteSupplier(desiredCaps, requiredCaps));
     suppliers.add(new OperaDriverSupplier(desiredCaps));
     suppliers.add(new PhantomJSDriverSupplier(desiredCaps));

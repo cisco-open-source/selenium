@@ -216,7 +216,7 @@ webdriver.chrome.isElementClickable = function(elem, coord) {
         false, 'Element is not clickable at point ' + coordStr);
   }
   var elemAtPointHTML = elemAtPoint.outerHTML;
-  if (elemAtPoint.hasChildNodes()) {
+  if (elemAtPoint.hasChildNodes() && elemAtPointHTML) {
     var inner = elemAtPoint.innerHTML;
     var closingTag = '</' + elemAtPoint.tagName + '>';
     var innerStart = elemAtPointHTML.length - inner.length - closingTag.length;

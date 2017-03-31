@@ -25,6 +25,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
 
 import com.google.common.base.Charsets;
@@ -57,7 +58,7 @@ public class UploadTest extends JUnit4TestBase {
   }
 
   @JavascriptEnabled
-  @Ignore(value = {OPERA, OPERA_MOBILE},
+  @Ignore(value = {OPERA, OPERA_MOBILE, QTWEBKIT},
           reason = "Opera/Opera Mobile: File input elements are not supported yet")
   @Test
   public void testFileUploading() throws Exception {

@@ -180,9 +180,9 @@ public class HttpCommandExecutor implements CommandExecutor, NeedsLocalLogs {
     }
 
     try {
-      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), true));
+      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), request.getUri(), request.getMethod().toString(), true));
       HttpResponse response = fallBackExecute(context, httpMethod);
-      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), false));
+      log(LogType.PROFILER, new HttpProfilerLogEntry(command.getName(), request.getUri(), request.getMethod().toString(), false));
 
       response = followRedirects(client, context, response, /* redirect count */0);
 

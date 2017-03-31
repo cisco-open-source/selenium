@@ -29,6 +29,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.IE;
 import static org.openqa.selenium.testing.Ignore.Driver.IPHONE;
 import static org.openqa.selenium.testing.Ignore.Driver.MARIONETTE;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 import org.junit.Test;
 import org.openqa.selenium.environment.GlobalTestEnvironment;
@@ -90,10 +91,11 @@ public class I18nTest extends JUnit4TestBase {
 
   @Test
   @Ignore(
-      value = {MARIONETTE, CHROME, OPERA},
+      value = {MARIONETTE, CHROME, OPERA, QTWEBKIT},
       reason = "MAIONETTE: not checked, "
                + "CHROME: ChromeDriver only supports characters in the BMP"
                + "OPERA: doesn't work - see issue 5069"
+               + "QTWEBKIT: WebDriver only supports characters in the BMP"
   )
   public void testEnteringSupplementaryCharacters() {
     assumeFalse("IE: versions less thank 10 have issue 5069",
@@ -133,7 +135,7 @@ public class I18nTest extends JUnit4TestBase {
   }
 
   @NeedsFreshDriver
-  @Ignore(value = {IE, CHROME, HTMLUNIT, FIREFOX, OPERA, ANDROID, IPHONE},
+  @Ignore(value = {IE, CHROME, HTMLUNIT, FIREFOX, OPERA, ANDROID, IPHONE, QTWEBKIT},
       reason = "Not implemented on anything other than"
           + "Firefox/Linux at the moment.")
   @Test

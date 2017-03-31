@@ -1,0 +1,16 @@
+<project name="MyProject" default="dist" basedir=".">
+    <description>
+        simple example build file
+    </description>
+
+    <property name="report" value="./build/test_logs" />
+
+  	<target name="test">
+		<junitreport todir="${report}">
+			<fileset dir="${report}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${report}/html" />
+		</junitreport>
+  	</target>
+</project>

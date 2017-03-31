@@ -16,9 +16,12 @@ limitations under the License.
 
 package org.openqa.selenium;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.remote.QtWebkitAugmenter;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.testing.Ignore;
 import org.openqa.selenium.testing.JUnit4TestBase;
 
@@ -36,6 +39,7 @@ import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
 import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
 import static org.openqa.selenium.testing.Ignore.Driver.PHANTOMJS;
 import static org.openqa.selenium.testing.Ignore.Driver.SAFARI;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 import com.google.common.collect.Sets;
 
@@ -135,7 +139,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {OPERA, SAFARI, CHROME},
+  @Ignore(value = {OPERA, SAFARI, CHROME, QTWEBKIT},
           reason = " SAFARI: takes only visible viewport." +
                    " CHROME: takes only visible viewport." +
                    " OPERA: takes only visible viewport."
@@ -158,7 +162,19 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {OPERA, SAFARI, CHROME},
+  public void testSaveElementScreenshot() throws Exception {
+    driver.get(appServer.whereIs("longContentPage.html"));
+
+    RemoteWebElement findElement = (RemoteWebElement) driver.findElement(By.id("link3"));
+    TakesScreenshot eltShot = (TakesScreenshot) new QtWebkitAugmenter().augment(findElement);
+    tempFile = eltShot.getScreenshotAs(OutputType.FILE);
+
+    assertTrue(tempFile.exists());
+    assertTrue(tempFile.length() > 0);
+  }
+
+  @Test
+  @Ignore(value = {SAFARI, CHROME, QTWEBKIT},
           reason = " SAFARI: takes only visible viewport." +
                    " CHROME: takes only visible viewport." +
                    " OPERA: takes only visible viewport."
@@ -181,7 +197,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {PHANTOMJS, OPERA, SAFARI, CHROME, IE, FIREFOX},
+  @Ignore(value = {IE, FIREFOX, SAFARI, QTWEBKIT},
           reason = " IE: cuts captured image at driver level." +
                    " FF: captured image is cat at driver level." +
                    " SAFARI: takes only visible viewport." +
@@ -207,7 +223,7 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {PHANTOMJS, OPERA, SAFARI, CHROME, IE, FIREFOX},
+  @Ignore(value = {IE, FIREFOX, SAFARI, CHROME, QTWEBKIT},
           reason = " IE: cuts captured image at driver level." +
                    " FF: captured image is cat at driver level." +
                    " SAFARI: takes only visible viewport." +
@@ -233,13 +249,14 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {PHANTOMJS, OPERA, SAFARI, CHROME, IE, FIREFOX},
+  @Ignore(value = {PHANTOMJS, OPERA, SAFARI, CHROME, IE, FIREFOX, QTWEBKIT},
           reason = " IE: returns null." +
                    " FF: failed due NS_ERROR_FAILURE at context.drawWindow." +
                    " SAFARI: takes only visible viewport." +
                    " CHROME: takes only visible viewport." +
                    " PHANTOMJS: takes empty data of byte[], no errors. " +
-                   " OPERA: takes only visible viewport."
+                   " OPERA: takes only visible viewport." +
+                   " QTWEBKIT: takes only visible viewport."
   )
   public void testShouldCaptureScreenshotOfPageWithTooLongXandY() throws Exception {
     driver.get(appServer.whereIs("screen/screen_too_long.html"));
@@ -288,8 +305,9 @@ public class TakesScreenshotTest extends JUnit4TestBase {
   }
 
   @Test
-  @Ignore(value = {CHROME},
-          reason = " CHROME: Unknown actual colors are presented at screenshot")
+  @Ignore(value = {CHROME, QTWEBKIT},
+          reason = " CHROME: Unknown actual colors are presented at screenshot" +
+                   " QTWEBKIT: Unknown actual colors are presented at screenshot")
   public void testShouldCaptureScreenshotAtIFramePage() throws Exception {
     driver.get(appServer.whereIs("screen/screen_iframes.html"));
 
@@ -347,10 +365,11 @@ public class TakesScreenshotTest extends JUnit4TestBase {
 
   @Test
   @Ignore(
-      value = {OPERA, IE, CHROME},
+      value = {OPERA, IE, CHROME, QTWEBKIT},
       reason = " OPERA: takes screenshot only of switched-in frame." +
                " IE: v9 takes screesnhot only of switched-in frame area " +
-               " CHROME: Unknown actual colors are presented at screenshot"
+               " CHROME: Unknown actual colors are presented at screenshot" +
+               " QTWEBKIT: Unknown actual colors are presented at screenshot"
   )
   public void testShouldCaptureScreenshotAtIFramePageAfterSwitching() throws Exception {
     driver.get(appServer.whereIs("screen/screen_iframes.html"));

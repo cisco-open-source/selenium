@@ -33,7 +33,7 @@ public class AppCacheTest extends JUnit4TestBase {
 
   @Test
   public void testAppCacheStatus() {
-    driver.get(pages.html5Page);
+    driver.get("http://www.google.com");
     driver.manage().timeouts().implicitlyWait(2000, MILLISECONDS);
 
     AppCacheStatus status = ((ApplicationCache) driver).getStatus();

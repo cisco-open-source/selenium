@@ -19,6 +19,9 @@ javascript/node/selenium-webdriver/node_modules/
 .idea/vcs.xml
 .idea/misc.xml
 .idea/workspace.xml
+.idea/projectCodeStyle.xml
+*.idea*
+*.iml
 .idea/dictionaries/
 .idea/scopes/
 .idea/qaplug_profiles.xml

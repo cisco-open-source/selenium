@@ -24,10 +24,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.internal.Locatable;
+import org.openqa.selenium.testing.Ignore;
+import static org.openqa.selenium.testing.Ignore.Driver.QTWEBKIT;
 
 /**
  * Tests the basic double tap operations.
  */
+@Ignore (QTWEBKIT)
 public class TouchDoubleTapTest extends TouchTestBase {
 
   private TouchActions getBuilder(WebDriver driver) {

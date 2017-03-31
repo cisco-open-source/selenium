@@ -18,17 +18,12 @@ limitations under the License.
 package org.openqa.selenium.interactions.touch;
 
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NeedsFreshDriver;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.testing.Ignore;
 
 import static org.junit.Assert.assertTrue;
-import static org.openqa.selenium.testing.Ignore.Driver.ANDROID;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA;
-import static org.openqa.selenium.testing.Ignore.Driver.OPERA_MOBILE;
+import static org.openqa.selenium.testing.Ignore.Driver.*;
 
 /**
  * Tests the basic flick operations on touch enabled devices.
